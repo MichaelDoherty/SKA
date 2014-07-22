@@ -1,0 +1,3 @@
+Nothing here. 
+This is a stub file to force Git to include the lib directory in downloads.
+The build process should move library files into this folder.
