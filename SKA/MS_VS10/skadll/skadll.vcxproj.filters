@@ -1,0 +1,441 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\SKA\src\Animation\AnimBone.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\AnimDebug.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\AnimSkeleton.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\Blender.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\BoneDefinition.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\Character.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\MotionSequence.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\MultiSequenceController.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\MotionSequenceController.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\RawMotionController.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\SkeletonDefinition.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Camera\Camera.cpp">
+      <Filter>Camera\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Core\SystemLog.cpp">
+      <Filter>Core\Source FIles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Core\SystemTimer.cpp">
+      <Filter>Core\Source FIles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\AMC_Reader.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\AMC_Writer.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\ASF_AMC_ParseUtils.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\ASF_Reader.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\ASF_Writer.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\BVH_Reader.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\Database.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\DatabaseLoader.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\DataIndex.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\DataManager.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\FileSystem.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\EasyBMP\EasyBMP.cpp">
+      <Filter>EasyBMP\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Input\InputFilter.cpp">
+      <Filter>Input\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Input\InputManager.cpp">
+      <Filter>Input\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Math\Matrix4x4.cpp">
+      <Filter>Math\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Math\Point2D.cpp">
+      <Filter>Math\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Math\Quaternion.cpp">
+      <Filter>Math\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Math\RandomGenerator.cpp">
+      <Filter>Math\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Math\Vector3D.cpp">
+      <Filter>Math\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Signals\FFT.cpp">
+      <Filter>Signals\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Signals\Signals.cpp">
+      <Filter>Signals\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Objects\BoneSequence.cpp">
+      <Filter>Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Objects\Object.cpp">
+      <Filter>Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Objects\QObject.cpp">
+      <Filter>Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Objects\Rotator.cpp">
+      <Filter>Objects\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Graphics\Graphics2D.cpp">
+      <Filter>Graphics\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Graphics\GraphicsInterface.cpp">
+      <Filter>Graphics\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Graphics\Lights.cpp">
+      <Filter>Graphics\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Graphics\Textures.cpp">
+      <Filter>Graphics\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Models\CodedModels.cpp">
+      <Filter>Models\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Models\SphereModels.cpp">
+      <Filter>Models\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Models\ModelFactory.cpp">
+      <Filter>Models\Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\SKA\include\Animation\AnimationException.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\AnimBone.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\AnimDebug.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\AnimSkeleton.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\Blender.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\BoneDefinition.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\Channel.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\Character.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\MotionController.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\MotionSequence.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\MotionSequenceController.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\MultiSequenceController.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\RawMotionController.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\SkeletonDefinition.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Camera\Camera.h">
+      <Filter>Camera\Header FIles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\Array2D.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\BasicException.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\DOF.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\SystemConfiguration.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\SystemLog.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\SystemTimer.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\TriFace.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Core\Utilities.h">
+      <Filter>Core\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\AMC_Reader.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\AMC_Writer.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\ASF_AMC_ParseUtils.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\ASF_Reader.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\ASF_Writer.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\BVH_Reader.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\Database.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\DatabaseLoader.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\DataIndex.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\DataManagementException.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\DataManager.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\FileSystem.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\LineScanner.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP.h">
+      <Filter>EasyBMP\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP_VariousBMPutilities.h">
+      <Filter>EasyBMP\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP_BMP.h">
+      <Filter>EasyBMP\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP_DataStructures.h">
+      <Filter>EasyBMP\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Input\InputFilter.h">
+      <Filter>Input\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Input\InputManager.h">
+      <Filter>Input\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\Math.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\Matrix4x4.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\Point2D.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\Quaternion.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\RandomGenerator.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\Vector3D.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Signals\FFT.h">
+      <Filter>Signals\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Signals\Signals.h">
+      <Filter>Signals\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Signals\SignalSpec.h">
+      <Filter>Signals\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Objects\BoneObject.h">
+      <Filter>Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Objects\BoneSequence.h">
+      <Filter>Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Objects\Object.h">
+      <Filter>Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Objects\QObject.h">
+      <Filter>Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Objects\Rotator.h">
+      <Filter>Objects\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Graphics\Graphics2D.h">
+      <Filter>Graphics\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Graphics\GraphicsInterface.h">
+      <Filter>Graphics\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Graphics\Lights.h">
+      <Filter>Graphics\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Graphics\Textures.h">
+      <Filter>Graphics\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Models\CodedModels.h">
+      <Filter>Models\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Models\Color.h">
+      <Filter>Models\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Models\ModelFactory.h">
+      <Filter>Models\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Models\Models.h">
+      <Filter>Models\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Models\SphereModels.h">
+      <Filter>Models\Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{c58de780-4cc0-4fd5-8fd7-c99562243018}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{337cabbe-444a-40eb-aa18-fe5250313eda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{80e091b6-2c04-47bf-810e-bb500f7c2297}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataManagement">
+      <UniqueIdentifier>{4cf6371a-42c0-49b1-b885-c5f9945b0e17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EasyBMP">
+      <UniqueIdentifier>{871cbfc0-a1e0-4807-b82c-70bb0bf4760e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{98fadc1e-1f78-475e-ae8e-8241bf651f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{5e901569-8f54-4527-9925-1f4acd4ed7a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{cbd6bb43-4747-45af-ab75-12100c7d039f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Signals">
+      <UniqueIdentifier>{ee1ce7bc-cc1f-4d32-9e6f-75e7d49b540e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation\Header Files">
+      <UniqueIdentifier>{ac3bfb87-a398-435d-a7f0-b6fec01f2585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation\Source Files">
+      <UniqueIdentifier>{44ef8a28-c88d-4cab-9a3b-ef82cc345785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera\Header FIles">
+      <UniqueIdentifier>{b9aa25e7-f7e2-473e-a529-5012631c38bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera\Source Files">
+      <UniqueIdentifier>{b501e555-0bac-47c3-86b3-04948d87d624}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Header Files">
+      <UniqueIdentifier>{b3bc0bf8-f34b-4431-b100-7a2371c25312}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Source FIles">
+      <UniqueIdentifier>{af6dbe81-5716-4270-b61f-6ba58552e368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataManagement\Header Files">
+      <UniqueIdentifier>{9f3767b0-2cdd-448c-af38-edbf4d9373fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataManagement\Source Files">
+      <UniqueIdentifier>{55a949ff-09a8-4dff-a041-b857ed26aa97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EasyBMP\Header Files">
+      <UniqueIdentifier>{530b1ca3-1e13-48fa-9938-c7ed9a2cd486}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EasyBMP\Source Files">
+      <UniqueIdentifier>{2cb8ac01-b350-42c9-b419-1e0798047711}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input\Header Files">
+      <UniqueIdentifier>{febb6026-c73e-47f9-8519-4710407e9ff8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input\Source Files">
+      <UniqueIdentifier>{4eef7017-0331-426b-8058-051d40cc032f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Header Files">
+      <UniqueIdentifier>{ad3cd2d8-3403-41ec-b6ce-64f9305e8945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Source Files">
+      <UniqueIdentifier>{383d577c-afc9-4b6b-9e5c-8ba66cd04574}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Signals\Header Files">
+      <UniqueIdentifier>{ecddcbc7-3835-445e-bd73-bf3f49b33be8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Signals\Source Files">
+      <UniqueIdentifier>{d2a9dfb6-7cfa-400f-82dd-848f1a6b8b68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Header Files">
+      <UniqueIdentifier>{0a2b4646-01f3-4a09-9e38-f2681e2a3d5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Source Files">
+      <UniqueIdentifier>{325b065f-afa8-421e-a2f4-efbaf8450ed6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{359fd2e7-5e43-4d6d-8804-42a394f91312}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Header Files">
+      <UniqueIdentifier>{441b2a42-f91e-4579-9c21-90b8ee897eb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Source Files">
+      <UniqueIdentifier>{fb0555e7-8308-41f3-bff5-1c1e97a99e05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Models">
+      <UniqueIdentifier>{ab56b5d6-2e04-47c1-af92-fc43ecda395c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Models\Header Files">
+      <UniqueIdentifier>{8b0edc1f-b648-43a4-a730-a8adfd2c23d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Models\Source Files">
+      <UniqueIdentifier>{435d7501-8b45-49f3-ade9-763e25175e40}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
