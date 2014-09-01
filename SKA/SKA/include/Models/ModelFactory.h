@@ -11,14 +11,31 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef MODELFACTORY_DOT_H
 #define MODELFACTORY_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "Models/Models.h"
+#include <Core/SystemConfiguration.h>
+#include <Models/Models.h>
 
-// IMPROVEIT! ModelFactory should only create one instance of each model type
+// Future Improvement: The model factory should recognize when it is asked to build duplicate models
+// and return a reference to previously constructed models when possible.
+
+class SKA_LIB_DECLSPEC ModelSpecification
+{
+public:
+	ModelSpecification(const char* _model_name);
+	ModelSpecification(const char* _model_name, const Color _color);
+	~ModelSpecification();
+	void addSpec(const char* _key, const char* _value);
+
+	char* getModelName();
+	Color getColor();
+	char* getSpec(const char* _key);
+
+private:
+	struct ModelSpecData* data;
+};
 
 class ModelFactory
 {

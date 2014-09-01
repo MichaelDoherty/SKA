@@ -1,16 +1,23 @@
 //-----------------------------------------------------------------------------
-// app0001: Demo program illustrating how to build a basic SKA application.
-//          This application reads a skeleton and motion from an ASF/AMC 
-//          file pair and uses that data to drive a character.
+// app0001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
-// AppMain.h
+// app0001: Demo program demonstrates how to animate a character based on
+//          an ASF/AMC file pair.
+//          It also illustrated various useful things that aren't
+//          directly related to the character animation.
+//          (1) additional objects, such as ground, sky and coordinate axes
+//          (2) moveable camera, controlled by the camera and mouse.
+//          (3) keyboard filtering, to avoid multiple responses when
+//              a single keystroke is expected.
+//          (4) animation speed control (freeze, single step, time warp)
+//          (5) heads-up display (2D text on screen)
+//-----------------------------------------------------------------------------
+// AppMain.cpp
 //    The main program is mostly the connection between openGL, 
 //    SKA and application specific code. It also controls the order of 
 //    initialization, before control is turned over to openGL.
 //-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
-// SKA configuration - should always be the first file included.
+// SKA configuration.
 #include <Core/SystemConfiguration.h>
 // C/C++ libraries
 #include <cstdio>
@@ -22,10 +29,14 @@ using namespace std;
 // SKA modules
 #include <Core/BasicException.h>
 #include <Core/SystemTimer.h>
+#include <Core/Utilities.h>
 #include <DataManagement/DataManagementException.h>
 #include <Input/InputManager.h>
 #include <Graphics/GraphicsInterface.h>
 #include <Graphics/Lights.h>
+#include <Graphics/Textures.h>
+#include <Graphics/Graphics2D.h>
+#include <Models/SphereModels.h>
 // local application
 #include "AppConfig.h"
 #include "AnimationControl.h"
@@ -34,13 +45,41 @@ using namespace std;
 
 // pointers to animated objects that need to be drawn (bones)
 list<Object*> anim_render_list;
+// pointers to background objects that need to be drawn
+list<Object*> bg_render_list;
 
 // default window size
 static int window_height = 800;
 static int window_width = 800;
 
+// which objects background objects do we want to see?
+static bool SHOW_SKY = true;
+static bool SHOW_GROUND = true;
+static bool SHOW_COORD_AXIS = true;
+
 //  background color (black)
 static float clear_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f};
+
+// heads-up display = 2D text on screen
+void drawHUD()
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	Color color(1.0f,1.0f,0.0f,1.0f);
+	float y = 0.9f;
+	string s;
+
+	s = "Time Warp: " + toString(anim_ctrl.getTimeWarp());
+	renderString(0.5f, y, 0.0f, color, s.c_str());
+	y -= 0.05f;
+	if (anim_ctrl.isFrozen())
+	{
+		s = "Animation Frozen";
+		renderString(0.5f, y, 0.0f, color, s.c_str());
+	}
+}
 
 // display() is the call back function from the openGL rendering loop.
 // All recurring processing is initiated from this function.
@@ -50,7 +89,7 @@ void display(void)
 	double elapsed_time = system_timer.elapsedTime();
 
 	// Check to see if any user inputs have been received since the last frame.
-	input_processor.processInputs();
+	input_processor.processInputs(elapsed_time);
 
 	// Set up openGL to draw next frame.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -58,6 +97,19 @@ void display(void)
 	glLoadIdentity();
 	camera.setSceneView();
 	glMatrixMode(GL_MODELVIEW);
+
+	// draw background objects
+	list<Object*>::iterator biter = bg_render_list.begin();
+	while (biter != bg_render_list.end())
+	{
+		Object* go = (Object*)(*biter);
+		if (go->isVisible()) 
+		{
+			Matrix4x4 world_xform;
+			(*biter)->render(world_xform);
+		}
+		biter++;
+	}
 
 	// Tell the animation subsystem to update the character, then redraw it.
 	if (anim_ctrl.isReady())
@@ -78,11 +130,55 @@ void display(void)
 		}
 	}
 
+	// draw the heads-up display
+	drawHUD();
+
 	// Activate the new frame.
 	glutSwapBuffers();
 
 	// Record any redering errors.
 	checkOpenGLError(203);
+}
+
+void buildObjects()
+{
+	// tell texture manager where to find texture BMP files
+	texture_manager.addTextureFilepath((char*)TEXTURE_FILE_PATH);
+
+	if (SHOW_SKY)
+	{
+		// create a sky model directly by creating an instance of InvertedSphereModel
+		// which is a textured model
+		SphereModel* skymod = new InvertedSphereModel(800, 3, 
+			Color(1.0f,1.0f,0.5f),(char*)"skymap1.bmp");
+		// build a sky object associated with the sky model 
+		Object* sky = new Object(skymod, Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
+		// store sky object for rendering
+		bg_render_list.push_back(sky);
+	}
+
+	if (SHOW_GROUND)
+	{
+		// create a ground model indirectly by defining a ModelSpecification
+		ModelSpecification groundspec("Ground");
+		// build a ground object associated with the ground model 
+		Object* ground = new Object(groundspec, 
+			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f), Vector3D(1.0f,1.0f,1.0f));
+		// store ground object for rendering
+		bg_render_list.push_back(ground);
+	}
+
+	if (SHOW_COORD_AXIS)
+	{
+		// create a coordinate axes model indirectly by defining a ModelSpecification
+		ModelSpecification caxisspec("CoordinateAxis");
+		caxisspec.addSpec("length", "100");
+		// build a coordinate axes object associated with the coordinate axes model 
+		Object* caxis = new Object(caxisspec, 
+			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
+		// store coordinate axes object for rendering
+		bg_render_list.push_back(caxis);
+	}
 }
 
 // reshape() is a call back from openGL to indicate that the window has 
@@ -127,17 +223,11 @@ int main(int argc, char **argv)
 {
 	// initialize the animation subsystem, which reads the
 	// mocap data files and sets up the character(s)
-	try
+	anim_ctrl.loadCharacters(anim_render_list);
+	if (!anim_ctrl.isReady()) 
 	{
-		anim_ctrl.loadCharacters(anim_render_list);
-	}
-	catch (DataManagementException& e)
-	{
-		logout << "Exception while loading characters" << endl;
-		logout << e.msg << endl;
-		cerr << "Exception while loading characters" << endl;
-		cerr << e.msg << endl;
-		exit(1);
+		logout << "main(): Unable to load characters. Aborting program." << endl;
+		return 1;
 	}
 
 	// initialize openGL and enter its rendering loop.
@@ -159,8 +249,11 @@ int main(int argc, char **argv)
 		initializeDefaultLighting();
 
 		// Application specific initialization of the camera/viewpoint.
-		initializeCamera(window_width, window_height);
+		camera.initializeCamera(window_width, window_height);
 		
+		// construct background objects
+		buildObjects();
+
 		// Record any openGL errors.
 		checkOpenGLError(202);
 

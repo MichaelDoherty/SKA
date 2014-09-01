@@ -11,15 +11,17 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Core/SystemLog.h"
-#include "Core/Utilities.h"
-#include "DataManagement/DataManagementException.h"
-#include "DataManagement/BVH_Reader.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/SystemLog.h>
+#include <Core/Utilities.h>
+#include <Core/Array2D.h>
+#include <DataManagement/DataManagementException.h>
+#include <DataManagement/BVH_Reader.h>
 #include <fstream>
 #include <cstdlib>
+#include <vector>
 using namespace std;
 
 /*==========================================================================
@@ -71,9 +73,9 @@ struct BVH_MOTION
 {
 	long frames;
 	float frame_time;
-	long channels;
+	short channels;
 	Array2D<float> frame_data;
-	BVH_MOTION(long _frames, long _channels)
+	BVH_MOTION(long _frames, short _channels)
 	: frames(_frames), channels(_channels) { frame_data.resize(frames, channels); }
 };
 
@@ -101,32 +103,33 @@ struct BVH_FILE {
 class BVH_Reader_Local
 {
 public:
-	BVH_Reader_Local() : SKA2BVH_channel_map(NULL), next_bone_id(0), line_scanner(NULL), size_scale(1.0f)
+	BVH_Reader_Local() : SKA2BVH_channel_map(NULL), next_bone_id(0), line_scanner(NULL)
 	{ }
 	virtual ~BVH_Reader_Local() 
 	{ 
 		if (line_scanner != NULL) delete line_scanner; 
 		if (SKA2BVH_channel_map != NULL) delete [] SKA2BVH_channel_map;
 	}
-	pair<SkeletonDefinition*, MotionSequence*> readBVH(const char* inputFilename);
+	pair<Skeleton*, MotionSequence*> readBVH(const char* inputFilename);
 
 private:
 
 	// conversion to SKA skeleton
-	SkeletonDefinition* createSkeleton(BVH_FILE* bvh_file);
-	void createSkeleton(BVH_DECL* decl, SkeletonDefinition* skeleton, string parent_name);
+	Skeleton* createSkeleton(BVH_FILE* bvh_file);
+	void createSkeleton(BVH_DECL* decl, Skeleton* skeleton, string parent_name);
 
 	// BVH_index = channel_reindexing[SKA_index]
 	short num_BVH_channels;
 	short num_SKA_channels;     
 	short* SKA2BVH_channel_map;
+	vector<CHANNEL_ID> channel_ids;
 	void set_SKA2BVH_channel_map(BVH_DECL* decl, short BVH_index, short SKA_index);
-	void configureChannels(short bone_id, BVH_DECL* decl, SkeletonDefinition* skel, short my_BVH_channels, bool noDOF);
+	void configureChannels(short bone_id, BVH_DECL* decl, Skeleton* skel, short my_BVH_channels, bool noDOF);
 
 	// non-terminals
 	BVH_FILE* parse_BVH_FILE();
 	BVH_HIERARCHY* parse_BVH_HIERARCHY();
-	BVH_MOTION* parse_BVH_MOTION(long _channels);
+	BVH_MOTION* parse_BVH_MOTION(short _channels);
 	BVH_DECL* parse_DECL();
 	BVH_OFFSET_SPEC* parse_OFFSET_SPEC();
 	BVH_CHANNELS_SPEC* parse_CHANNELS_SPEC();
@@ -138,7 +141,7 @@ private:
 	bool parse_KEYWORD(string keyword);
 
 	// misc
-	long countChannels(BVH_HIERARCHY* hier);
+	short countChannels(BVH_HIERARCHY* hier);
 	short next_bone_id;
 	short* setupReindexing(BVH_HIERARCHY* hier);
 
@@ -150,19 +153,15 @@ private:
 	LineScanner* line_scanner;
 	list<string> token_buffer;
 	short token_index;
-
-public:
-	float size_scale;
-	void setSizeScale(float s) { size_scale = s; }
 };
 
 //==========================================================================*/
 
 ostream& operator<<(ostream& os, BVH_FILE* ptr);
 
-pair<SkeletonDefinition*, MotionSequence*> BVH_Reader_Local::readBVH(const char* inputFilename)
+pair<Skeleton*, MotionSequence*> BVH_Reader_Local::readBVH(const char* inputFilename)
 {
-	pair<SkeletonDefinition*, MotionSequence*> result;
+	pair<Skeleton*, MotionSequence*> result;
 	result.first = NULL;
 	result.second = NULL;
 
@@ -173,34 +172,32 @@ pair<SkeletonDefinition*, MotionSequence*> BVH_Reader_Local::readBVH(const char*
 	BVH_FILE* bvh_parse_tree = parse_BVH_FILE();
 	bvh_parse_tree->filename = inputFilename;
 
-	/*
-	logout << "START BVH PARSE DUMP" << endl;
-	logout << bvh_parse_tree;
-	logout << "END BVH PARSE DUMP" << endl;
-	*/
-
-	SkeletonDefinition* skel = createSkeleton(bvh_parse_tree);
+	Skeleton* skel = createSkeleton(bvh_parse_tree);
 
 	BVH_MOTION* motion = bvh_parse_tree->motion;
 	MotionSequence* ms = new MotionSequence();
-	ms->setNumFrames((short)motion->frames);
+	ms->setNumFrames(motion->frames);
 	//ms->setFrameRate(1.0f/motion->frame_time);
 	ms->setFrameRate(120);
-	ms->buildChannelsFromSkeleton(skel);
 
-	for (short f=0; f<motion->frames; f++)
+	CHANNEL_ID* cid = new CHANNEL_ID[channel_ids.size()];
+	for (unsigned short c=0; c<channel_ids.size(); c++)	cid[c] = channel_ids[c];
+	Array2D<float> bulk_data(motion->frames, channel_ids.size());
+	for (long f=0; f<motion->frames; f++)
 	{
 		for (short SKA_channel=0; SKA_channel<num_SKA_channels; SKA_channel++)
 		{
 			short BVH_channel = SKA2BVH_channel_map[SKA_channel];
 			float v = motion->frame_data.get(f, BVH_channel);
-			if (BVH_channel < 3) v *= size_scale;
-			ms->setValueByChannelIndex(SKA_channel, f, v);
+			bulk_data.set(f, SKA_channel, v);
 		}
 	}
+	ms->bulkBuild(cid, channel_ids.size(), bulk_data);
+	delete [] cid;
 
 	delete bvh_parse_tree;
 
+	skel->finalizeInitialization();
 	result.first = skel;
 	result.second = ms;
 	return result;
@@ -208,9 +205,9 @@ pair<SkeletonDefinition*, MotionSequence*> BVH_Reader_Local::readBVH(const char*
 
 // =============================================================
 // conversion to SKA skeleton
-SkeletonDefinition* BVH_Reader_Local::createSkeleton(BVH_FILE* parse_tree)
+Skeleton* BVH_Reader_Local::createSkeleton(BVH_FILE* parse_tree)
 {
-	SkeletonDefinition* skeleton = new SkeletonDefinition(parse_tree->filename);
+	Skeleton* skeleton = new Skeleton(parse_tree->filename.c_str());
 	BVH_HIERARCHY* hier = parse_tree->hierarchy;
 	if (hier->roots.size() < 1) 
 	{
@@ -233,26 +230,30 @@ SkeletonDefinition* BVH_Reader_Local::createSkeleton(BVH_FILE* parse_tree)
 	return skeleton;
 }
 
-void BVH_Reader_Local::createSkeleton(BVH_DECL* decl, SkeletonDefinition* skeleton, string parent_name)
+// This function is a bit tricky, since it needs to convert BVH joints to bones.
+// To do this it inserts some intermediate bones at joints that connect multiple children.
+void BVH_Reader_Local::createSkeleton(BVH_DECL* decl, Skeleton* skeleton, string parent_name)
 {
 	if ((decl->decl_type != BVH_ROOT) && (decl->decl_type != BVH_JOINT)) return;
 	
 	short my_BVH_channels = num_BVH_channels;
 	if (decl->decl_type == BVH_ROOT) num_BVH_channels += 6;
 	else num_BVH_channels += 3;
+	
+	//logout << "BVH_Reader_Local::createSkeleton " << decl->name 
+	//	<< " " << my_BVH_channels
+	//	<< " " << num_BVH_channels << endl;
 
-	// FIXIT! Create a root bone that receives six root DOF, then create the root children (HIPS) with no DOF.
 	if (parent_name == string(""))
 	{
 		short id = next_bone_id++;
 		parent_name = "root";
-		skeleton->setBoneName(id, parent_name);
+		skeleton->createBone(id, parent_name.c_str());
 		
 		// BVH does not support root offsets
 		skeleton->setRootPosition(0,0,0);
 		skeleton->setRootOrientation(0,0,0);
 
-		Vector3D off(0.0f,0.0f,0.0f);
 		float length = 0.0f;
 		Vector3D dir(0.0f,0.0f,1.0f);
 		skeleton->setBoneLength(id, length);
@@ -261,8 +262,8 @@ void BVH_Reader_Local::createSkeleton(BVH_DECL* decl, SkeletonDefinition* skelet
 		configureChannels(id, decl, skeleton, my_BVH_channels, false);
 	}
 
-	// process this bone once for each of its children and build skeleton structure
-	// If BVH bone has multiple children, it will result in multiple SKA bones.
+	// process this joint once for each of its children and build skeleton structure
+	// If BVH joint has multiple children, it will result in multiple SKA bones.
 	for (unsigned short child=0; child<decl->children.size(); child++)
 	{
 		short id = next_bone_id++;
@@ -275,7 +276,7 @@ void BVH_Reader_Local::createSkeleton(BVH_DECL* decl, SkeletonDefinition* skelet
 			SKA_name += string("__");
 			SKA_name += toString(child);
 		}
-		skeleton->setBoneName(id, SKA_name);
+		skeleton->createBone(id, SKA_name.c_str());
 
 		float offx=0.0f, offy=0.0f, offz=0.0f;
 		float length=0.0f;
@@ -285,64 +286,96 @@ void BVH_Reader_Local::createSkeleton(BVH_DECL* decl, SkeletonDefinition* skelet
 		offy = (float)decl->children[child]->offset->y;
 		offz = (float)decl->children[child]->offset->z;
 		Vector3D off(offx, offy, offz);
-		length = off.magnitude()*size_scale;
+		length = off.magnitude();
 		Vector3D dir(0.0f,0.0f,1.0f);
 		if (length > EPSILON) dir = off.normalize();
 		skeleton->setBoneLength(id, length);
 		skeleton->setBoneDirection(id, dir.x, dir.y, dir.z);
 
 		bool noDOF = !(decl->decl_type == BVH_JOINT);
+
 		configureChannels(id, decl, skeleton, my_BVH_channels, noDOF);
 
 		// connect to parent
-		skeleton->addConnection(parent_name, SKA_name);
+		skeleton->addConnection(parent_name.c_str(), SKA_name.c_str());
 		// build child
 		createSkeleton(decl->children[child], skeleton, SKA_name);
 	}
 }
 
-void BVH_Reader_Local::configureChannels(short bone_id, BVH_DECL* decl, SkeletonDefinition* skel, short my_BVH_channels, bool noDOF)
+void BVH_Reader_Local::configureChannels(short bone_id, BVH_DECL* decl, Skeleton* skel, short my_BVH_channels, bool noDOF)
 {
+	// BVH files do not specify axis angles 
+	float axis_angles[3] = { 0.0f, 0.0f, 0.0f };
+	CHANNEL_TYPE dof[3] = { CT_INVALID, CT_INVALID, CT_INVALID }; 
+	skel->setBoneAxis(bone_id, axis_angles, dof);	
+
 	if (noDOF)
 	{
 		skel->setBoneChannels(bone_id, NULL, 0);
-		//skel->setBoneAxis(bone_id, values, dof);	
 		return;
 	}
 
 	// DOF application order comes from the "CHANNELS" line
-	DOF_ID dof_order[6];
+	CHANNEL_TYPE dof_order[6];
 	short num_dof = decl->channels->channel_labels.size();
 	for (unsigned short i=0; i<num_dof; i++)
 	{
 		string label = decl->channels->channel_labels[i];
-		if (label == string("Xposition")) dof_order[i] = DOF_X;
-		else if (label == string("Yposition")) dof_order[i] = DOF_Y;
-		else if (label == string("Zposition")) dof_order[i] = DOF_Z;
-		else if (label == string("Xrotation")) dof_order[i] = DOF_PITCH;	
-		else if (label == string("Yrotation")) dof_order[i] = DOF_YAW;
-		else if (label == string("Zrotation")) dof_order[i] = DOF_ROLL;
+		if (label == string("Xposition")) 
+		{ 
+			dof_order[i] = CT_TX; 
+			CHANNEL_ID c(bone_id, CT_TX);
+			channel_ids.push_back(c); 
+		}
+		else if (label == string("Yposition")) 
+		{ 
+			dof_order[i] = CT_TY; 
+			CHANNEL_ID c(bone_id, CT_TY);
+			channel_ids.push_back(c); 
+		}
+		else if (label == string("Zposition"))
+		{ 
+			dof_order[i] = CT_TZ; 
+			CHANNEL_ID c(bone_id, CT_TZ);
+			channel_ids.push_back(c); 
+		}
+		else if (label == string("Xrotation"))	
+		{ 
+			dof_order[i] = CT_RX; 
+			CHANNEL_ID c(bone_id, CT_RX);
+			channel_ids.push_back(c); 
+		}
+		else if (label == string("Yrotation")) 
+		{ 
+			dof_order[i] = CT_RY; 
+			CHANNEL_ID c(bone_id, CT_RY);
+			channel_ids.push_back(c); 
+		}
+		else if (label == string("Zrotation")) 
+		{ 
+			dof_order[i] = CT_RZ; 
+			CHANNEL_ID c(bone_id, CT_RZ);
+			channel_ids.push_back(c); 
+		}
 	}
-
-	skel->setBoneChannels(bone_id, dof_order, num_dof);
-	
-	// axis of rotation is z-axis?
-	float values[3] = { 0.0f, 0.0f, 0.0f };
-	// assuming BVH always applies roll, pitch, yaw (vR = v(rYrXrZ))
-	DOF_ID dof[3] = { DOF_ROLL, DOF_PITCH, DOF_YAW};
-
-	short i=0, j=0;
-	for (i=0; i<num_dof; i++)
+	// reverse angle application order. 
+	// BVH defines in left-to-right order. SKA expects right-to-left order.
+	if (num_dof == 6)
 	{
-		if      (dof_order[i] == DOF_PITCH) { dof[j] = DOF_PITCH; /*values[j] = dirx;*/ j++; }
-		else if (dof_order[i] == DOF_YAW)   { dof[j] = DOF_YAW;   /*values[j] = diry;*/ j++; }
-		else if (dof_order[i] == DOF_ROLL)  { dof[j] = DOF_ROLL;  /*values[j] = dirz;*/ j++; }
+		CHANNEL_TYPE tmp = dof_order[5];
+		dof_order[5] = dof_order[3];
+		dof_order[3] = tmp;
 	}
-	
-	//if (num_dof==3) { dof[0] = DOF_ROLL; dof[1] = DOF_PITCH; dof[2] = DOF_YAW; }
-	skel->setBoneAxis(bone_id, values, dof);	
+	else if (num_dof == 3)
+	{
+		CHANNEL_TYPE tmp = dof_order[2];
+		dof_order[2] = dof_order[0];
+		dof_order[0] = tmp;
+	}
+	skel->setBoneChannels(bone_id, dof_order, num_dof);
 
-	// channel map
+	// channel map - used to translate file order channels to motion sequence channels
 	short my_SKA_channels = num_SKA_channels;
 	if (decl->decl_type == BVH_ROOT) num_SKA_channels += 6;
 	else num_SKA_channels += 3;
@@ -355,11 +388,11 @@ void BVH_Reader_Local::configureChannels(short bone_id, BVH_DECL* decl, Skeleton
 BVH_FILE* BVH_Reader_Local::parse_BVH_FILE()
 {
 	token_buffer.clear();
-	if (!getMoreTokens()) throw DataManagementException(string("BVH file has no tokens"));
+	if (!getMoreTokens()) throw DataManagementException("BVH file has no tokens");
 	
 	BVH_FILE* file = new BVH_FILE;
 	file->hierarchy = parse_BVH_HIERARCHY();
-	long channels = countChannels(file->hierarchy);
+	short channels = countChannels(file->hierarchy);
 	file->motion = parse_BVH_MOTION(channels);
 	return file;
 }
@@ -367,7 +400,7 @@ BVH_FILE* BVH_Reader_Local::parse_BVH_FILE()
 BVH_HIERARCHY* BVH_Reader_Local::parse_BVH_HIERARCHY()
 {
 	if (!parse_KEYWORD(string("HIERARCHY"))) 
-		throw DataManagementException(string("BVH file: Invalid HIERARCHY LABEL"));
+		throw DataManagementException("BVH file: Invalid HIERARCHY LABEL");
 	BVH_HIERARCHY* hierarchy = new BVH_HIERARCHY;
 	BVH_DECL* root = NULL;
 	while ((root=parse_DECL()) != NULL) 
@@ -442,33 +475,25 @@ BVH_CHANNELS_SPEC* BVH_Reader_Local::parse_CHANNELS_SPEC()
 			break;
 		}
 	}
-	//+BVH::DEBUG+
-	logout << "BVH_Reader_Local::parse_CHANNELS_SPEC ";
-	for (unsigned short i=0; i<channels->channel_labels.size(); i++)
-	{
-		logout << channels->channel_labels[i] << " ";
-	}
-	logout << endl;
-	//-BVH::DEBUG-
-
 	return channels;
 }
 
-BVH_MOTION* BVH_Reader_Local::parse_BVH_MOTION(long _channels)
+BVH_MOTION* BVH_Reader_Local::parse_BVH_MOTION(short _channels)
 {
-	if (!parse_KEYWORD(string("MOTION"))) return false;
-	if (!parse_KEYWORD(string("Frames:"))) return false;
+	if (!parse_KEYWORD(string("MOTION"))) return NULL;
+	if (!parse_KEYWORD(string("Frames:"))) return NULL;
 	long frames = parse_INTEGER();
-	if (!parse_KEYWORD(string("Frame"))) return false;
-	if (!parse_KEYWORD(string("Time:"))) return false;
+	if (!parse_KEYWORD(string("Frame"))) return NULL;
+	if (!parse_KEYWORD(string("Time:"))) return NULL;
 	BVH_MOTION* motion = new BVH_MOTION(frames, _channels);
 	motion->frame_time = (float)parse_REAL();
-	long f,c;
+	long f;
+	short c;
 	for (f=0; f<frames; f++)
 		for (c=0; c<_channels; c++)
 		{
 			float v = (float)parse_REAL();
-			// HACK! assume channels 3 and higher are angles in degrees. 
+			// assume channels 3 and higher are angles in degrees. 
 			// (only the root has translation channels)
 			if (c > 2) v = deg2rad(v);
 			// load channels in file order. does not attempt to reorder based on DOF order.
@@ -479,22 +504,22 @@ BVH_MOTION* BVH_Reader_Local::parse_BVH_MOTION(long _channels)
 //==================================================
 // misc
 
-long countChannelsRecursive(BVH_DECL* decl)
+short countChannelsRecursive(BVH_DECL* decl)
 {
-	long c=0;
+	short c=0;
 	if ((decl->decl_type == BVH_ROOT)  || (decl->decl_type == BVH_JOINT))
 	{
 		c += decl->channels->channel_labels.size();
-		for (unsigned long i=0; i<decl->children.size(); i++)
+		for (unsigned short i=0; i<decl->children.size(); i++)
 			c += countChannelsRecursive(decl->children[i]);
 	}
 	return c;
 }
 
-long BVH_Reader_Local::countChannels(BVH_HIERARCHY* hier)
+short BVH_Reader_Local::countChannels(BVH_HIERARCHY* hier)
 {
-	long c = 0;
-	for (unsigned long i=0; i<hier->roots.size(); i++)
+	short c = 0;
+	for (unsigned short i=0; i<hier->roots.size(); i++)
 		c += countChannelsRecursive(hier->roots[i]);
 	return c;
 }
@@ -504,37 +529,8 @@ void BVH_Reader_Local::set_SKA2BVH_channel_map(BVH_DECL* decl, short BVH_index, 
 {
 	if ((decl->decl_type == BVH_ROOT)  || (decl->decl_type == BVH_JOINT))
 	{
-		BVH_CHANNELS_SPEC* cspec = decl->channels;
-		short b = BVH_index;
-		short s = SKA_index;
-		short r = 0;
-		short num_channels = cspec->channel_labels.size();
-		if (num_channels == 6)
-		{
-			// translations
-			if (cspec->channel_labels[r+0] == "Xposition")      SKA2BVH_channel_map[s]   = b;
-			else if (cspec->channel_labels[r+0] == "Yposition") SKA2BVH_channel_map[s+1] = b;
-			else if (cspec->channel_labels[r+0] == "Zposition") SKA2BVH_channel_map[s+2] = b;
-			if (cspec->channel_labels[r+1] == "Xposition")      SKA2BVH_channel_map[s]   = b+1;
-			else if (cspec->channel_labels[r+1] == "Yposition") SKA2BVH_channel_map[s+1] = b+1;
-			else if (cspec->channel_labels[r+1] == "Zposition") SKA2BVH_channel_map[s+2] = b+1;
-			if (cspec->channel_labels[r+2] == "Xposition")      SKA2BVH_channel_map[s ] =  b+2;
-			else if (cspec->channel_labels[r+2] == "Yposition") SKA2BVH_channel_map[s+1] = b+2;
-			else if (cspec->channel_labels[r+2] == "Zposition") SKA2BVH_channel_map[s+2] = b+2;
-			r += 3;
-			b += 3;
-			s += 3;
-		}
-		// rotations
-		if (cspec->channel_labels[r+0] == "Xrotation")      SKA2BVH_channel_map[s]   = b;
-		else if (cspec->channel_labels[r+0] == "Yrotation") SKA2BVH_channel_map[s+1] = b;
-		else if (cspec->channel_labels[r+0] == "Zrotation") SKA2BVH_channel_map[s+2] = b;
-		if (cspec->channel_labels[r+1] == "Xrotation")      SKA2BVH_channel_map[s]   = b+1;
-		else if (cspec->channel_labels[r+1] == "Yrotation") SKA2BVH_channel_map[s+1] = b+1;
-		else if (cspec->channel_labels[r+1] == "Zrotation") SKA2BVH_channel_map[s+2] = b+1;
-		if (cspec->channel_labels[r+2] == "Xrotation")      SKA2BVH_channel_map[s]   = b+2;
-		else if (cspec->channel_labels[r+2] == "Yrotation") SKA2BVH_channel_map[s+1] = b+2;
-		else if (cspec->channel_labels[r+2] == "Zrotation") SKA2BVH_channel_map[s+2] = b+2;
+		for (unsigned int i=0; i<decl->channels->channel_labels.size(); i++) 
+			SKA2BVH_channel_map[SKA_index+i] = BVH_index+i;
 	}
 }
 
@@ -603,10 +599,10 @@ bool BVH_Reader_Local::getMoreTokens()
 	string s;
 	while (true)
 	{
-		while ((i<line.length()) && AAPU::iswhitespace(line[i])) i++;
+		while ((i<line.length()) && ParsingUtilities::iswhitespace(line[i])) i++;
 		if (i>=line.length()) return true;
 		s = "";
-		while ((i<line.length()) && !AAPU::iswhitespace(line[i])) 
+		while ((i<line.length()) && !ParsingUtilities::iswhitespace(line[i])) 
 			s += line[i++];
 		token_buffer.push_back(s);
 		got_one = true;
@@ -698,11 +694,10 @@ BVH_Reader::BVH_Reader() { }
 
 BVH_Reader::~BVH_Reader() { } 
 
-pair<SkeletonDefinition*, MotionSequence*> BVH_Reader::readBVH(const char* inputFilename)
+pair<Skeleton*, MotionSequence*> BVH_Reader::readBVH(const char* inputFilename)
 {
 	BVH_Reader_Local reader;
-	reader.setSizeScale(size_scale);
-	pair<SkeletonDefinition*, MotionSequence*> answer = reader.readBVH(inputFilename);
+	pair<Skeleton*, MotionSequence*> answer = reader.readBVH(inputFilename);
 	return answer;
 }
 

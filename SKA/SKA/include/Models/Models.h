@@ -11,31 +11,19 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef MODELS_DOT_H
 #define MODELS_DOT_H
 
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <vector>
 using namespace std;
-#include "Math/Math.h"
-#include "Math/Point2D.h"
-#include "Math/Vector3D.h"
-#include "Math/Matrix4x4.h"
-#include "Models/Color.h"
-
-// used to pass requests to ModelFactory
-struct ModelSpecification
-{
-	string model_name;
-	Color color;
-	vector<pair<string,string> > specs;
-	void addSpec(const string& key, const string& value)
-	{
-		specs.push_back(pair<string,string>(key, value));
-	}
-};
+#include <Math/Math.h>
+#include <Math/Point2D.h>
+#include <Math/Vector3D.h>
+#include <Math/Matrix4x4.h>
+#include <Models/Color.h>
 
 class SKA_LIB_DECLSPEC Model
 {

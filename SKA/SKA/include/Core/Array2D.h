@@ -2,29 +2,30 @@
 // Array2D.h
 //	 A template class implementing a 2D array stored in column-major order.
 //-----------------------------------------------------------------------------
-// This software is part of the Skeleton Animation Toolkit (SKA) developed by 
+// This software is part of the Skeleton Animation Toolkit (SKA) developed 
 // at the University of the Pacific, under the guidance of Michael Doherty.
 // For information please contact mdoherty@pacific.edu.
 //-----------------------------------------------------------------------------
 // This is open software. You are free to use it as you see fit.
-// The University of the Pacific and identified authors should be
-// credited for any significant use, particularly if used for commercial 
-// projects or academic research publications.
+// The University of the Pacific and identified authors would appreciate
+// being credited for any significant use, particularly if used for
+// commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 1.0 - January 25, 2012 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef ARRAY2D_DOT_H
 #define ARRAY2D_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <fstream>
 using namespace std;
-#include "Core/BasicException.h"
+#include <Core/BasicException.h>
 
 class SKA_LIB_DECLSPEC Array2D_Exception : public BasicException
 {
 public:
-	Array2D_Exception() : BasicException(string("undefined exception")) { }
-	Array2D_Exception(const string& _msg) : BasicException(_msg) { }
+	Array2D_Exception() : BasicException("Unspecified Array2D exception") { }
+	Array2D_Exception(const char* _msg) : BasicException(_msg) { }
+	Array2D_Exception(const Array2D_Exception& _other) : BasicException(_other) { }
 };
 
 template<class T> 
@@ -32,8 +33,8 @@ class SKA_LIB_DECLSPEC Array2D {
 
 private: 
 	T* m;
-	int columns; 
-	int rows;
+	long columns; 
+	long rows;
 	
 public:
 
@@ -45,12 +46,12 @@ public:
 	}
 
 	// general constructor
-	Array2D(int _rows, int _columns)
+	Array2D(long _rows, long _columns)
 		: m(NULL)
 	{
 		resize(_rows, _columns);
 	}
-	
+
 	// copy constructor
 	Array2D(const Array2D& _a)
 	{
@@ -83,7 +84,7 @@ public:
 	}
 
 	// resize array - sets all elements to 0
-	void resize(int _rows, int _columns)
+	void resize(long _rows, long _columns)
 	{
 		clear();
 		columns =_columns;
@@ -92,56 +93,110 @@ public:
 		memset(m, 0, columns*rows*sizeof(T));
 	}
 
-	// accessors
+	// add additional columns at end, preserving data in existing columns
+	// new columns are initialized to zero
+	void addColumns(long _num_new_cols)
+	{
+		long new_columns = columns + _num_new_cols;
+		T* tmp = m;
+		m = new T[new_columns*rows*sizeof(T)];
+		memcpy(m, tmp, columns*rows*sizeof(T));
+		delete [] tmp;
+		memset(&(m[columns*rows]), 0, _num_new_cols*rows*sizeof(T));
+		columns = new_columns;
+	}
 
-	T& get(int r, int c){
+	// loadRawData - assumes _data points at _rows*_columns*sizeof(T) bytes 
+	// that are properly formatted as an array of T
+	void loadRawData(long _rows, long _columns, void* _data)
+	{
+		resize(_rows, _columns);
+		memcpy(m, _data, columns*rows*sizeof(T));
+	}
+
+	// accessors 
+
+	T& get(long r, long c){
 		boundsCheck(r,c);
 		return m[rows*c+r];
 	}
 
-	void set(int r, int c, T val){
+	void set(long r, long c, T val){
 		boundsCheck(r,c);
 		m[rows*c+r]=val;
 	}
 
-	T& element(int r, int c) 
+	T& element(long r, long c) 
 	{ 
 		boundsCheck(r,c);
 		return m[rows*c+r]; 
 	}
 
-	int getColumns() const { return columns; }
+	long getColumns() const { return columns; }
 	
-	int getRows() const { return rows;	}
+	long getRows() const { return rows;	}
 
-	T* getColumnPtr(int c)
+	T* getColumnPtr(long c)
 	{
 		boundsCheck(0,c);
 		return &(m[rows*c]);
 	}
 
-	void MultipleColumnByScalar(int col, float scale)
+	void swapColumns(long col1, long col2)
+	{
+		boundsCheck(0,col1);
+		boundsCheck(0,col2);
+		T* p1 = getColumnPtr(col1);
+		T* p2 = getColumnPtr(col2);
+		T* tmp = new T[rows];
+		memcpy(tmp, p1, rows*sizeof(T));
+		memcpy(p1, p2, rows*sizeof(T));
+		memcpy(p2, tmp, rows*sizeof(T));
+		delete [] tmp;
+	}
+
+	// this will change the number of columns
+	// and the contents of all columns > col.
+	void removeColumn(long col)
 	{
 		boundsCheck(0,col);
-		for (int r=0; r<rows; r++)
+		T* m2 = new T[(columns-1)*rows];
+		long c1=0, c2=0;
+		for (c1=0; c1<columns; c1++)
+		{
+			if (c1 != col) 
+			{
+				memcpy(&(m2[rows*c2]), &(m[rows*c1]), rows*sizeof(T));
+				c2++;
+			}
+		}
+		delete [] m;
+		m = m2;
+		columns--;
+	}
+
+	void MultiplyColumnByScalar(long col, float scale)
+	{
+		boundsCheck(0,col);
+		for (long r=0; r<rows; r++)
 			set(r,col,get(r,col)*scale);
 	}
 
 	void MultiplyElements(Array2D<double>& x)
 	{
 		if ((x.columns != columns) || (x.rows != rows)) 
-			throw Array2D_Exception(string("INCOMPATIBLE ARRAY TO Array2D.MultiplyElements"));
-		for (int r=0; r<rows; r++)
-			for (int c=0; c<columns; c++)
+			throw Array2D_Exception("INCOMPATIBLE ARRAY TO Array2D.MultiplyElements");
+		for (long r=0; r<rows; r++)
+			for (long c=0; c<columns; c++)
 				set(r,c,get(r,c)*x.get(r,c));
 	}
 
 	void AddElements(Array2D<double>& x)
 	{
 		if ((x.columns != columns) || (x.rows != rows)) 
-			throw Array2D_Exception(string("INCOMPATIBLE ARRAY TO Array2D.AddElements"));
-		for (int r=0; r<rows; r++)
-			for (int c=0; c<columns; c++)
+			throw Array2D_Exception("INCOMPATIBLE ARRAY TO Array2D.AddElements");
+		for (long r=0; r<rows; r++)
+			for (long c=0; c<columns; c++)
 				set(r,c,get(r,c)+x.get(r,c));
 	}
 
@@ -149,7 +204,7 @@ public:
 	// but the template is giving the linker problems.
 	void dump(ostream& out)
 	{
-		int r, c;
+		long r, c;
 		for (r=0; r<rows; r++)
 		{
 			out << r << ", ";
@@ -163,10 +218,10 @@ public:
 	}
 
 private:
-	void boundsCheck(int r, int c)
+	void boundsCheck(long r, long c)
 	{
 		if ((r<0) || (r>=rows) || (c<0) || (c>=columns))
-			throw Array2D_Exception(string("Array2D bounds error"));
+			throw Array2D_Exception("Array2D bounds error");
 	}
 
 };

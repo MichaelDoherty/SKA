@@ -11,15 +11,15 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Graphics/Graphics2D.h"
+#include <Core/SystemConfiguration.h>
+#include <Graphics/Graphics2D.h>
 #include <vector>
 using namespace std;
-#include "Math/Vector3D.h"
+#include <Math/Vector3D.h>
 #include <GL/glut.h>
-#include "Graphics/GraphicsInterface.h"
+#include <Graphics/GraphicsInterface.h>
 
 static const GLfloat black_color[ ] = { 0.0f, 0.0f, 0.0f, 1.0f };
 static const GLfloat white_color[ ] = { 1.0f, 1.0f, 1.0f, 1.0f };

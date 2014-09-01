@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------------
 // DataManager.cpp
-//	 Wrapper class around the various file and database interfaces.
+//	 Interface for reading and writing the various types of 
+//   motion and skeleton files.
 //-----------------------------------------------------------------------------
 // This software is part of the Skeleton Animation Toolkit (SKA) developed 
 // at the University of the Pacific, under the guidance of Michael Doherty.
@@ -11,391 +12,320 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cstdlib>
-#include "DataManagement/DataManager.h"
-#include "DataManagement/DataManagementException.h"
-#include "DataManagement/Database.h"
-#include "DataManagement/DatabaseLoader.h"
-#include "DataManagement/DataIndex.h"
-#include "DataManagement/ASF_Reader.h"
-#include "DataManagement/AMC_Reader.h"
-#include "DataManagement/ASF_Writer.h"
-#include "DataManagement/AMC_Writer.h"
-#include "DataManagement/FileSystem.h"
-#include "Core/Utilities.h"
-#include "Core/SystemTimer.h"
-#include "Animation/SkeletonDefinition.h"
-#include "Animation/MotionSequence.h"
-#include "Animation/Character.h"
+#include <vector>
+#include <string>
+using namespace std;
+#include <DataManagement/DataManager.h>
+#include <DataManagement/DataManagementException.h>
+#include <DataManagement/ASF_Reader.h>
+#include <DataManagement/AMC_Reader.h>
+#include <DataManagement/ASF_Writer.h>
+#include <DataManagement/AMC_Writer.h>
+#include <DataManagement/BVH_Reader.h>
+#include <DataManagement/SKS_ReaderWriter.h>
+#include <DataManagement/SKM_ReaderWriter.h>
+#include <DataManagement/FileSystem.h>
+#include <Core/Utilities.h>
+#include <Core/SystemTimer.h>
+#include <Animation/Skeleton.h>
+#include <Animation/MotionSequence.h>
+
+struct DataManagerData {
+	vector<string> paths;
+};
 
 DataManager data_manager;
 
-DataManager::DataManager()
-: database(NULL), use_database(false)
+DataManager::DataManager() 
 { 
-	data_index = new DataIndex;
+	data = new DataManagerData; 
+	data->paths.push_back(string("."));
 }
 
-DataManager::~DataManager()
+DataManager::~DataManager() { delete data; }
+
+void DataManager::addFileSearchPath(const char* _path)
 {
-	if (database != NULL)
-	{
-		database->close();
-		delete database;
-		database = NULL;
-	}
-	if (database_loader != NULL)
-	{
-		delete database_loader; 
-		database_loader = NULL;
-	}
-	if (data_index != NULL)
-	{
-		delete data_index;
-		data_index = NULL;
-	}
+	string p(_path);
+	if (p.at(p.length()-1) != '/') p += '/';
+	data->paths.push_back(p);
 }
 
-bool DataManager::setupDatabase(const string& host, const string& user, const string& pw, const string& db)
+char* DataManager::findFile(const char* _file)
 {
-	db_host = host;
-	db_user = user;
-	db_pw = pw;
-	db_db = db;
-	if (database == NULL) database = new Database;
-	return database->open(db_host.c_str(), db_user.c_str(), db_pw.c_str(), db_db.c_str());
-}
-	
-void DataManager::useDatabase(bool flag) 
-{ 
-	if (database == NULL)
+	for (unsigned int i=0; i<data->paths.size(); i++)
 	{
-		use_database = false;
-		return;
-	}
-	if (flag)
-	{
-		if (database_loader == NULL) database_loader = new DatabaseLoader(database);
-		else database_loader->setDatabase(database);
-		use_database = true;
-	}
-	else
-	{
-		if (database_loader != NULL) 
+		string check_file = data->paths[i] + _file;
+		if (FileSystem::fileExists(check_file.c_str()))
 		{
-			delete database_loader;
-			database_loader = NULL;
+			return strClone(check_file.c_str());
 		}
-		use_database = flag; 
 	}
+	return NULL;
 }
 
-void DataManager::setFilePathRoot(const string& root_path)
+//---------- ASF/AMC file management -------------------
+
+pair<Skeleton*, MotionSequence*> DataManager::readASFAMC(
+	const char* _asf_file, const char* _amc_file)
 {
-	file_root = root_path;
-	// FIXIT! not the best place for this, but it forces it to get done.
-	//        should be fixed when CMU_Index is replaced.
-	string index_file = file_root + string("/CMU_index.txt");
-	data_index->loadASFAMCDescriptions(index_file.c_str());
+	Skeleton* skel = NULL;
+	MotionSequence* ms = NULL;
+	skel = readASF(_asf_file);
+	if (skel != NULL)
+	{
+		try {
+			ms = readAMC(skel, _amc_file);
+		}
+		catch (const DataManagementException& dme)
+		{
+			if (ms == NULL)	{ delete skel; skel = NULL;	}
+			logout << "Rethrowing DataManagementException: " << dme.msg << endl;
+			throw;
+		}
+	}
+	return pair<Skeleton*, MotionSequence*>(skel, ms);
 }
 
-string DataManager::buildSkeletonDirname(const string& skel_id)
+Skeleton* DataManager::readASF(const char* _asf_file)
 {
-	string fn = file_root + string("/") + skel_id;
-	return fn;
-}
+	if (!FileSystem::fileExists(_asf_file)) 
+	{
+		string err = string("DataManager::readASF: Could not read ASF file ") + _asf_file + " (file not found).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
 
-string DataManager::buildSkeletonFilename(const string& skel_id)
-{
-	string fn = file_root + string("/") + skel_id + string("/") + skel_id + string(".asf");
-	return fn;
-}
-
-string DataManager::buildMotionFilename(const string& skel_id, const string& motion_id)
-{
-	string fn = file_root + string("/") + skel_id + string("/") + skel_id 
-		+ string("_") + motion_id + string(".amc");
-	return fn;
-}
-
-SkeletonDefinition* DataManager::loadSkeletonFromFile(const string& skel_id)
-{
 	ASF_Reader asf_reader;
-	string fn = buildSkeletonFilename(skel_id);
-	if (!FileSystem::fileExists(fn)) return NULL;
-	SkeletonDefinition* skel = asf_reader.readASF(fn.c_str());
-	if (skel != NULL)
+	Skeleton* skel = asf_reader.readASF(_asf_file);
+	if (skel == NULL)
 	{
-		skel->setId(skel_id);
-		// if skeleton is in file index, override description and source.
-		string description;
-		string filename;
-		if (data_index->getASFData(skel_id, description, filename)) 
-		{
-			skel->clearDocumentation();
-			skel->addDocumentation(description);
-			skel->setSource(string("CMU ASF: ") + skel_id);
-		}
-		return skel;
+		string err = string("DataManager::readASF: Could not read ASF file ") + _asf_file + " (read failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
 	}
-	return NULL;
+	return skel;
 }
 
-SkeletonDefinition* DataManager::loadSkeletonFromDatabase(const string& skel_id)
+MotionSequence* DataManager::readAMC(
+	Skeleton* _skel, const char* _amc_file)
 {
-	if (database_loader == NULL) return NULL;
-	return database_loader->loadSkeleton(skel_id);
-}
-
-SkeletonDefinition* DataManager::loadSkeleton(const string& skel_id)
-{
-	if (use_database)
+	if (_skel == NULL) 
 	{
-		SkeletonDefinition* skel = loadSkeletonFromDatabase(skel_id);
-		if (skel != NULL)
-		{
-			logout << "skeleton " << skel_id << " loaded from database." << endl;
-			return skel;
-		}
+		string err = string("DataManager::readAMC: Could not read AMC file ") + _amc_file + " (no skeleton supplied).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
 	}
-	SkeletonDefinition* skel = loadSkeletonFromFile(skel_id);
-	if (skel != NULL)
-	{
-		logout << "skeleton " << skel_id << " loaded from file." << endl;
-		return skel;
+	if (!FileSystem::fileExists(_amc_file)) 
+	{ 
+		string err = string("DataManager::readAMC: Could not read AMC file ") + _amc_file + " (file not found).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
 	}
-	logout << "Could not load skeleton " << skel_id << "." << endl;
-	return NULL;
-}
 
-MotionSequence* DataManager::loadMotionFromFile(const string& skel_id, const string& motion_id, SkeletonDefinition* skel)
-{
-	if (skel == NULL) return NULL;
 	AMC_Reader amc_reader;
-	MotionSequence* ms = NULL;
+	MotionSequence* ms  = amc_reader.readAMC(_amc_file, _skel);
 
-	string fn = buildMotionFilename(skel_id, motion_id);
-	if (!FileSystem::fileExists(fn)) return NULL;
-	ms = amc_reader.readAMC(fn.c_str(), skel);
-
-	string description;
-	string framerate;
-	string filename;
-	if (data_index->getAMCData(skel_id, motion_id, description, framerate, filename)) 
+	if (ms == NULL) 
 	{
-		ms->clearDocumentation();
-		ms->addDocumentation(description);
-		ms->setSource(string("CMU AMC: ") + skel_id + string(".") + motion_id);
-		ms->setFrameRate((float)atof(framerate.c_str()));
+		string err = string("DataManager::readAMC: Could not read AMC file ") + _amc_file + " (read failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
 	}
+
 	return ms;
 }
 
-MotionSequence* DataManager::loadMotionFromDatabase(const string& skel_id, const string& motion_id, SkeletonDefinition* skel)
+void DataManager::writeASFAMC(
+	Skeleton* _skel, MotionSequence* _ms, 
+	const char* _asf_file, const char* _amc_file)
 {
-	if (database_loader == NULL) return NULL;
-	if (skel == NULL) return NULL;
-	MotionSequence* ms = database_loader->loadMotion(skel_id, motion_id, skel);
-	return ms;
+	writeASF(_skel, _asf_file);
+	writeAMC(_skel, _ms, _amc_file);
 }
 
-MotionSequence* DataManager::loadMotion(const string& skel_id, const string& motion_id, SkeletonDefinition* skel)
+void DataManager::writeASF(
+	Skeleton* _skel, const char* _asf_file)
 {
-	MotionSequence* ms = NULL;
-	if (skel == NULL) 
-	{
-		logout << "No skeleton supplied for loading motion " << motion_id << endl;
-		return NULL;
-	}
-	if (use_database)
-	{
-		ms = loadMotionFromDatabase(skel_id, motion_id, skel);
-		if (ms != NULL) 
-		{
-			logout << "Motion " << skel_id << "." << motion_id << " loaded from database. " << endl;
-			return ms;
-		}
-	}
-	ms = loadMotionFromFile(skel_id, motion_id, skel);
-	if (ms != NULL) 
-	{
-		logout << "Motion " << skel_id << "." << motion_id << " loaded from file. " << endl;
-		return ms;
-	}
-	logout << "Motion " << skel_id << "." << motion_id << " could not be loaded. " << endl;
-	return NULL;
-}
-/*
-Character* DataManager::loadCharacter(const string& skel_id, const string& motion_id, SkeletonDefinition* skel)
-{
-	SkeletonDefinition* skel = loadSkeleton(skel_id);
-	if (skel == NULL) return NULL;
-	MotionSequence* ms = loadMotion(skel, motion_id);
-	if (ms == NULL) { delete skel; return NULL;	}
-
-	string skel_description, motion_description;
-	string framerate;
-	string skel_file, motion_file;
-	
-	if (!data_index->getASFData(skel_id, skel_description, skel_file))
-		skel_description = string("UNDEFINED");
-	if (!data_index->getAMCData(skel_id, motion_id,	motion_description, framerate, motion_file)) 
-		motion_description = string("UNDEFINED");
-
-	Character* character = new Character;
-	character->skeleton_definition = skel;
-	character->motion_sequence = ms;
-
-	character->description1 = string("ASF ") + skel_id + string(": ") + skel_description;
-	character->description2 = string("AMC ") + skel_id + string(".") + motion_id
-		+ string(": ") + motion_description 
-		+ " (" + toString<int>(character->motion_sequence->numFrames()) + " frames)";
-
-	return character;	
-}
-*/
-
-// FIXIT! This seems to be broken.
-bool DataManager::getDescriptions(const string& skel_id, const string& motion_id, 
-								  string& skel_description, string& motion_description)
-{
-	bool status = true;
-
-	string skel_desc, motion_desc;
-	string framerate;
-	string skel_file, motion_file;
-	
-	if (!data_index->getASFData(skel_id, skel_description, skel_file))
-	{
-		skel_desc = string("UNDEFINED");
-		status = false;
-	}
-	if (!data_index->getAMCData(skel_id, motion_id,	motion_description, framerate, motion_file)) 
-	{
-		motion_desc = string("UNDEFINED");
-		status = false;
-	}
-
-	skel_description = string("ASF ") + skel_id + string(": ") + skel_desc;
-	motion_description = string("AMC ") + skel_id + string(".") + motion_id
-		+ string(": ") + motion_desc;
-
-	return status;	
-}
-
-bool DataManager::writeSkeletonToFile(SkeletonDefinition* skel)
-{
-	string dn = buildSkeletonDirname(skel->getId());
-	if (!FileSystem::makeDir(dn)) return false;
-	string fn = buildSkeletonFilename(skel->getId());
 	ASF_Writer asf_writer;
-	return asf_writer.writeASF(fn.c_str(), skel);
+	if (!asf_writer.writeASF(_asf_file, _skel))
+	{
+		string err = string("DataManager::writeASF: Could not write ASF file ") + _asf_file + " (write failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
 }
 
-bool DataManager::writeMotionToFile(SkeletonDefinition* skel, MotionSequence* ms)
+void DataManager::writeAMC(
+	Skeleton* _skel, MotionSequence* _ms, const char* _amc_file)
 {
-	string dn = buildSkeletonDirname(skel->getId());
-	if (!FileSystem::makeDir(dn)) return false;
-	string fn = buildMotionFilename(skel->getId(), ms->getId());
 	AMC_Writer amc_writer;
-	return amc_writer.writeAMC(fn.c_str(), skel, ms);
+	if (!amc_writer.writeAMC(_amc_file, _skel, _ms))
+	{
+		string err = string("DataManager::writeAMC: Could not write AMC file ") + _amc_file + " (write failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
 }
 
-void DataManager::copyDataFromFilesToDatabase()
+//---------- BVH file management -------------------
+
+pair<Skeleton*, MotionSequence*> DataManager::readBVH(
+		const char* _bvh_file)
 {
-	if (database == NULL) return;
-	if (!database->connectionIsOpen()) return;
-
-	string last_ASF_name = string("none");
-	SkeletonDefinition* skel = NULL;
-
-	vector<pair <string, string> > motions;
-	data_index->getAllIndexedMotions(motions);
-/*
-	// loop to copy all skeletons
-	for (unsigned int i=0; i<motions.size(); i++)
+	pair<Skeleton*, MotionSequence*> result;
+	result.first = NULL;
+	result.second = NULL;
+	if (!FileSystem::fileExists(_bvh_file)) 
 	{
-		string asf = motions[i].first;
-		cout << "asf ---" << asf << "---" << endl;
-		string fn, asf_desc, asf_filename;
-		try
-		{
-			data_index->getASFData(asf, asf_desc, asf_filename);
-			if (asf != last_ASF_name)
-			{
-				SkeletonDefinition* skel = loadSkeletonFromFile(asf);
-				if (skel != NULL)
-				{
-					skel->setId(asf);
-					skel->clearDocumentation();
-					skel->addDocumentation(asf_desc);
-					skel->setSource(string("CMU mocap ") + asf);
-					logout << "storing skeleton " << asf << " to database " << endl;
-					system_timer.elapsedTime();
-					database_loader->storeSkeleton(skel);
-					logout << asf << " data storage time " << system_timer.elapsedTime() << endl;
-					delete skel;
-				}
-				last_ASF_name = asf;
-			}
+		string err = string("DataManager::readBVH: Could not read BVH file ") + _bvh_file + " (file not found).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+	BVH_Reader bvh_reader;
+	result = bvh_reader.readBVH(_bvh_file);
+	if ((result.first == NULL) || (result.second == NULL))
+	{
+		if (result.first != NULL) delete result.first;
+		if (result.second != NULL) delete result.second;
+		result.first = NULL;
+		result.second = NULL;
+		string err = string("DataManager::readBVH: Could not read BVH file ") + _bvh_file + " (read failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+	return result;
+}
 
+void DataManager::writeBVH(
+	Skeleton* _skel, MotionSequence* _ms, const char* _bvh_file)
+{
+	string err = string("DataManager::writeBVH: Could not write BVH file ") + _bvh_file + " (function not yet available).";
+	logout << err << endl;
+	throw DataManagementException(err.c_str());
+}
+
+//---------- SKS/SKM file management -------------------
+
+pair<Skeleton*, MotionSequence*> DataManager::readSKSSKM(
+	const char* _sks_file, const char* _skm_file)
+{
+	Skeleton* skel = NULL;
+	MotionSequence* ms = NULL;
+	skel = readSKS(_sks_file);
+	if (skel != NULL)
+	{
+		try {
+			ms = readSKM(skel, _skm_file);
 		}
-		catch (DataManagementException& e)
+		catch (const DataManagementException& dme)
 		{
-			logout << "data management exception : " << e.msg 
-				<< " skeleton " << asf << " database storage aborted" << endl;
+			if (ms == NULL)	{ delete skel; skel = NULL;	}
+			logout << "Rethrowing DataManagementException: " << dme.msg << endl;
+			throw;
 		}
 	}
-*/
-	// loop to copy motions
-	for (unsigned int i=0; i<motions.size(); i++)
+	return pair<Skeleton*, MotionSequence*>(skel, ms);
+}
+
+Skeleton* DataManager::readSKS(const char* _sks_file)
+{
+	if (!FileSystem::fileExists(_sks_file)) 
 	{
-		string asf = motions[i].first;
-		string amc = motions[i].second;
-		cout << "---" << asf << "." << amc << "---" << endl;
-		string fn, asf_desc, asf_filename, amc_desc, amc_filename, amc_framerate;
-		try
-		{
-			data_index->getASFData(asf, asf_desc, asf_filename);
-			data_index->getAMCData(asf, amc, amc_desc, amc_framerate, amc_filename);
-			//if ((asf == string("01")) || (asf == string("141")) || (asf == string("142")) || (asf == string("143")))
-			if (asf == string("01"))
-			{
-
-			if (asf != last_ASF_name)
-			{
-				if (skel != NULL) delete skel;
-				skel = loadSkeleton(asf);
-				last_ASF_name = asf;
-			}
-
-			if (skel != NULL)
-			{
-				MotionSequence* ms = loadMotionFromFile(asf, amc, skel);
-				if (ms != NULL)
-				{
-					logout << "storing motion " << asf << "." << amc << endl;
-					system_timer.elapsedTime();
-					ms->setId(amc);
-					ms->setFrameRate((float)atof(amc_framerate.c_str()));				
-					ms->addDocumentation(amc_desc);
-					ms->setSource(string("CMU mocap ")+asf+string(".")+amc);
-					database_loader->storeMotion(skel, ms);
-					cout << "stored " << asf << "." << amc << endl;
-					logout << asf << "." << amc << " data storage time " << system_timer.elapsedTime() << endl;
-				}
-			}
-			}
-		}
-		catch (DataManagementException& e)
-		{
-			logout << "no skeleton " << asf << " is defined" << endl;
-			logout << "exception : " << e.msg << endl;
-		}
+		string err = string("DataManager::readSKS: Could not read ASF file ") + _sks_file + " (file not found).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
 	}
-	
-	cout << "!!!!! database loading complete" << endl;
+
+	Skeleton* skel = SKS_ReaderWriter::readSKS(_sks_file);
+	if (skel == NULL)
+	{
+		string err = string("DataManager::readSKS: Could not read ASF file ") + _sks_file + " (read failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+	return skel;
+}
+
+MotionSequence* DataManager::readSKM(
+	Skeleton* _skel, const char* _skm_file)
+{
+	if (_skel == NULL) 
+	{
+		string err = string("DataManager::readAMC: Could not read AMC file ") + _skm_file + " (no skeleton supplied).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+	if (!FileSystem::fileExists(_skm_file)) 
+	{ 
+		string err = string("DataManager::readAMC: Could not read AMC file ") + _skm_file + " (file not found).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+
+	MotionSequence* ms  = SKM_ReaderWriter::readSKM(_skm_file, _skel);
+
+	if (ms == NULL) 
+	{
+		string err = string("DataManager::readAMC: Could not read AMC file ") + _skm_file + " (read failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+
+	return ms;
+}
+
+void DataManager::writeSKSSKM(
+	Skeleton* _skel, MotionSequence* _ms, const char* _sks_file, const char* _skm_file)
+{
+	writeSKS(_skel, _sks_file);
+	writeSKM(_skel, _ms, _skm_file);
+}
+
+void DataManager::writeSKS(
+	Skeleton* _skel, const char* _sks_file)
+{
+	if (!SKS_ReaderWriter::writeSKS(_sks_file, _skel))
+	{
+		string err = string("DataManager::writeASF: Could not write ASF file ") + _sks_file + " (write failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+}
+
+void DataManager::writeSKM(
+	Skeleton* _skel, MotionSequence* _ms, const char* _skm_file)
+{
+	if (!SKM_ReaderWriter::writeSKM(_skm_file, _skel, _ms))
+	{
+		string err = string("DataManager::writeAMC: Could not write AMC file ") + _skm_file + " (write failure).";
+		logout << err << endl;
+		throw DataManagementException(err.c_str());
+	}
+}
+
+//---------- Format Conversion Utilities -------------------
+
+void DataManager::openAllEulerChannels(
+		Skeleton* _skel, 
+		MotionSequence* _ms)
+{
+	CHANNEL_TYPE channel_order[3] = { CT_RX, CT_RY, CT_RZ };
+	for (int b=1; b <_skel->numBones(); b++)
+	{
+		for (CHANNEL_TYPE ct=CT_RX; ct<=CT_RZ; ct=CHANNEL_TYPE(ct+1))
+		{
+			CHANNEL_ID cid(b,ct);
+			if (!_skel->isActiveChannel(b, ct)) _ms->addChannel(cid); 
+		}
+		// TRICKY BIT: We also need to know the application order of the Euler channels
+		//  Suppose the ASF said "dof rx rz", how do we decide if we want "ry rx rz", "rx ry rz" or "rx rz ry"?
+		// The axisRemoval test (axrt app) assumes it should be "rx ry rz".
+		// This currently assumes "rx ry rz".
+		_skel->setBoneChannels(b,channel_order,3);
+	}
 }

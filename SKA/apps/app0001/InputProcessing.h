@@ -1,29 +1,24 @@
 //-----------------------------------------------------------------------------
-// app0001: Demo program illustrating how to build a basic SKA application.
-//          This application reads a skeleton and motion from an ASF/AMC 
-//          file pair and uses that data to drive a character.
+// app0001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // InputProcessing.h
 //    Object to monitor user input from mouse and keyboard.
 //-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
 #ifndef INPUTPROCESSING_DOT_H
 #define INPUTPROCESSING_DOT_H
-// SKA configuration - should always be the first file included.
+// SKA configuration
 #include <Core/SystemConfiguration.h>
 
 class InputProcessor
 {
 public:
-	InputProcessor() {}
-	// processInputs() checks input queues for keyboard 
-	// and mouse actions received from GLUT.
-	// It should be called regularly, at least once per frame.
-	void processInputs();
+	InputProcessor();
+	~InputProcessor();
+	// processInputs() checks input queues for keyboard and mouse
+	// Requires elapsed time to check key press times for filtered keys
+	void processInputs(float elapsed_time);
 };
 
-// global single instance of the input processor
 extern InputProcessor input_processor;
 
 #endif // INPUTPROCESSING_DOT_H

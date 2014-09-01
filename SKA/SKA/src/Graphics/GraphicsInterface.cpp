@@ -13,15 +13,15 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Core/SystemLog.h"
-#include "Graphics/GraphicsInterface.h"
-#include "Camera/Camera.h"
-#include "Models/Models.h"
-#include "Models/CodedModels.h"
-#include "Graphics/Textures.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/SystemLog.h>
+#include <Graphics/GraphicsInterface.h>
+#include <Camera/Camera.h>
+#include <Models/Models.h>
+#include <Models/CodedModels.h>
+#include <Graphics/Textures.h>
 #include <GL/glut.h>
 
 float time_fade_factor = 1.0f;

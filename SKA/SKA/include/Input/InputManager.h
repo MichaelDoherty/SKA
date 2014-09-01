@@ -11,11 +11,11 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef INPUTMANAGER_DOT_H
 #define INPUTMANAGER_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cstdlib>
 
 // An instance of InputActions structure contains all user inputs 

@@ -11,20 +11,20 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef AMC_WRITER_DOT_H
 #define AMC_WRITER_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 
-class SkeletonDefinition;
+class Skeleton;
 class MotionSequence;
 
-class AMC_Writer
+class SKA_LIB_DECLSPEC AMC_Writer
 {
 public:
 	bool writeAMC(const char* outputFilename, 
-		SkeletonDefinition* skeleton, 
+		Skeleton* skeleton, 
 		MotionSequence* motion,
 		bool overwrite=true);
 };

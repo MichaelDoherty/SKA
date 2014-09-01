@@ -1,0 +1,101 @@
+# Hand modified skeleton for legs-only character
+# -----------------------------------------------
+:version 1.10
+:name VICON
+:units
+  mass 1.0
+  length 0.45
+  angle deg
+:documentation
+   Hand modified to extract legs from CMU skeleton 01.
+   Modified by Doherty on Jan 15, 2013
+:root
+   order TX TY TZ RX RY RZ
+   axis XYZ
+   position 0 0 0  
+   orientation 0 0 0 
+:bonedata
+  begin
+     id 1 
+     name lhipjoint
+     direction 0.566809 -0.746272 0.349008 
+     length 2.40479 
+     axis 0 0 0  XYZ
+  end
+  begin
+     id 2 
+     name lfemur
+     direction 0.34202 -0.939693 0  
+     length 7.1578  
+     axis 0 0 20  XYZ
+    dof rx ry rz
+    limits (-160.0 20.0)
+           (-70.0 70.0)
+           (-60.0 70.0)
+  end
+  begin
+     id 3 
+     name ltibia
+     direction 0.34202 -0.939693 0   
+     length 7.49137   
+     axis 0 0 20   XYZ
+    dof rx
+    limits (-10.0 170.0)
+  end
+  begin
+     id 4 
+     name lfoot
+     direction 0.0665746 -0.182912 0.980873   
+     length 3.56   
+     axis -90 7.62852e-016 20   XYZ
+    dof rx rz
+    limits (-45.0 90.0)
+           (-70.0 20.0)
+  end
+  begin
+     id 5 
+     name rhipjoint
+     direction -0.550236 -0.756381 0.353735   
+     length 2.37265  
+     axis 0 0 0  XYZ 
+  end
+  begin
+     id 6 
+     name rfemur
+     direction -0.34202 -0.939693 0   
+     length 7.43386   
+     axis 0 0 -20   XYZ
+    dof rx ry rz
+    limits (-160.0 20.0)
+           (-70.0 70.0)
+           (-70.0 60.0)
+  end
+  begin
+     id 7 
+     name rtibia
+     direction -0.34202 -0.939693 0   
+     length 7.50908   
+     axis 0 0 -20   XYZ
+    dof rx
+    limits (-10.0 170.0)
+ end
+ begin
+     id 8 
+     name rfoot
+     direction -0.0683029 -0.187661 0.979856   
+     length 3.6  
+     axis -90 -7.62852e-016 -20   XYZ
+    dof rx rz
+    limits (-45.0 90.0)
+           (-20.0 70.0)
+  end 
+:hierarchy
+  begin
+    root lhipjoint rhipjoint
+    lhipjoint lfemur
+    lfemur ltibia
+    ltibia lfoot
+    rhipjoint rfemur
+    rfemur rtibia
+    rtibia rfoot
+  end

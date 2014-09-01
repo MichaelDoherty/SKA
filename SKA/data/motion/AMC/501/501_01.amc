@@ -1,0 +1,11 @@
+#! Hand coded motion for legs-only skeleton, one frame only
+:FULLY-SPECIFIED
+:DEGREES
+1
+root 0.0 17.8693 0.0 0.0 0.0 0.0
+rfemur 0.0 0.0 0.0
+rtibia 0
+rfoot 0 0
+lfemur 0.0 0.0 0.0
+ltibia 0
+lfoot 0 0

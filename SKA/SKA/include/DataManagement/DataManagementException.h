@@ -11,18 +11,19 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef DATA_MANAGEMENT_EXCEPTION_DOT_H
 #define DATA_MANAGEMENT_EXCEPTION_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "Core/BasicException.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/BasicException.h>
 
 class DataManagementException : public BasicException
 {
 public:
-	DataManagementException() : BasicException(string("DataManagement exception")) { }
-	DataManagementException(const string& _msg) : BasicException(_msg) { }
+	DataManagementException() : BasicException("Unspecified DataManagement exception") { }
+	DataManagementException(const char* _msg) : BasicException(_msg) { }
+	DataManagementException(const DataManagementException& _other) : BasicException(_other) { }
 };
 
 #endif

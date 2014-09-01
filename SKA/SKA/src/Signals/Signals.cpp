@@ -11,14 +11,14 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Signals/Signals.h"
+#include <Core/SystemConfiguration.h>
+#include <Signals/Signals.h>
 #include <fstream>
 using namespace std;
-#include "Math/Math.h"
-#include "Signals/FFT.h"
+#include <Math/Math.h>
+#include <Signals/FFT.h>
 
 SignalGenerator* buildSignalGenerator(vector<SignalSpec>& specs)
 {

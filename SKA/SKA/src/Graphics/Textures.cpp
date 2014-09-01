@@ -12,87 +12,88 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Graphics/Textures.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/Utilities.h>
+#include <Graphics/Textures.h>
 #include <GL/glut.h>
-#include "Core/SystemLog.h"
-#include "Graphics/GraphicsInterface.h"
-#include "EasyBMP/EasyBMP.h"
+#include <Core/SystemLog.h>
+#include <Graphics/GraphicsInterface.h>
+#include <EasyBMP/EasyBMP.h>
 
 TextureManager texture_manager;
 
-// This is static to avoid exposing GL through Textures.h
-// It means that there can only be one TextureManager.
-static GLuint texture_names[MAX_TEXTURES];
+const short MAX_TEXTURES = 100;
 
-void addTextureFilepath(char* filepath)
+struct TextureManagerData
 {
-	texture_manager.addTextureFilepath(filepath);
-}
+	Texture* textures[MAX_TEXTURES];
+	GLuint texture_names[MAX_TEXTURES];
+	vector<char*> filepaths;
+	bool opengl_initialized;
+};
 
 // A Texture's id is an index into the openGL texture names array.
 // External users get back TextureIndexes, not texture IDs.
 
 TextureManager::TextureManager()
 {
-	for (int i=0; i<MAX_TEXTURES; i++) textures[i] = NULL;
-	opengl_initialized = false;
+	data = new TextureManagerData;
+	for (int i=0; i<MAX_TEXTURES; i++) data->textures[i] = NULL;
+	data->opengl_initialized = false;
 }
 
 TextureManager::~TextureManager()
 {
 	releaseAllTextures();
-	//for (unsigned short i=0; i<filepaths.size(); i++) delete [] filepaths[i];
-	//filepaths.clear();
+	delete data;
 }
 
 void TextureManager::addTextureFilepath(char* filepath)
 {
-	char* s = new char[strlen(filepath+1)];
-	strcpy(s, filepath);
-	filepaths.push_back(s);
+	char* s = strClone(filepath);
+	data->filepaths.push_back(s);
 }
 
 void TextureManager::releaseAllTextures()
 {
 	for (int i=0; i<MAX_TEXTURES; i++) 
-		if (textures[i] != NULL) 
+		if (data->textures[i] != NULL) 
 		{
-			releaseTexture(textures[i]->getId());
-			delete textures[i];
-			textures[i] = NULL;
+			releaseTexture(data->textures[i]->getId());
+			delete data->textures[i];
+			data->textures[i] = NULL;
 		}
 }
 
 void TextureManager::releaseTexture(TextureIndex index)
 {
-	if (textures[index] == NULL)
+	if (data->textures[index] == NULL)
 	{
-		throw TextureException(string("TextureManager::releaseTexture() - Invalid TextureIndex"));
+		throw TextureException("TextureManager::releaseTexture() - Invalid TextureIndex");
 		return;
 	}
-	glDeleteTextures(1, &(texture_names[textures[index]->getId()]));
-	delete textures[index];
-	textures[index] = NULL;
+	glDeleteTextures(1, &(data->texture_names[data->textures[index]->getId()]));
+	delete data->textures[index];
+	data->textures[index] = NULL;
 }
 
 void TextureManager::selectTexture(TextureIndex index)
 {
-	if (!opengl_initialized)
+	if (!data->opengl_initialized)
 	{
-		throw TextureException(string("TextureManager::selectTexture() - selecting Texture before API initialization"));
+		throw TextureException("TextureManager::selectTexture() - selecting Texture before API initialization");
 		return;
 	}
 
-	if (textures[index] == NULL)
+	if (data->textures[index] == NULL)
 	{
-		throw TextureException(string("TextureManager::selectTexture() - Invalid TextureIndex"));
+		throw TextureException("TextureManager::selectTexture() - Invalid TextureIndex");
 		return;
 	}
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	GLuint texname = texture_names[textures[index]->getId()];
+	GLuint texname = data->texture_names[data->textures[index]->getId()];
 	glBindTexture(GL_TEXTURE_2D, texname);
 	glEnable(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -110,23 +111,23 @@ void TextureManager::disableTextures()
 // http://www.gamedeception.net/threads/5425-Loading-a-BMP-without-AuxDIBImageLoad()
 TextureIndex TextureManager::loadTextureBMP(char* filename)
 {
-	if (!opengl_initialized)
+	if (!data->opengl_initialized)
 	{
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glGenTextures(MAX_TEXTURES, texture_names);
-		opengl_initialized = true;
+		glGenTextures(MAX_TEXTURES, data->texture_names);
+		data->opengl_initialized = true;
 	}
 
 	checkOpenGLError(0);
 	unsigned long img_width = 0;	
 	unsigned long img_height = 0;		
-	unsigned char* data = NULL;
+	unsigned char* bmp_data = NULL;
 
 	TextureIndex new_index = -1;
 	// find a free index
 	for (TextureIndex i=0; i<MAX_TEXTURES; i++)
 	{
-		if (textures[i] == NULL) 
+		if (data->textures[i] == NULL) 
 		{
 			new_index = i;
 			break;
@@ -134,7 +135,7 @@ TextureIndex TextureManager::loadTextureBMP(char* filename)
 	}
 	if (new_index == -1) return new_index;
 
-	GLuint texture_name = texture_names[new_index];
+	GLuint texture_name = data->texture_names[new_index];
 
 	char s[3000];
 	sprintf(s, "Loading texture %s index %d name %d", filename, new_index, texture_name);
@@ -147,10 +148,10 @@ TextureIndex TextureManager::loadTextureBMP(char* filename)
 	file_found = bmp.ReadFromFile(filename);
 	if (!file_found)
 	{
-		for (unsigned short i=0; i<filepaths.size(); i++)
+		for (unsigned short i=0; i<data->filepaths.size(); i++)
 		{
-			char* s = new char[strlen(filepaths[i])+strlen(filename)+1];
-			sprintf(s, "%s/%s", filepaths[i], filename);
+			char* s = new char[strlen(data->filepaths[i])+strlen(filename)+1];
+			sprintf(s, "%s/%s", data->filepaths[i], filename);
 			file_found = bmp.ReadFromFile(s);
 			if (file_found) break;
 		}
@@ -164,16 +165,16 @@ TextureIndex TextureManager::loadTextureBMP(char* filename)
 	int bit_depth = bmp.TellBitDepth(); // 24
 	int bytes_per_pixel = bit_depth/8;
 	int data_size = img_width*img_height*bytes_per_pixel;
-	data = (unsigned char*)malloc(data_size);
+	bmp_data = (unsigned char*)malloc(data_size);
 	for (unsigned int i=0; i<img_width; i++)
 	{
 		for (unsigned int j=0; j<img_height; j++)
 		{
 			RGBApixel* p = bmp(i,j);
 			int k = (i+j*img_width)*bytes_per_pixel;
-			data[k] = p->Red;
-			data[k+1] = p->Green;
-			data[k+2] = p->Blue;
+			bmp_data[k] = p->Red;
+			bmp_data[k+1] = p->Green;
+			bmp_data[k+2] = p->Blue;
 		}
 	}
 
@@ -195,11 +196,11 @@ TextureIndex TextureManager::loadTextureBMP(char* filename)
 		0, GL_RGB, 
 		img_width, img_height, 
 		0, GL_RGB, 
-		GL_UNSIGNED_BYTE, data);
-	free(data);
+		GL_UNSIGNED_BYTE, bmp_data);
+	free(bmp_data);
 
 	checkOpenGLError(8);
 
-	textures[new_index] = new Texture(new_index, filename);
+	data->textures[new_index] = new Texture(new_index, filename);
 	return new_index;
 }

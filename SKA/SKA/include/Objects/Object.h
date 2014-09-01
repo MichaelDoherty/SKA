@@ -12,17 +12,16 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef OBJECT_DOT_H
 #define OBJECT_DOT_H
-
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "Core/SystemLog.h"
-#include "Models/Models.h"
+#include <Core/SystemLog.h>
+#include <Models/ModelFactory.h>
 
 class SKA_LIB_DECLSPEC Object
 {

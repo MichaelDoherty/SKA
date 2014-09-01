@@ -11,16 +11,16 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef BLENDER_DOT_H
 #define BLENDER_DOT_h
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <vector>
 #include <fstream>
 using namespace std;
-#include "Animation/Channel.h"
-#include "Animation/MotionSequence.h"
+#include <Animation/Channel.h>
+#include <Animation/MotionSequence.h>
 
 // DESIGN PRINCIPLES:
 // Blender is "functional" in the sense that it is
@@ -51,15 +51,13 @@ struct MOTION_BLEND_SPEC
 	short num_frames;
 };
 
-class Blender
+class SKA_LIB_DECLSPEC Blender
 {
 private:
 public:
 	MotionSequence* blend(MOTION_BLEND_SPEC& spec);
 };
 
-extern Blender blender;
-
-ostream& operator<<(ostream& out, MOTION_BLEND_SPEC& spec);
+SKA_LIB_DECLSPEC ostream& operator<<(ostream& out, MOTION_BLEND_SPEC& spec);
 
 #endif

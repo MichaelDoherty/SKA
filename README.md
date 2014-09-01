@@ -1,6 +1,7 @@
 SKA: Skeletal Animation Toolkit
 C++/openGL library to support research in character animation.
-
+===
+Ver 3.1 posted Spet 1, 2014
 ===
 
 Windows/VisualStudio users: 

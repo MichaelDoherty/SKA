@@ -1,17 +1,8 @@
 //-----------------------------------------------------------------------------
-// app0002: Demo program illustrating various useful things that aren't
-//          directly related to the character animation.
-//          (1) additional objects, such as ground, sky and coordinate axes
-//          (2) moveable camera, controlled by the camera and mouse.
-//          (3) keyboard filtering, to avoid multiple responses when
-//              a single keystroke is expected.
-//          (4) animation speed control (freeze, single step, time warp)
-//          (5) heads-up display (2D text on screen)
+// app0002 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.h
-//    Object that is the interface to the animation subsystem.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
+//    Animation controller for a single character defined by a BVH file.
 //-----------------------------------------------------------------------------
 #ifndef ANIMATIONCONTROL_DOT_H
 #define ANIMATIONCONTROL_DOT_H
@@ -21,24 +12,23 @@
 #include <list>
 using namespace std;
 // SKA modules
-#include <Animation/Character.h>
 #include <Objects/Object.h>
+
+class Skeleton;
 
 struct AnimationControl
 {
 private:
 	bool ready;
 	float run_time;
-	Character* character;
+	Skeleton* character;
 	// flags to control animation
 	bool single_step;
 	bool freeze;
 	float time_warp;
 public:
-	AnimationControl() : ready(false), run_time(0.0f), character(NULL), 
-		single_step(false), freeze(false), time_warp(1.0f)
-	{ } 
-	virtual ~AnimationControl()	{ if (character != NULL) delete character; }
+	AnimationControl();
+	virtual ~AnimationControl();
 
 	// loadCharacters() sets up the characters and their motion control.
 	// It places all the bone objects for each character into the render list,

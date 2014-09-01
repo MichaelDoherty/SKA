@@ -1,15 +1,8 @@
 //-----------------------------------------------------------------------------
-// app0003: Adds a second character, defined and controlled by a BVH file.
+// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.cpp
-//    Object that is the interface to the animation subsystem.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
-// BVH reader and playback is still in development. 
-// There are still problems, including:
-//   1) incorrect interpretation of angles at joints with multple DOF
-//   2) lack of integration with data manager module
+//    animation controller for multiple characters.
 //-----------------------------------------------------------------------------
 // SKA configuration
 #include <Core/SystemConfiguration.h>
@@ -19,8 +12,9 @@
 // SKA modules
 #include <Core/Utilities.h>
 #include <Animation/MotionSequenceController.h>
+#include <Animation/RawMotionController.h>
 #include <Animation/AnimationException.h>
-#include <Animation/AnimSkeleton.h>
+#include <Animation/Skeleton.h>
 #include <DataManagement/DataManager.h>
 #include <DataManagement/DataManagementException.h>
 #include <DataManagement/BVH_Reader.h>
@@ -33,19 +27,25 @@ AnimationControl anim_ctrl;
 
 // This example will create and animate two characters
 
-// ID of the ASF and AMC files for the first (orange) character
-static string skeleton_id("01"); 
-static string motion_id("01");
+// ASF and AMC files for the first (orange) character
+static string character1_ASF("02/02.asf"); 
+static string character1_AMC("02/02_01.amc");  
 
 // BVH file for the 2nd (blue) character
-static string bvh_filename("UOP_lab_01.bvh");
+static string character2_BVH("UOP_lab_01.bvh");
 // scale the character to same size as character 1
-float BVH_scale_size = 0.2f;
+float character2_size_scale = 0.2f;
 
-// alternate BVH file for the 2nd (blue) character
-// This should be the exact same motion as ASF/AMC 01_01
-//static string bvh_filename("01_01.bvh"); 
-//float BVH_scale_size = 1.0f;
+AnimationControl::AnimationControl() 
+	: ready(false), run_time(0.0f), 
+	single_step(false), freeze(false), time_warp(1.0f)
+{ } 
+
+AnimationControl::~AnimationControl()	
+{		
+	for (unsigned short c=0; c<characters.size(); c++)
+		if (characters[c] != NULL) delete characters[c]; 
+}
 
 bool AnimationControl::updateAnimation(float _elapsed_time)
 {
@@ -58,8 +58,7 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	{
 		run_time += _elapsed_time;
 		for (unsigned short c=0; c<characters.size(); c++)
-			if (characters[c]->skeleton != NULL) 
-				characters[c]->skeleton->update(run_time);
+			if (characters[c] != NULL) characters[c]->update(run_time);
 	}
 	if (single_step) // single step then freeze AFTER this frame
 	{
@@ -69,92 +68,120 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	return true;
 }
 
+static Skeleton* buildCharacter(
+	Skeleton* _skel, 
+	MotionSequence* _ms, 
+	Color _bone_color, 
+	const string& _description1, 
+	const string& _description2,
+	list<Object*>& _render_list)
+{
+	if ((_skel == NULL) || (_ms == NULL)) return NULL;
+
+	MotionSequenceController* controller = new MotionSequenceController(_ms);
+	_skel->constructRenderObject(_render_list, _bone_color);
+	_skel->attachMotionController(controller);
+	_skel->setDescription1(_description1.c_str());
+	_skel->setDescription2(_description2.c_str());
+	return _skel;
+}
+
 void AnimationControl::loadCharacters(list<Object*>& render_list)
 {
-	char s[2000];
+	data_manager.addFileSearchPath(AMC_MOTION_FILE_PATH);
+	data_manager.addFileSearchPath(BVH_MOTION_FILE_PATH);
+
+	Skeleton* skel = NULL;
+	MotionSequence* ms = NULL;
+	string descr1, descr2;
+	Color bone_color;
+	char* filename1 = NULL;
+	char* filename2 = NULL;
+	Skeleton* character = NULL;
+	pair<Skeleton*, MotionSequence*> read_result;
 
 // ----------- create 1st character ---------------------------
-
-	data_manager.setFilePathRoot(string(AMC_MOTION_FILE_PATH));
-
-	// read the ASF file to create a skeleton definition instance
-	SkeletonDefinition* skel = data_manager.loadSkeleton(skeleton_id);
-	if (skel == NULL) 
+	try
 	{
-		sprintf(s, "Could not load ASF %s", skeleton_id.c_str());
-		logout << s << endl;
-		throw AnimationException();
+		filename1 = data_manager.findFile(character1_ASF.c_str());
+		if (filename1 == NULL)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to find character ASF file <" << character1_ASF << ">. Aborting load." << endl;
+			throw BasicException("ABORT 1A");
+		}
+	
+		filename2 = data_manager.findFile(character1_AMC.c_str());
+		if (filename2 == NULL)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to find character AMC file <" << character1_AMC << ">. Aborting load." << endl;
+			throw BasicException("ABORT 1B");
+		}
+		
+		try {
+			read_result = data_manager.readASFAMC(filename1, filename2);
+		}
+		catch (const DataManagementException& dme)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to load character data files. Aborting load." << endl;
+			logout << "   Failure due to " << dme.msg << endl;
+			throw BasicException("ABORT 1C");
+		}
+		
+		skel = read_result.first;
+		ms = read_result.second;
+		
+		// create a character to link all the pieces together.
+		descr1 = string("skeleton: ") + character1_ASF;
+		descr2 = string("motion: ") + character1_AMC;
+		bone_color = Color(1.0f,0.4f,0.3f);
+		character = buildCharacter(skel, ms, bone_color, descr1, descr2, render_list);
+		if (character != NULL) characters.push_back(character);
 	}
-
-	// read the AMC file and store it as a motion sequence in a motion controller
-	MotionSequence* ms = data_manager.loadMotion(skeleton_id, motion_id, skel);
-	if (ms == NULL) 
-	{ 
-		sprintf(s, "Could not load AMC %s.%s", skeleton_id.c_str(), motion_id.c_str());
-		logout << s << endl;
-		throw AnimationException();			
-	}
-	MotionSequenceController* controller = new MotionSequenceController(ms);
-
-	// create 1st character to link all the pieces together.
-	characters.push_back(new Character);
-	characters[0]->description1 = string("ASF") + skeleton_id;
-	characters[0]->description2 = string("AMC") + motion_id;;
-	data_manager.getDescriptions(skeleton_id, motion_id,
-		characters[0]->description1, characters[0]->description2);
-
-	// create an animated skeleton for this character.
-	characters[0]->skeleton_definition = skel;
-	characters[0]->skeleton = new AnimSkeleton(characters[0]->skeleton_definition);
-	if (characters[0]->skeleton == NULL) 
-	{
-		sprintf(s, "Failed to build AnimSkeleton for %s", skeleton_id.c_str());
-		logout << s << endl;
-		throw AnimationException();
-	}
-
-	// create rendering model for the character and put the character's 
-	// bone objects in the rendering list
-	Color color(1.0f,0.4f,0.3f);
-	characters[0]->skeleton->constructRenderObject(render_list, color);
-
-	// attach motion controller to character
-	characters[0]->skeleton->attachMotionController(controller);
+	catch (BasicException&) { }
+	strDelete(filename1); filename1 = NULL;
+	strDelete(filename2); filename2 = NULL;
 
 // ----------- create 2nd character ---------------------------
-
-	char bvh_fullfilename[1000];
-	sprintf(bvh_fullfilename, "%s/%s", BVH_MOTION_FILE_PATH, bvh_filename.c_str());
-	
-	BVH_Reader bvh_reader;
-
-	bvh_reader.setSizeScale(BVH_scale_size);
-	pair<SkeletonDefinition*, MotionSequence*> bvh_result = bvh_reader.readBVH(bvh_fullfilename);
-
-	SkeletonDefinition* skel2 = bvh_result.first;
-	MotionSequence* ms2 = bvh_result.second;
-
-	characters.push_back(new Character);
-	characters[1]->description1 = string("BVH DATA");
-	characters[1]->description2 = string("BVH DATA");
-
-	// attach skeleton to character
-	characters[1]->skeleton_definition = skel2;
-	characters[1]->skeleton = new AnimSkeleton(characters[1]->skeleton_definition);
-	if (characters[1]->skeleton == NULL) 
+	try
 	{
-		sprintf(s, "Failed to build AnimSkeleton for BVH character");
-		throw AnimationException();
-	}
+		filename1 = data_manager.findFile(character2_BVH.c_str());
+		if (filename1 == NULL)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to find character BVH file <" << character2_BVH << ">. Aborting load." << endl;
+			throw BasicException("ABORT 2A");
+		}
+		try
+		{
+			read_result = data_manager.readBVH(filename1);
+		}
+		catch (const DataManagementException& dme)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to load character data files. Aborting load." << endl;
+			logout << "   Failure due to " << dme.msg << endl;
+			throw BasicException("ABORT 2C");
+		}
 
-	// create rendering model for the character
-	Color color2(0.0f,0.4f,1.0f);
-	characters[1]->skeleton->constructRenderObject(render_list, color2);
+		skel = read_result.first;
+		ms = read_result.second;
 	
-	// attach motion controller to character
-	characters[1]->skeleton->attachMotionController(new MotionSequenceController(ms2));
+		skel->scaleBoneLengths(character2_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TX), character2_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TY), character2_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TZ), character2_size_scale);
+		
+		// create a character to link all the pieces together.
+		descr1 = string("skeleton: ") + character2_BVH;
+		descr2 = string("motion: ") + character2_BVH;
+		bone_color = Color(0.0f,0.4f,1.0f);
+		character = buildCharacter(skel, ms, bone_color, descr1, descr2, render_list);
+		if (character != NULL) characters.push_back(character);
+	}
+	catch (BasicException&) { }
 
-	ready = true;
+	strDelete(filename1); filename1 = NULL;
+	strDelete(filename2); filename2 = NULL;
+
+	if (characters.size() > 0) ready = true;
 }
 
 

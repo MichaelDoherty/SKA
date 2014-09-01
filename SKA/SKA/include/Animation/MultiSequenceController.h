@@ -12,12 +12,12 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef MULTISEQUENCECONTROLLER_DOT_H
 #define MULTISEQUENCECONTROLLER_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "Animation/MotionSequenceController.h"
+#include <Core/SystemConfiguration.h>
+#include <Animation/MotionSequenceController.h>
 
 class SKA_LIB_DECLSPEC MultiSequenceController : public MotionController
 {

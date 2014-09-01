@@ -1,0 +1,55 @@
+# ASF file for IK test arm
+# -----------------------------------------------
+:version 1.10
+:name VICON
+:units
+  mass 1.0
+  length 0.45
+  angle deg
+:documentation
+   written Feb 5, 2012
+:root
+   order TX TY TZ RX RY RZ
+   axis XYZ
+   position 0 0 0  
+   orientation 0 0 0 
+:bonedata
+  begin
+     id 1 
+     name bone1
+     direction 0 0 1
+     length 4 
+     axis 0 0 0  XYZ
+     dof rx ry rz
+     limits (-360.0 360.0)
+            (-360.0 360.0)
+            (-360.0 360.0)      
+  end
+  begin
+     id 2 
+     name bone2
+     direction 0 0 1
+     length 10
+     axis 0 0 0  XYZ
+     dof rx ry rz
+     limits (-360.0 360.0)
+            (-360.0 360.0)
+            (-360.0 360.0)   
+  end
+  begin
+     id 3 
+     name bone3
+     direction 0 0 1
+     length 5
+     axis 0 0 0   XYZ
+     dof rx ry rz
+     limits (-360.0 360.0)
+            (-360.0 360.0)
+            (-360.0 360.0)        
+  end
+:hierarchy
+  begin
+    root bone1
+    bone1 bone2
+    bone2 bone3
+  end

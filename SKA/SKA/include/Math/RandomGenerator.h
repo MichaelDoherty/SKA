@@ -15,11 +15,11 @@
 // Some code in this file is derived from the works attributed below.
 // Use of this code may be restricted by their ownership.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef RANDOMGENERATOR_DOT_H
 #define RANDOMGENERATOR_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 
 //-----------------------------------------------------------------------------
 // The randf() function is from R. Jain, 
@@ -39,9 +39,8 @@
 #include <cstdlib>
 #include <cmath>
 #include <ctime>
-#include <string>
 using namespace std;
-#include "Math/Math.h"
+#include <Math/Math.h>
 
 class SKA_LIB_DECLSPEC RandomGenerator
 {
@@ -84,7 +83,7 @@ public:
 	// distribution with lower bound a and upper bound b.
 	double uniform(double a, double b)
 	{         
-		if (a>b) throw MathException(string("RandomGenerator::uniform Argument Error: a > b")); 
+		if (a>b) throw MathException("RandomGenerator::uniform Argument Error: a > b"); 
 
 		return(a+(b-a)*randf());
 	}
@@ -94,7 +93,7 @@ public:
 	// set of integers i, i+1, i+2, . . , n.                      
 	int random(int i, int n)
 	{ 
-		if (i>n) throw MathException(string("RandomGenerator::random Argument Error: i > n")); 	
+		if (i>n) throw MathException("RandomGenerator::random Argument Error: i > n"); 	
 
 		n-=i; 
 		n=int((n+1.0)*randf());
@@ -115,7 +114,7 @@ public:
 
 	double erlang(double x, double s)
 	{ 
-		if (s>x) throw MathException(string("RandomGenerator::erlang Argument Error: s > x")); 	
+		if (s>x) throw MathException("RandomGenerator::erlang Argument Error: s > x"); 	
 
 		int i,k; double z;
 		z=x/s; 
@@ -130,7 +129,7 @@ public:
 	// deviation s, s>x.  
 	double hyperx(double x, double s)
 	{ 
-		if (s<=x) throw MathException(string("RandomGenerator::hyperx Argument Error: s not > x")); 	
+		if (s<=x) throw MathException("RandomGenerator::hyperx Argument Error: s not > x"); 	
 
 		double cv,z,p; 
 		cv=s/x; z=cv*cv; p=0.5*(1.0-sqrt((z-1.0)/(z+1.0)));

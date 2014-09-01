@@ -11,11 +11,11 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "DataManagement/DataManagementException.h"
-#include "DataManagement/ASF_Reader.h"
+#include <Core/SystemConfiguration.h>
+#include <DataManagement/DataManagementException.h>
+#include <DataManagement/ASF_Reader.h>
 #include <fstream>
 #include <cstdlib>
 using namespace std;
@@ -23,7 +23,7 @@ using namespace std;
 static const int LOGBUFF_SIZE = 1000;
 static char LOGBUFF[LOGBUFF_SIZE];
 
-static void DOF_StringToIndexes(string& dof_s, DOF_ID dof[3])
+static void CHANNEL_TYPE_StringToIndexes(string& dof_s, CHANNEL_TYPE dof[3])
 {
 	// string is "XYZ", "ZYX", ...
 	// represents order of axis values (and application order)
@@ -31,9 +31,9 @@ static void DOF_StringToIndexes(string& dof_s, DOF_ID dof[3])
 	{
 		switch (dof_s[d])
 		{
-		case 'X': case 'x': dof[d] = DOF_PITCH; break;
-		case 'Y': case 'y': dof[d] = DOF_YAW; break;
-		case 'Z': case 'z': dof[d] = DOF_ROLL; break;
+		case 'X': case 'x': dof[d] = CT_RX; break;
+		case 'Y': case 'y': dof[d] = CT_RY; break;
+		case 'Z': case 'z': dof[d] = CT_RZ; break;
 		}
 	}
 }
@@ -41,163 +41,185 @@ static void DOF_StringToIndexes(string& dof_s, DOF_ID dof[3])
 // =============================================================
 // readASF
 
-SkeletonDefinition* ASF_Reader::readASF(const char* inputFilename)
+class ASF_Reader_Local
+{
+public:
+	ASF_Reader_Local() : skeleton(NULL), ASF_angles_are_degrees(true) { }
+	Skeleton* readASF(const char* inputFilename);
+private:
+	Skeleton* skeleton;
+	bool ASF_angles_are_degrees;
+
+	bool processComment(LineScanner& line_scanner, string& line);
+	bool processVersionSection(LineScanner& line_scanner, string& line);
+	bool processNameSection(LineScanner& line_scanner, string& line);
+	bool processUnitsSection(LineScanner& line_scanner, string& line);
+	bool processDocumentationSection(LineScanner& line_scanner, string& line);
+	bool processRootSection(LineScanner& line_scanner, string& line);
+	bool processBonedataSection(LineScanner& line_scanner, string& line);
+	bool processHierarchySection(LineScanner& line_scanner, string& line);
+
+	bool processBone(LineScanner& line_scanner);
+};
+
+Skeleton* ASF_Reader_Local::readASF(const char* inputFilename)
 {
 	LineScanner line_scanner(inputFilename);
 	if (!line_scanner.fileIsOpen()) return NULL;
 
-	skeleton = new SkeletonDefinition(string(inputFilename));
+	skeleton = new Skeleton(inputFilename);
 	string line;
 	
 	while (line_scanner.getNextLine(line))
 	{
-		if (AAPU::linePrefix(line, string("#")))
+		if (ParsingUtilities::linePrefix(line, string("#")))
 			continue;
-		else if (AAPU::linePrefix(line, string(":version")))
+		else if (ParsingUtilities::linePrefix(line, string(":version")))
 			processVersionSection(line_scanner, line);
-		else if (AAPU::linePrefix(line, string(":name")))
+		else if (ParsingUtilities::linePrefix(line, string(":name")))
 			processNameSection(line_scanner, line);
-		else if (AAPU::linePrefix(line, string(":units")))
+		else if (ParsingUtilities::linePrefix(line, string(":units")))
 			processUnitsSection(line_scanner, line);
-		else if (AAPU::linePrefix(line, string(":documentation")))
+		else if (ParsingUtilities::linePrefix(line, string(":documentation")))
 			processDocumentationSection(line_scanner, line);
-		else if (AAPU::linePrefix(line, string(":root")))
+		else if (ParsingUtilities::linePrefix(line, string(":root")))
 			processRootSection(line_scanner, line);
-		else if (AAPU::linePrefix(line, string(":bonedata")))
+		else if (ParsingUtilities::linePrefix(line, string(":bonedata")))
 			processBonedataSection(line_scanner, line);
-		else if (AAPU::linePrefix(line, string(":hierarchy")))
+		else if (ParsingUtilities::linePrefix(line, string(":hierarchy")))
 			processHierarchySection(line_scanner, line);
 		else 
 		{
 			sprintf(LOGBUFF, "ASF_Reader BAD LINE: %s", line.c_str());
-			throw DataManagementException(string(LOGBUFF));
+			throw DataManagementException(LOGBUFF);
 		}
 	}
+	skeleton->finalizeInitialization();
 	return skeleton;
 }
 
-bool ASF_Reader::processComment(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processComment(LineScanner& line_scanner, string& line)
 {
-	if (AAPU::linePrefix(line, string("# Documentation:"))) 
+	if (ParsingUtilities::linePrefix(line, string("# Documentation:"))) 
 	{
-		AAPU::stripPrefix(line, string("# Documentation:"));
-		skeleton->addDocumentation(line);
+		ParsingUtilities::stripPrefix(line, string("# Documentation:"));
+		skeleton->addDocumentation(line.c_str());
 	}
-	else if (AAPU::linePrefix(line, string("# Source:"))) 
+	else if (ParsingUtilities::linePrefix(line, string("# Source:"))) 
 	{
-		AAPU::stripPrefix(line, string("# Source:"));
-		skeleton->setSource(line);
+		ParsingUtilities::stripPrefix(line, string("# Source:"));
+		skeleton->setSource(line.c_str());
 	}
 	return true;
 }
 
-bool ASF_Reader::processVersionSection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processVersionSection(LineScanner& line_scanner, string& line)
 {
-	if (!AAPU::stripPrefix(line, string(":version"))) return false;
+	if (!ParsingUtilities::stripPrefix(line, string(":version"))) return false;
 	// No longer stored. 
 	//skeleton->setVersion(line);
 	return true;
 }
 
-bool ASF_Reader::processNameSection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processNameSection(LineScanner& line_scanner, string& line)
 {
-	if (!AAPU::stripPrefix(line, string(":name"))) return false;
+	if (!ParsingUtilities::stripPrefix(line, string(":name"))) return false;
 	//  No longer stored.
 	//skeleton->setAsfName(line);
 	return true;
 }
 
-bool ASF_Reader::processUnitsSection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processUnitsSection(LineScanner& line_scanner, string& line)
 {
 	while (true)
 	{
 		if (!line_scanner.getNextLine(line)) return true;
-		if (AAPU::linePrefix(line, string(":")))
+		if (ParsingUtilities::linePrefix(line, string(":")))
 		{
 			line_scanner.pushbackLine(line);
 			return true;
 		}
 		string unit_name;
 		string unit_value;
-		AAPU::splitLine(line, unit_name, unit_value);
-		skeleton->addUnits(unit_name, unit_value);
+		ParsingUtilities::splitLine(line, unit_name, unit_value);
+		skeleton->addUnits(unit_name.c_str(), unit_value.c_str());
 		if ((unit_name == string("angle")) && (unit_value == string("deg")))
 			ASF_angles_are_degrees = true;
 	}
 	return true;
 }
 
-bool ASF_Reader::processDocumentationSection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processDocumentationSection(LineScanner& line_scanner, string& line)
 {
 	while (true)
 	{
 		if (!line_scanner.getNextLine(line)) return true;
-		if (AAPU::linePrefix(line, string(":")))
+		if (ParsingUtilities::linePrefix(line, string(":")))
 		{
 			line_scanner.pushbackLine(line);
 			return true;
 		}
-		skeleton->addDocumentation(line);
+		skeleton->addDocumentation(line.c_str());
 	}
 	return true;
 }
 
-bool ASF_Reader::processRootSection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processRootSection(LineScanner& line_scanner, string& line)
 {
-	skeleton->setBoneName(0, string("root"));
+	skeleton->createBone(0, "root");
 	while (true)
 	{
 		if (!line_scanner.getNextLine(line)) return true;
-		if (AAPU::linePrefix(line, string(":")))
+		if (ParsingUtilities::linePrefix(line, string(":")))
 		{
 			line_scanner.pushbackLine(line);
 			return true;
 		}
 		string prefix, rest;
-		if (AAPU::linePrefix(line, string("order")))
+		if (ParsingUtilities::linePrefix(line, string("order")))
 		{
-			DOF_ID dof_order[6];
+			CHANNEL_TYPE dof_order[6];
 			short num_dof = 0;
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<string> words;
-			AAPU::parseWords(rest, words);
+			ParsingUtilities::parseWords(rest, words);
 			list<string>::iterator iter = words.begin();
 			while (iter != words.end())
 			{
 				string s = (*iter);
 				if ((s == string("TX")) || (s == string("tx")))
-					dof_order[num_dof++] = DOF_X;
+					dof_order[num_dof++] = CT_TX;
 				else if ((s == string("TY")) || (s == string("ty")))
-					dof_order[num_dof++] = DOF_Y;
+					dof_order[num_dof++] = CT_TY;
 				else if ((s == string("TZ")) || (s == string("tz")))
-					dof_order[num_dof++] = DOF_Z;
+					dof_order[num_dof++] = CT_TZ;
 				else if ((s == string("RX")) || (s == string("rx")))
-					dof_order[num_dof++] = DOF_PITCH;
+					dof_order[num_dof++] = CT_RX;
 				else if ((s == string("RY")) || (s == string("ry")))
-					dof_order[num_dof++] = DOF_YAW;
+					dof_order[num_dof++] = CT_RY;
 				else if ((s == string("RZ")) || (s == string("rz")))
-					dof_order[num_dof++] = DOF_ROLL;
+					dof_order[num_dof++] = CT_RZ;
 				iter++;
 			}
 			skeleton->setBoneChannels(0, dof_order, num_dof);
 		}
-		else if (AAPU::linePrefix(line, string("axis")))
+		else if (ParsingUtilities::linePrefix(line, string("axis")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			float values[3] = { 0.0f, 0.0f, 0.0f };
-			DOF_ID dof[3];
-			DOF_StringToIndexes(rest, dof);
+			CHANNEL_TYPE dof[3];
+			CHANNEL_TYPE_StringToIndexes(rest, dof);
 			skeleton->setBoneAxis(0, values, dof);
 		}
-		else if (AAPU::linePrefix(line, string("position")))
+		else if (ParsingUtilities::linePrefix(line, string("position")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<float> values;
-			AAPU::parseFloats(rest, values);
+			ParsingUtilities::parseFloats(rest, values);
 			if (values.size() != 3)
 			{
 				sprintf(LOGBUFF, "ASF_Reader: INVALID number of values in root position line: %s", line.c_str());
-				throw DataManagementException(string(LOGBUFF));
+				throw DataManagementException(LOGBUFF);
 			}
 			else 
 			{
@@ -208,15 +230,15 @@ bool ASF_Reader::processRootSection(LineScanner& line_scanner, string& line)
 				skeleton->setRootPosition(x,y,z);
 			}
 		}
-		else if (AAPU::linePrefix(line, string("orientation")))
+		else if (ParsingUtilities::linePrefix(line, string("orientation")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<float> values;
-			AAPU::parseFloats(rest, values);
+			ParsingUtilities::parseFloats(rest, values);
 			if (values.size() != 3)
 			{
 				sprintf(LOGBUFF, "ASF_Reader: INVALID number of values in root orientation line: %s", line.c_str());
-				throw DataManagementException(string(LOGBUFF));
+				throw DataManagementException(LOGBUFF);
 			}
 			else 
 			{
@@ -237,54 +259,54 @@ bool ASF_Reader::processRootSection(LineScanner& line_scanner, string& line)
 	return false;
 }
 
-bool ASF_Reader::processHierarchySection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processHierarchySection(LineScanner& line_scanner, string& line)
 {
 	while (true)
 	{
 		if (!line_scanner.getNextLine(line)) return true;
-		if (AAPU::linePrefix(line, string(":")))
+		if (ParsingUtilities::linePrefix(line, string(":")))
 		{
 			line_scanner.pushbackLine(line);
 			return true;
 		}
 		list<string> bonenames;
-		AAPU::parseWords(line, bonenames);
+		ParsingUtilities::parseWords(line, bonenames);
 		if (bonenames.size() > 1)
 		{
 			list<string>::iterator iter = bonenames.begin();
 			string parent = (*iter); iter++;
 			while (iter != bonenames.end())
 			{
-				skeleton->addConnection(parent, (*iter));
+				skeleton->addConnection(parent.c_str(), (*iter).c_str());
 				iter++;
 			}
 		}
 	}
 }
 
-bool ASF_Reader::processBonedataSection(LineScanner& line_scanner, string& line)
+bool ASF_Reader_Local::processBonedataSection(LineScanner& line_scanner, string& line)
 {
 	while (true)
 	{
 		if (!line_scanner.getNextLine(line)) return true;
-		if (AAPU::linePrefix(line, string(":")))
+		if (ParsingUtilities::linePrefix(line, string(":")))
 		{
 			line_scanner.pushbackLine(line);
 			return true;
 		}
-		else if (AAPU::linePrefix(line, string("begin")))
+		else if (ParsingUtilities::linePrefix(line, string("begin")))
 		{
 			processBone(line_scanner);
 		}
 		else 
 		{
 			sprintf(LOGBUFF, "ASF_Reader: INVALID line in Bonedata section: %s", line.c_str());
-			throw DataManagementException(string(LOGBUFF));
+			throw DataManagementException(LOGBUFF);
 		}
 	}
 }
 
-bool ASF_Reader::processBone(LineScanner& line_scanner)
+bool ASF_Reader_Local::processBone(LineScanner& line_scanner)
 {
 	string line, prefix, rest;
 
@@ -296,47 +318,47 @@ bool ASF_Reader::processBone(LineScanner& line_scanner)
 		if (!line_scanner.getNextLine(line))
 		{
 			sprintf(LOGBUFF, "ASF_Reader: EOF FOUND before END of bonedata: %s", line.c_str());
-			throw DataManagementException(string(LOGBUFF));
+			throw DataManagementException(LOGBUFF);
 		}
-		if (AAPU::linePrefix(line, string(":")))
+		if (ParsingUtilities::linePrefix(line, string(":")))
 		{
 			line_scanner.pushbackLine(line);
 			sprintf(LOGBUFF, "ASF_Reader: INVALID LINE FOUND before END of bonedata: %s", line.c_str());
-			throw DataManagementException(string(LOGBUFF));
+			throw DataManagementException(LOGBUFF);
 		}
-		else if (AAPU::linePrefix(line, string("end")))
+		else if (ParsingUtilities::linePrefix(line, string("end")))
 		{
 			return true;
 		}
-		else if (AAPU::linePrefix(line, string("id")))
+		else if (ParsingUtilities::linePrefix(line, string("id")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<long> values;
-			if (AAPU::parseInts(rest, values))
+			if (ParsingUtilities::parseInts(rest, values))
 			{
 				list<long>::iterator iter = values.begin();
 				id = (short)(*iter);
 			}
 		}
-		else if (AAPU::linePrefix(line, string("name")))
+		else if (ParsingUtilities::linePrefix(line, string("name")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<string> words;
-			if (AAPU::parseWords(rest, words))
+			if (ParsingUtilities::parseWords(rest, words))
 			{
 				list<string>::iterator iter = words.begin();
-				skeleton->setBoneName(id, (*iter));
+				skeleton->createBone(id, (*iter).c_str());
 			}
 		}
-		else if (AAPU::linePrefix(line, string("direction")))
+		else if (ParsingUtilities::linePrefix(line, string("direction")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<float> values;
-			AAPU::parseFloats(rest, values);
+			ParsingUtilities::parseFloats(rest, values);
 			if (values.size() != 3)
 			{
 				sprintf(LOGBUFF, "ASF_Reader: INVALID number of values in BONE DIRECTION line: %s", line.c_str());
-				throw DataManagementException(string(LOGBUFF));
+				throw DataManagementException(LOGBUFF);
 			}
 			else 
 			{
@@ -347,15 +369,15 @@ bool ASF_Reader::processBone(LineScanner& line_scanner)
 				skeleton->setBoneDirection(id,x,y,z);
 			}
 		}
-		else if (AAPU::linePrefix(line, string("length")))
+		else if (ParsingUtilities::linePrefix(line, string("length")))
 		{
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<float> values;
-			AAPU::parseFloats(rest, values);
+			ParsingUtilities::parseFloats(rest, values);
 			if (values.size() != 1)
 			{
 				sprintf(LOGBUFF, "ASF_Reader: INVALID number of values in BONE LENGTH line: %s", line.c_str());
-				throw DataManagementException(string(LOGBUFF));
+				throw DataManagementException(LOGBUFF);
 			}
 			else 
 			{
@@ -364,19 +386,19 @@ bool ASF_Reader::processBone(LineScanner& line_scanner)
 				skeleton->setBoneLength(id, x);
 			}
 		}
-		else if (AAPU::linePrefix(line, string("axis")))
+		else if (ParsingUtilities::linePrefix(line, string("axis")))
 		{
 			list<string> words;
-			AAPU::parseWords(line, words);
+			ParsingUtilities::parseWords(line, words);
 			if (words.size() != 5)
 			{
 				sprintf(LOGBUFF, "ASF_Reader: INVALID number of values in BONE AXIS line: %s", line.c_str());
-				throw DataManagementException(string(LOGBUFF));
+				throw DataManagementException(LOGBUFF);
 			}
 			else
 			{
 				float values[3];
-				DOF_ID dof[3];
+				CHANNEL_TYPE dof[3];
 
 				list<string>::iterator iter = words.begin();
 				iter++; // shift "axis"
@@ -392,31 +414,31 @@ bool ASF_Reader::processBone(LineScanner& line_scanner)
 					values[2] = deg2rad(values[2]);
 				}
 
-				DOF_StringToIndexes((*iter), dof);
+				CHANNEL_TYPE_StringToIndexes((*iter), dof);
 				skeleton->setBoneAxis(id, values, dof);
 			}
 		}
-		else if (AAPU::linePrefix(line, string("dof")))
+		else if (ParsingUtilities::linePrefix(line, string("dof")))
 		{
-			DOF_ID dof_order[6];
+			CHANNEL_TYPE dof_order[6];
 			short num_dof = 0;
-			AAPU::splitLine(line, prefix, rest);
+			ParsingUtilities::splitLine(line, prefix, rest);
 			list<string> words;
-			AAPU::parseWords(rest, words);
+			ParsingUtilities::parseWords(rest, words);
 			list<string>::iterator iter = words.begin();
 			while (iter != words.end())
 			{
 				string s = (*iter);
 				if ((s == string("RX")) || (s == string("rx")))
-					dof_order[num_dof++] = DOF_PITCH;
+					dof_order[num_dof++] = CT_RX;
 				else if ((s == string("RY")) || (s == string("ry")))
-					dof_order[num_dof++] = DOF_YAW;
+					dof_order[num_dof++] = CT_RY;
 				else if ((s == string("RZ")) || (s == string("rz")))
-					dof_order[num_dof++] = DOF_ROLL;
+					dof_order[num_dof++] = CT_RZ;
 				else
 				{
 					sprintf(LOGBUFF, "ASF_Reader: INVALID dof values in BONE DOF line: %s", line.c_str());
-					throw DataManagementException(string(LOGBUFF));
+					throw DataManagementException(LOGBUFF);
 				}
 				iter++;
 
@@ -426,19 +448,19 @@ bool ASF_Reader::processBone(LineScanner& line_scanner)
 			}
 			skeleton->setBoneChannels(id, dof_order, num_dof);
 		}
-		else if (AAPU::linePrefix(line, string("limits")))
+		else if (ParsingUtilities::linePrefix(line, string("limits")))
 		{
 			int i=0;
 			while (true) 
 			{
 				float min, max;
-				AAPU::parseLimits(line, min, max);
+				ParsingUtilities::parseLimits(line, min, max);
 				if (ASF_angles_are_degrees)
 				{
 					min = deg2rad(min);
 					max = deg2rad(max);
 				}
-				skeleton->setBoneDOFLimit(id, i, min, max);
+				skeleton->setBoneChannelLimit(id, i, min, max);
 				i++;
 				if (i>=num_limits) break;
 				if (!line_scanner.getNextLine(line)) return false;
@@ -448,7 +470,22 @@ bool ASF_Reader::processBone(LineScanner& line_scanner)
 		{
 			line_scanner.pushbackLine(line);
 			sprintf(LOGBUFF, "ASF_Reader: INVALID LINE FOUND before END of bonedata: %s", line.c_str());
-			throw DataManagementException(string(LOGBUFF));
+			throw DataManagementException(LOGBUFF);
 		}
 	}
+}
+
+ASF_Reader::ASF_Reader() 
+{
+	local_reader = new ASF_Reader_Local;
+}
+
+ASF_Reader::~ASF_Reader()
+{
+	delete local_reader;
+}
+
+Skeleton* ASF_Reader::readASF(const char* inputFilename)
+{
+	return local_reader->readASF(inputFilename);
 }

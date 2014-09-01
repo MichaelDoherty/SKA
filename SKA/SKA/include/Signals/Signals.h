@@ -11,18 +11,17 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef SIGNALS_DOT_H
 #define SIGNALS_DOT_H
-
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cmath>
 #include <vector>
 #include <iostream>
 using namespace std;
-#include "Math/Math.h"
-#include "Signals/SignalSpec.h"
+#include <Math/Math.h>
+#include <Signals/SignalSpec.h>
 
 class SignalGenerator
 {

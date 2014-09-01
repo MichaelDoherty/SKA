@@ -11,12 +11,12 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Models/SphereModels.h"
-#include "Math/Math.h"
-#include "Graphics/Textures.h"
+#include <Core/SystemConfiguration.h>
+#include <Models/SphereModels.h>
+#include <Math/Math.h>
+#include <Graphics/Textures.h>
 
 //=====================================================================
 
@@ -112,7 +112,7 @@ static Triangle* generateSphere(int maxlevel, int& num_triangles)
 		sphere  = new Triangle[num_triangles];
 
 		if (sphere == NULL) 
-			throw BasicException(string("SphereModels: Out of memory in sphere generator"));
+			throw BasicException("SphereModels: Out of memory in sphere generator");
 
 		for (int i = 0; i<old_size; i++) 
 		{

@@ -11,22 +11,22 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef MATH_DOT_H
 #define MATH_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cmath>
 #include <fstream>
-#include <string>
 using namespace std;
-#include "Core/BasicException.h"
+#include <Core/BasicException.h>
 
 class SKA_LIB_DECLSPEC MathException : public BasicException
 {
 public:
-	MathException() : BasicException(string("Unspecified Math exception")) { }
-	MathException(const string& _msg) : BasicException(_msg) { }
+	MathException() : BasicException("Unspecified Math exception") { }
+	MathException(const char* _msg) : BasicException(_msg) { }
+	MathException(const MathException& _other) : BasicException(_other) { }
 };
 
 const float PI = 3.1415926534f;

@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------------
-// app0003: Adds a second character, defined and controlled by a BVH file.
+// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // CameraControl.h
 //    Object to control the camera/viewpoint.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef CAMERACONTROL_DOT_H
 #define CAMERACONTROL_DOT_H

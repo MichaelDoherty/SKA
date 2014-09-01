@@ -9,7 +9,6 @@ GLLIBS = -lglut -lGLU -lGL
 
 SOURCES = AppMain.cpp AnimationControl.cpp CameraControl.cpp InputProcessing.cpp
   
-
 OBJECTS = $(SOURCES:.cpp=.o)
 
 $(TARGET): $(OBJECTS)

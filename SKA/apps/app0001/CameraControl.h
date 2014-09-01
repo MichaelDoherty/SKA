@@ -1,24 +1,32 @@
 //-----------------------------------------------------------------------------
-// app0001: Demo program illustrating how to build a basic SKA application.
-//          This application reads a skeleton and motion from an ASF/AMC 
-//          file pair and uses that data to drive a character.
+// app0001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // CameraControl.h
 //    Object to control the camera/viewpoint.
 //-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
 #ifndef CAMERACONTROL_DOT_H
 #define CAMERACONTROL_DOT_H
-// SKA configuration - should always be the first file included.
+// SKA configuration
 #include <Core/SystemConfiguration.h>
 // SKA modules
 #include <Camera/Camera.h>
 
-// Setup function, which should be called once before entering openGL loop.
-void initializeCamera(int window_width, int window_height);
+class AppCamera : public MovingCamera
+{
+public:
+	AppCamera();
+	~AppCamera();
+	// setup function, which should be called once before entering openGL loop.
+	void initializeCamera(int window_width, int window_height);
+	// move camera to predefine locations
+	void setCameraLeft();
+	void setCameraFront();
+	void setCameraFrontLeft();
+	// move camera slightly to force it to update position
+	void bumpCamera(); 
+};
 
 // global single instance of the camera
-extern MovingCamera camera;
+extern AppCamera camera;
 
 #endif // CAMERACONTROL_DOT_H

@@ -11,19 +11,19 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef ASF_WRITER_DOT_H
 #define ASF_WRITER_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 
-class SkeletonDefinition;
+class Skeleton;
 
-class ASF_Writer
+class SKA_LIB_DECLSPEC ASF_Writer
 {
 public:
 	bool writeASF(const char* outputFilename,
-		SkeletonDefinition* skeleton,
+		Skeleton* skeleton,
 		bool overwrite=true);
 };
 

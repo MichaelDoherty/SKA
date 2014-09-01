@@ -1,34 +1,35 @@
 //-----------------------------------------------------------------------------
-// app0001: Demo program illustrating how to build a basic SKA application.
-//          This application reads a skeleton and motion from an ASF/AMC 
-//          file pair and uses that data to drive a character.
+// app0001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.h
-//    Object that is the interface to the animation subsystem.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
+//    Animation controller for a single character
+//    defined by an ASF/AMC file pair.
 //-----------------------------------------------------------------------------
 #ifndef ANIMATIONCONTROL_DOT_H
 #define ANIMATIONCONTROL_DOT_H
-// SKA configuration - should always be the first file included.
+// SKA configuration
 #include <Core/SystemConfiguration.h>
 // C/C++ libraries
 #include <list>
 using namespace std;
 // SKA modules
-#include <Animation/Character.h>
 #include <Objects/Object.h>
+
+class Skeleton;
 
 struct AnimationControl
 {
 private:
 	bool ready;
 	float run_time;
-	Character* character;
-
+	Skeleton* character;
+	// flags to control animation
+	bool single_step;
+	bool freeze;
+	float time_warp;
 public:
-	AnimationControl() : ready(false), run_time(0.0f), character(NULL) { } 
-	virtual ~AnimationControl()	{ if (character != NULL) delete character; }
+	AnimationControl();
+	virtual ~AnimationControl();
 
 	// loadCharacters() sets up the characters and their motion control.
 	// It places all the bone objects for each character into the render list,
@@ -39,7 +40,14 @@ public:
 	// _elapsed_time should be the time (in seconds) since the last frame/update.
 	bool updateAnimation(float _elapsed_time);
 
-	bool isReady() { return ready; }
+	bool isReady()      { return ready; }
+	void togglePause()  { freeze = !freeze; }
+	void singleStep()   { single_step = true; }
+	void slowDown()     { time_warp /= 2.0f; }
+	void speedUp()      { time_warp *= 2.0f; }
+	void normalSpeed()  { time_warp = 1.0f; }
+	bool isFrozen()     { return freeze; }
+	float getTimeWarp() { return time_warp; }
 };
 
 // global single instance of the animation controller

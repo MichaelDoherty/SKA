@@ -13,7 +13,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2012 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef SYSTEMCONFIGURATION_DOT_H
 #define SYSTEMCONFIGURATION_DOT_H
@@ -42,18 +42,6 @@
 // Disable MS Visual C++ warnings about unsafe standard C string functions
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
-#endif
-
-// ENABLE_MYSQL: Enable code that depends on MySQL library.
-//   Enabling this code requires installation of
-//   MySQL database, with MySQL C API
-//   Requires including <my_global.h> and <mysql.h> (see Database.cpp)
-//   Requires linking to libmysql.lib
-// 0 = disable MySQL
-// 1 = enable MySQL
-//   This flag can be overridden with a compiler flag.
-#ifndef ENABLE_MYSQL
-#define ENABLE_MYSQL 0
 #endif
 
 // ENABLE_FFTW: Enable code that depends on FFTW library.

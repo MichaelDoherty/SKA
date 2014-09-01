@@ -11,11 +11,11 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #include <GL/glut.h>
-#include "Graphics/GraphicsInterface.h"
-#include "Graphics/Lights.h"
+#include <Graphics/GraphicsInterface.h>
+#include <Graphics/Lights.h>
 
 void initializeDefaultLighting()
 {

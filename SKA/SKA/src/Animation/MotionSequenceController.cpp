@@ -14,23 +14,17 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Core/Utilities.h"
-#include "Animation/MotionSequenceController.h"
-#include "Animation/AnimationException.h"
-#include "Animation/AnimDebug.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/Utilities.h>
+#include <Animation/MotionSequenceController.h>
+#include <Animation/AnimationException.h>
 
 MotionSequenceController::MotionSequenceController(MotionSequence* _ms) 
 	: MotionController(), motion_sequence(_ms), prev_time(-1.0f), sequence_time(0.0f),
 	apply_start_offset(false), frame_is_cached(NULL)
 { 
-	/*
-	float roll  = motion_sequence->getValue(CHANNEL_ID(0,DOF_ROLL),0);
-	float pitch = motion_sequence->getValue(CHANNEL_ID(0,DOF_PITCH),0);
-	float yaw   = motion_sequence->getValue(CHANNEL_ID(0,DOF_YAW),0);
-	*/
 }
 
 void MotionSequenceController::setRootOffset(Vector3D& _offset_position, Vector3D& _offset_orientation, long _offset_start_frame)
@@ -39,13 +33,13 @@ void MotionSequenceController::setRootOffset(Vector3D& _offset_position, Vector3
 	start_offset_frame = _offset_start_frame;
 
 	Vector3D orig_start_position(
-		motion_sequence->getValue(CHANNEL_ID(0,DOF_X),start_offset_frame),
-		motion_sequence->getValue(CHANNEL_ID(0,DOF_Y),start_offset_frame),
-		motion_sequence->getValue(CHANNEL_ID(0,DOF_Z),start_offset_frame));
+		motion_sequence->getValue(CHANNEL_ID(0,CT_TX),start_offset_frame),
+		motion_sequence->getValue(CHANNEL_ID(0,CT_TY),start_offset_frame),
+		motion_sequence->getValue(CHANNEL_ID(0,CT_TZ),start_offset_frame));
 	Vector3D orig_start_orientation(
-		motion_sequence->getValue(CHANNEL_ID(0,DOF_PITCH),start_offset_frame),
-		motion_sequence->getValue(CHANNEL_ID(0,DOF_YAW),start_offset_frame),
-		motion_sequence->getValue(CHANNEL_ID(0,DOF_ROLL),start_offset_frame));
+		motion_sequence->getValue(CHANNEL_ID(0,CT_RX),start_offset_frame),
+		motion_sequence->getValue(CHANNEL_ID(0,CT_RY),start_offset_frame),
+		motion_sequence->getValue(CHANNEL_ID(0,CT_RZ),start_offset_frame));
 
 	// compute root translation as position difference
 	start_offset_translation = _offset_position - orig_start_position;
@@ -91,8 +85,8 @@ float MotionSequenceController::getValue(CHANNEL_ID _channel, float _time)
 	if (!isValidChannel(_channel, _time)) 
 	{
 		string s = string("MotionSequenceController received request for invalid channel ") 
-			+ " bone: " + toString(_channel.bone_id) + " dof: " + toString(_channel.dof_id);
-		throw AnimationException(s);
+			+ " bone: " + toString(_channel.bone_id) + " dof: " + toString(_channel.channel_type);
+		throw AnimationException(s.c_str());
 	}
 
 	float duration = motion_sequence->getDuration();
@@ -102,8 +96,6 @@ float MotionSequenceController::getValue(CHANNEL_ID _channel, float _time)
 	if (sequence_time > duration) sequence_time = 0.0f;
 
 	int frame = int(motion_sequence->numFrames()*sequence_time/duration);
-
-	if (useForcedFrame) frame = forcedFrame;
 
 	float value = motion_sequence->getValue(_channel, frame);
 
@@ -115,13 +107,13 @@ float MotionSequenceController::getValue(CHANNEL_ID _channel, float _time)
 			if (!frame_is_cached[frame])
 			{
 				Vector3D frame_position(
-					motion_sequence->getValue(CHANNEL_ID(0,DOF_X), frame),
-					motion_sequence->getValue(CHANNEL_ID(0,DOF_Y), frame),
-					motion_sequence->getValue(CHANNEL_ID(0,DOF_Z), frame));
+					motion_sequence->getValue(CHANNEL_ID(0,CT_TX), frame),
+					motion_sequence->getValue(CHANNEL_ID(0,CT_TY), frame),
+					motion_sequence->getValue(CHANNEL_ID(0,CT_TZ), frame));
 				Vector3D frame_orientation(
-					motion_sequence->getValue(CHANNEL_ID(0,DOF_PITCH), frame),
-					motion_sequence->getValue(CHANNEL_ID(0,DOF_YAW), frame),
-					motion_sequence->getValue(CHANNEL_ID(0,DOF_ROLL), frame));
+					motion_sequence->getValue(CHANNEL_ID(0,CT_RX), frame),
+					motion_sequence->getValue(CHANNEL_ID(0,CT_RY), frame),
+					motion_sequence->getValue(CHANNEL_ID(0,CT_RZ), frame));
 
 				frame_position = start_offset_combined_transform * frame_position;
 
@@ -148,21 +140,21 @@ float MotionSequenceController::getValue(CHANNEL_ID _channel, float _time)
 				root_cache.set(frame,5,frame_orientation.roll);
 				frame_is_cached[frame] = true;
 			}
-			switch(_channel.dof_id)
+			switch(_channel.channel_type)
 			{
-			case DOF_X:
+			case CT_TX:
 				value = root_cache.get(frame,0); break;
-			case DOF_Y:
+			case CT_TY:
 				value = root_cache.get(frame,1); break;
-			case DOF_Z:
+			case CT_TZ:
 				value = root_cache.get(frame,2); break;
-			case DOF_PITCH:
+			case CT_RX:
 				value = root_cache.get(frame,3); break;
-			case DOF_YAW:
+			case CT_RY:
 				value = root_cache.get(frame,4); break;
-			case DOF_ROLL:
+			case CT_RZ:
 				value = root_cache.get(frame,5); break;
-			case DOF_INVALID:
+			default:
 				value = 0.0f; break;
 			}
 		}

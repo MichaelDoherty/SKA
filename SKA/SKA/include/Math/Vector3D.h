@@ -14,20 +14,20 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef VECTOR3D_DOT_H
 #define VECTOR3D_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cmath>
 #include <fstream>
 #include <cstring> // (for memcpy)
 using namespace std;
-#include "Math/Math.h"
+#include <Math/Math.h>
 
 class SKA_LIB_DECLSPEC Vector3D
 {
-	friend ostream& operator<<(ostream& out, Vector3D& v);
+	SKA_LIB_DECLSPEC friend ostream& operator<<(ostream& out, Vector3D& v);
 public:
 	// store as an array
 	float v[3];

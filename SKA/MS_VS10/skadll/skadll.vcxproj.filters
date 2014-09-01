@@ -1,22 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\SKA\src\Animation\AnimBone.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\Animation\AnimDebug.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\Animation\AnimSkeleton.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SKA\src\Animation\Blender.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\Animation\BoneDefinition.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\Animation\Character.cpp">
       <Filter>Animation\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SKA\src\Animation\MotionSequence.cpp">
@@ -26,12 +11,6 @@
       <Filter>Animation\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SKA\src\Animation\MotionSequenceController.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\Animation\RawMotionController.cpp">
-      <Filter>Animation\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\Animation\SkeletonDefinition.cpp">
       <Filter>Animation\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SKA\src\Camera\Camera.cpp">
@@ -49,9 +28,6 @@
     <ClCompile Include="..\..\SKA\src\DataManagement\AMC_Writer.cpp">
       <Filter>DataManagement\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\SKA\src\DataManagement\ASF_AMC_ParseUtils.cpp">
-      <Filter>DataManagement\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SKA\src\DataManagement\ASF_Reader.cpp">
       <Filter>DataManagement\Source Files</Filter>
     </ClCompile>
@@ -59,15 +35,6 @@
       <Filter>DataManagement\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SKA\src\DataManagement\BVH_Reader.cpp">
-      <Filter>DataManagement\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\DataManagement\Database.cpp">
-      <Filter>DataManagement\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\DataManagement\DatabaseLoader.cpp">
-      <Filter>DataManagement\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\SKA\src\DataManagement\DataIndex.cpp">
       <Filter>DataManagement\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SKA\src\DataManagement\DataManager.cpp">
@@ -139,30 +106,33 @@
     <ClCompile Include="..\..\SKA\src\Models\ModelFactory.cpp">
       <Filter>Models\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\ParsingUtilities.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\RawMotionController.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\Skeleton.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\Animation\Bone.cpp">
+      <Filter>Animation\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\SKS_ReaderWriter.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SKA\src\DataManagement\SKM_ReaderWriter.cpp">
+      <Filter>DataManagement\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\SKA\include\Animation\AnimationException.h">
       <Filter>Animation\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\AnimBone.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\AnimDebug.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\AnimSkeleton.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\SKA\include\Animation\Blender.h">
       <Filter>Animation\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\BoneDefinition.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\SKA\include\Animation\Channel.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\Character.h">
       <Filter>Animation\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\Animation\MotionController.h">
@@ -177,12 +147,6 @@
     <ClInclude Include="..\..\SKA\include\Animation\MultiSequenceController.h">
       <Filter>Animation\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\RawMotionController.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Animation\SkeletonDefinition.h">
-      <Filter>Animation\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\SKA\include\Camera\Camera.h">
       <Filter>Camera\Header FIles</Filter>
     </ClInclude>
@@ -190,9 +154,6 @@
       <Filter>Core\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\Core\BasicException.h">
-      <Filter>Core\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Core\DOF.h">
       <Filter>Core\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\Core\SystemConfiguration.h">
@@ -204,9 +165,6 @@
     <ClInclude Include="..\..\SKA\include\Core\SystemTimer.h">
       <Filter>Core\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\SKA\include\Core\TriFace.h">
-      <Filter>Core\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\SKA\include\Core\Utilities.h">
       <Filter>Core\Header Files</Filter>
     </ClInclude>
@@ -214,9 +172,6 @@
       <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\DataManagement\AMC_Writer.h">
-      <Filter>DataManagement\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\DataManagement\ASF_AMC_ParseUtils.h">
       <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\DataManagement\ASF_Reader.h">
@@ -228,15 +183,6 @@
     <ClInclude Include="..\..\SKA\include\DataManagement\BVH_Reader.h">
       <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\SKA\include\DataManagement\Database.h">
-      <Filter>DataManagement\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\DataManagement\DatabaseLoader.h">
-      <Filter>DataManagement\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\DataManagement\DataIndex.h">
-      <Filter>DataManagement\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\SKA\include\DataManagement\DataManagementException.h">
       <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
@@ -244,9 +190,6 @@
       <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\DataManagement\FileSystem.h">
-      <Filter>DataManagement\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SKA\include\DataManagement\LineScanner.h">
       <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP.h">
@@ -335,6 +278,24 @@
     </ClInclude>
     <ClInclude Include="..\..\SKA\include\Models\SphereModels.h">
       <Filter>Models\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\ParsingUtilities.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\RawMotionController.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\Skeleton.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Animation\Bone.h">
+      <Filter>Animation\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\SKS_ReaderWriter.h">
+      <Filter>DataManagement\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SKA\include\DataManagement\SKM_ReaderWriter.h">
+      <Filter>DataManagement\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

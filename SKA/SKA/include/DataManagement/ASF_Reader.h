@@ -11,34 +11,24 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef ASF_READER_DOT_H
 #define ASF_READER_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "DataManagement/LineScanner.h"
-#include "DataManagement/ASF_AMC_ParseUtils.h"
-#include "Animation/SkeletonDefinition.h"
+#include <Core/SystemConfiguration.h>
+#include <DataManagement/ParsingUtilities.h>
+#include <Animation/Skeleton.h>
 
-class ASF_Reader
+class ASF_Reader_Local;
+
+class SKA_LIB_DECLSPEC ASF_Reader
 {
 public:
-	ASF_Reader() : skeleton(NULL), ASF_angles_are_degrees(true) { }
-	SkeletonDefinition* readASF(const char* inputFilename);
+	ASF_Reader();
+	~ASF_Reader();
+	Skeleton* readASF(const char* inputFilename);
 private:
-	SkeletonDefinition* skeleton;
-	bool ASF_angles_are_degrees;
-
-	bool processComment(LineScanner& line_scanner, string& line);
-	bool processVersionSection(LineScanner& line_scanner, string& line);
-	bool processNameSection(LineScanner& line_scanner, string& line);
-	bool processUnitsSection(LineScanner& line_scanner, string& line);
-	bool processDocumentationSection(LineScanner& line_scanner, string& line);
-	bool processRootSection(LineScanner& line_scanner, string& line);
-	bool processBonedataSection(LineScanner& line_scanner, string& line);
-	bool processHierarchySection(LineScanner& line_scanner, string& line);
-
-	bool processBone(LineScanner& line_scanner);
+	ASF_Reader_Local* local_reader;
 };
 
 #endif

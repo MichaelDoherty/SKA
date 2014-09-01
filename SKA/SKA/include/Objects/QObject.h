@@ -11,15 +11,15 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef QOBJECT_DOT_H
 #define QOBJECT_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "Objects/Object.h"
-#include "Math/Quaternion.h"
+#include <Core/SystemConfiguration.h>
+#include <Objects/Object.h>
+#include <Math/Quaternion.h>
 
-class QObject : public Object
+class SKA_LIB_DECLSPEC QObject : public Object
 {
 public:
 	QObject() : Object() { }

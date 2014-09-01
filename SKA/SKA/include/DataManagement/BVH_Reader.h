@@ -11,16 +11,15 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef BVH_READER_DOT_H
 #define BVH_READER_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "DataManagement/LineScanner.h"
-#include "DataManagement/ASF_AMC_ParseUtils.h"
-#include "Animation/SkeletonDefinition.h"
-#include "Animation/MotionSequence.h"
-#include "Core/Array2D.h"
+#include <Core/SystemConfiguration.h>
+#include <DataManagement/ParsingUtilities.h>
+#include <Animation/Skeleton.h>
+#include <Animation/MotionSequence.h>
+#include <Core/Array2D.h>
 
 #include <list>
 #include <vector>
@@ -32,12 +31,7 @@ class SKA_LIB_DECLSPEC BVH_Reader
 public:
 	BVH_Reader();
 	virtual ~BVH_Reader();
-	pair<SkeletonDefinition*, MotionSequence*> readBVH(const char* inputFilename);
-
-	// HACK! This scales bones as they are read from the BVH. 
-	// It would probably be cleaner if bones were scaled in the resulting skeleton later.
-	float size_scale;
-	void setSizeScale(float s) { size_scale = s; }
+	pair<Skeleton*, MotionSequence*> readBVH(const char* inputFilename);
 };
 
 #endif

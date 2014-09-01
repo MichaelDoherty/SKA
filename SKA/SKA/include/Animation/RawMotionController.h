@@ -12,15 +12,15 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef RAWMOTIONCONTROLLER_DOT_H
 #define RAWMOTIONCONTROLLER_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "Animation/MotionController.h"
-#include "Animation/MotionSequence.h"
+#include <Core/SystemConfiguration.h>
+#include <Animation/MotionController.h>
+#include <Animation/MotionSequence.h>
 
-class RawMotionController : public MotionController
+class SKA_LIB_DECLSPEC RawMotionController : public MotionController
 {
 public:
 	RawMotionController() 
@@ -35,6 +35,10 @@ public:
 	virtual float getValue(CHANNEL_ID _channel, float _time);
 
 	virtual bool isValidChannel(CHANNEL_ID _channel);
+	virtual bool isValidChannel(CHANNEL_ID _channel, float _time)
+	{
+		return isValidChannel(_channel);
+	}
 
 	virtual float getValueByFrame(CHANNEL_ID _channel, int _frame);
 	virtual int numFrames() { return motion_sequence->numFrames(); }

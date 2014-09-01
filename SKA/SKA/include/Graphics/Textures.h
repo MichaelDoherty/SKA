@@ -11,48 +11,47 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef TEXTURES_DOT_H
 #define TEXTURES_DOT_H
-#include "Core/SystemConfiguration.h"
-#include <string>
+#include <Core/SystemConfiguration.h>
 #include <vector>
 using namespace std;
-#include "Core/BasicException.h"
+#include <Core/BasicException.h>
+#include <Core/Utilities.h>
 
-class TextureException : public BasicException
+class SKA_LIB_DECLSPEC TextureException : public BasicException
 {
 public:
-	TextureException() : BasicException(string("undefined exception")) { }
-	TextureException(const string& _msg) : BasicException(_msg) { }
+	TextureException() : BasicException("Unspecified Texture exception") { }
+	TextureException(const char* _msg) : BasicException(_msg) { }
+	TextureException(const TextureException& _other) : BasicException(_other) { }
 };
 
-const short MAX_TEXTURES = 100;
 typedef unsigned short TextureId;
 typedef short TextureIndex;
 
-class Texture
+class SKA_LIB_DECLSPEC Texture
 {
 private:
 	TextureId id; 
-	string filename;
+	char* filename;
 public:
 	Texture(TextureId _id, char* _file)
-		: id(_id), filename(_file)
+		: id(_id), filename(NULL)
 	{
+		filename = strClone(_file);
 	}
-	virtual ~Texture() { }
+	virtual ~Texture() { strDelete(filename); }
 	TextureId getId() { return id; }
 	string getFilename() { return filename; }
 };
 
-class TextureManager
+class SKA_LIB_DECLSPEC TextureManager
 {
 private:
-	Texture* textures[MAX_TEXTURES];
-	vector<char*> filepaths;
-	bool opengl_initialized;
+	struct TextureManagerData* data;
 public:
 	TextureManager();
 	virtual ~TextureManager();
@@ -64,8 +63,6 @@ public:
 	void disableTextures();
 };
 
-extern TextureManager texture_manager;
-
-SKA_LIB_DECLSPEC void addTextureFilepath(char* filepath);
+SKA_LIB_DECLSPEC extern TextureManager texture_manager;
 
 #endif

@@ -11,14 +11,13 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Animation/Blender.h"
-#include "Core/SystemLog.h"
+#include <Core/SystemConfiguration.h>
+#include <Animation/Blender.h>
+#include <Core/SystemLog.h>
 
 static const short MAX_INPUT_CHANNELS = 40;
-Blender blender;
 
 MotionSequence* Blender::blend(MOTION_BLEND_SPEC& spec)
 {
@@ -57,7 +56,7 @@ MotionSequence* Blender::blend(MOTION_BLEND_SPEC& spec)
 				for (j=0; j<cblend.inputs.size(); j++)
 				{
 					// FIXIT! need to interpolate
-					short cframe = short((frame-cblend.start_frame) * warp[j])
+					long cframe = short((frame-cblend.start_frame) * warp[j])
 						+ cblend.inputs[j].start_frame;
 					if (cframe >= cblend.inputs[j].ms->numFrames())
 						cframe = cblend.inputs[j].ms->numFrames()-1;

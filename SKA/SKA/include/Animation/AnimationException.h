@@ -11,18 +11,19 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef ANIMATIONEXCEPTION_DOT_H
 #define ANIMATIONEXCEPTION_DOT_H
-
-#include "Core/BasicException.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/BasicException.h>
 
 class SKA_LIB_DECLSPEC AnimationException : public BasicException
 {
 public:
-	AnimationException() : BasicException(string("Unspecified Animation exception")) { }
-	AnimationException(const string& _msg) : BasicException(_msg) { }
+	AnimationException() : BasicException("Unspecified Animation exception") { }
+	AnimationException(const char* _msg) : BasicException(_msg) { }
+	AnimationException(const AnimationException& _other) : BasicException(_other) { }
 };
 
 #endif

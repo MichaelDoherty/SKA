@@ -11,22 +11,21 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "DataManagement/ASF_Writer.h"
-#include "DataManagement/FileSystem.h"
-#include "Animation/SkeletonDefinition.h"
-#include "Core/DOF.h"
-#include "Core/Utilities.h"
+#include <Core/SystemConfiguration.h>
+#include <DataManagement/ASF_Writer.h>
+#include <DataManagement/FileSystem.h>
+#include <Animation/Skeleton.h>
+#include <Core/Utilities.h>
 #include <fstream>
 using namespace std;
 
 bool ASF_Writer::writeASF(const char* outputFilename,
-		SkeletonDefinition* skeleton,
+		Skeleton* skeleton,
 		bool overwrite)
 {
-	if (!overwrite && FileSystem::fileExists(string(outputFilename))) 
+	if (!overwrite && FileSystem::fileExists(outputFilename))
 		return false;
 
 	ofstream ofs (outputFilename);
@@ -56,120 +55,132 @@ bool ASF_Writer::writeASF(const char* outputFilename,
 	//   orientation 0 0 0 
 	ofs << ":root" << endl;
 
-	short root_id = skeleton->boneIdFromName(string("root"));
-	BoneDefinition* root_bone = skeleton->getBoneDescription(root_id);
+	short root_id = skeleton->boneIdFromName("root");
+	Bone* root_bone = skeleton->getBone(root_id);
 	ofs << "   order ";
 	for (int d=0; d<6; d++)
 	{
-		switch (root_bone->channel_order[d])
+		switch (root_bone->getChannelOrder(d))
 		{
-		case DOF_X: ofs << "TX "; break;
-		case DOF_Y: ofs << "TY "; break;
-		case DOF_Z: ofs << "TZ "; break;
-		case DOF_PITCH: ofs << "RX "; break;
-		case DOF_YAW: ofs << "RY "; break;
-		case DOF_ROLL: ofs << "RZ "; break;
-		case DOF_INVALID: ofs << "INVALID "; break;
+		case CT_TX: ofs << "TX "; break;
+		case CT_TY: ofs << "TY "; break;
+		case CT_TZ: ofs << "TZ "; break;
+		case CT_RX: ofs << "RX "; break;
+		case CT_RY: ofs << "RY "; break;
+		case CT_RZ: ofs << "RZ "; break;
+		default: ofs << "INVALID "; break;
 		}
 	}
 	ofs << endl << "   axis ";
 	for (int d=0; d<3; d++)
 	{
-		switch (root_bone->axis_order[d])
+		switch (root_bone->getAxisOrder(d))
 		{
-		case DOF_PITCH: ofs << "X "; break;
-		case DOF_YAW: ofs << "Y "; break;
-		case DOF_ROLL: ofs << "Z "; break;
-		case DOF_X:
-		case DOF_Y:
-		case DOF_Z:
-		case DOF_INVALID: break;
+		case CT_RX: ofs << "X "; break;
+		case CT_RY: ofs << "Y "; break;
+		case CT_RZ: ofs << "Z "; break;
+		default: break;
 		}
 	}	
 	ofs << endl;
+	Vector3D initposition = skeleton->getRootPosition();
+	Vector3D initorientation = skeleton->getRootOrientation();
 	ofs << "   position " << 
-		skeleton->init_root_position.x << " " << 
-		skeleton->init_root_position.y << " " << 
-		skeleton->init_root_position.z << endl;
+		initposition.x << " " << 
+		initposition.y << " " << 
+		initposition.z << endl;
 	ofs << "   orientation " << 
-		skeleton->init_root_orientation.pitch << " " << 
-		skeleton->init_root_orientation.yaw << " " << 
-		skeleton->init_root_orientation.roll << endl;
+		initorientation.pitch << " " << 
+		initorientation.yaw << " " << 
+		initorientation.roll << endl;
 
 	ofs << ":bonedata" << endl;
 	for (int bone_id=0; bone_id<skeleton->numBones(); bone_id++)
 	{
 		string bone_name = skeleton->boneNameFromId(bone_id);
 		if (bone_name == string("root")) continue;
-		BoneDefinition* bone = skeleton->getBoneDescription(bone_id);
+		Bone* bone = skeleton->getBone(bone_id);
 		ofs << "  begin" << endl;
 		
 		ofs << "     id " << bone_id << endl;
 		ofs << "     name " << bone_name << endl;
+		Vector3D bone_direction = bone->getDirection();
 		ofs << "     direction " 
-			<< bone->direction.x << " " 
-			<< bone->direction.y << " " 
-			<< bone->direction.z << endl;
-		ofs << "     length " << bone->length << endl;
+			<< bone_direction.x << " " 
+			<< bone_direction.y << " " 
+			<< bone_direction.z << endl;
+		ofs << "     length " << bone->getLength() << endl;
 		ofs << "     axis ";
 		for (int d=0; d<3; d++)
 		{
-			switch (bone->axis_order[d])
+			switch (bone->getAxisOrder(d))
 			{
-			case DOF_PITCH: ofs << rad2deg(bone->axis.pitch) << " "; break;
-			case DOF_YAW: ofs << rad2deg(bone->axis.yaw) << " "; break;
-			case DOF_ROLL: ofs << rad2deg(bone->axis.roll) << " "; break;
-			case DOF_X:
-			case DOF_Y:
-			case DOF_Z:
-			case DOF_INVALID: break;
+			case CT_RX: ofs << rad2deg(bone->getAxis().pitch) << " "; break;
+			case CT_RY: ofs << rad2deg(bone->getAxis().yaw) << " "; break;
+			case CT_RZ: ofs << rad2deg(bone->getAxis().roll) << " "; break;
+			default: break;
 			}
 		}
 		ofs << " ";
 		for (int d=0; d<3; d++)
 		{
-			switch (bone->axis_order[d])
+			switch (bone->getAxisOrder(d))
 			{
-			case DOF_PITCH: ofs << "X"; break;
-			case DOF_YAW: ofs << "Y"; break;
-			case DOF_ROLL: ofs << "Z"; break;
-			case DOF_X:
-			case DOF_Y:
-			case DOF_Z:
-			case DOF_INVALID: break;
+			case CT_RX: ofs << "X"; break;
+			case CT_RY: ofs << "Y"; break;
+			case CT_RZ: ofs << "Z"; break;
+			default: break;
 			}
 		}
 		ofs << endl;
-		if (bone->channel_order[0] != DOF_INVALID)
+		if (bone->getChannelOrder(0) != CT_INVALID)
 		{
 			// "dof" and "limits" lines only when bone has valid DOF
 			ofs << "     dof ";
 			for (int d=0; d<6; d++)
 			{
-				if (bone->channel_order[d] != DOF_INVALID) 
-					ofs << bone->channel_order[d] << " ";
+				if (bone->getChannelOrder(d) != CT_INVALID) 
+				{
+					switch (bone->getChannelOrder(d))
+					{
+					case CT_TX: ofs << "TX"; break;
+					case CT_TY: ofs << "TY"; break;
+					case CT_TZ: ofs << "TZ"; break;
+					case CT_RX: ofs << "RX"; break;
+					case CT_RY: ofs << "RY"; break;
+					case CT_RZ: ofs << "RZ"; break;
+					case CT_QW: ofs << "QW"; break;
+					case CT_QX: ofs << "QX"; break;
+					case CT_QY: ofs << "QY"; break;
+					case CT_QZ: ofs << "QZ"; break;
+					default: ofs << "--"; break;
+					}
+					ofs << " ";
+				}
 			}
 			ofs << endl;
 			ofs << "     limits ";
 			for (int d=0; d<6; d++)
 			{
-				if (bone->channel_order[d] != DOF_INVALID) 
+				if (bone->getChannelOrder(d) != CT_INVALID) 
 				{
 					if (d>0) ofs << "            ";
 					int d2 = 0;
-					switch (bone->channel_order[d])
+					switch (bone->getChannelOrder(d))
 					{
-					case DOF_PITCH: d2 = 3; break;
-					case DOF_YAW: d2 = 4; break;
-					case DOF_ROLL: d2 = 5; break;
-					case DOF_X:
-					case DOF_Y:
-					case DOF_Z:
-					case DOF_INVALID: break;
+					case CT_RX: d2 = 3; break;
+					case CT_RY: d2 = 4; break;
+					case CT_RZ: d2 = 5; break;
+					default: break;
 					}
-					ofs << "(" 
-						<< rad2deg(bone->dof[d2].min) << "," 
-						<< rad2deg(bone->dof[d2].max) << ")" <<  endl;
+					ofs << "(";
+					if (bone->getChannelLowerLimit(d2) == -1.0f*FLT_MAX) ofs << "-inf";
+					else ofs << rad2deg(bone->getChannelLowerLimit(d2));
+					ofs << " ";
+					if (bone->getChannelUpperLimit(d2) == FLT_MAX) ofs << "inf";
+					else ofs << rad2deg(bone->getChannelUpperLimit(d2)); 
+					ofs << ")";
+					ofs <<  endl;
 				}
 					
 			}
@@ -182,11 +193,12 @@ bool ASF_Writer::writeASF(const char* outputFilename,
 	for (int bone_id=0; bone_id<skeleton->numBones(); bone_id++)
 	{
 		string bone_name = skeleton->boneNameFromId(bone_id);
-		list<pair<string,string> >::iterator iter = skeleton->connections.begin();
+		list<pair<char*,char*> > connections = skeleton->getConnections();
+		list<pair<char*,char*> >::iterator iter = connections.begin();
 		int count = 0;
-		while (iter != skeleton->connections.end())
+		while (iter != connections.end())
 		{
-			if ((*iter).first == bone_name)
+			if (strcmp((*iter).first, bone_name.c_str()) == 0)
 			{
 				if (count == 0) ofs << "    " << bone_name << " ";
 				count++;

@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------------
-// app0003: Adds a second character, defined and controlled by a BVH file.
+// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.h
-//    Object that is the interface to the animation subsystem.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
+//    animation controller for multiple characters.
 //-----------------------------------------------------------------------------
 #ifndef ANIMATIONCONTROL_DOT_H
 #define ANIMATIONCONTROL_DOT_H
@@ -15,29 +13,23 @@
 #include <vector>
 using namespace std;
 // SKA modules
-#include <Animation/Character.h>
 #include <Objects/Object.h>
+
+class Skeleton;
 
 struct AnimationControl
 {
 private:
 	bool ready;
 	float run_time;
-	vector<Character*> characters;
+	vector<Skeleton*> characters;
 	// flags to control animation
 	bool single_step;
 	bool freeze;
 	float time_warp;
 public:
-	AnimationControl() : ready(false), run_time(0.0f), 
-		single_step(false), freeze(false), time_warp(1.0f)
-	{ } 
-	virtual ~AnimationControl()	
-	{		
-		for (unsigned short c=0; c<characters.size(); c++)
-			if (characters[c]->skeleton != NULL)  
-				delete characters[c]; 
-	}
+	AnimationControl();
+	virtual ~AnimationControl();
 
 	// loadCharacters() sets up the characters and their motion control.
 	// It places all the bone objects for each character into the render list,

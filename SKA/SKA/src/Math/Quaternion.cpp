@@ -19,11 +19,11 @@
 // Original file name: IvQuat.{h,cpp}
 // Original code: Copyright (C) 2004 by Elsevier, Inc. All rights reserved.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Core/SystemLog.h"
-#include "Math/Quaternion.h"
+#include <Core/SystemConfiguration.h>
+#include <Core/SystemLog.h>
+#include <Math/Quaternion.h>
 #include <iomanip>
 using namespace std;
 
@@ -186,7 +186,7 @@ void Quaternion::set( const Vector3D& from, const Vector3D& to )
 {
     // Ensure that our vectors are unit
     if (!from.isUnit() || !to.isUnit()) 
-		throw MathException(string("non-unit vector passed to Quaternion::Set()"));
+		throw MathException("non-unit vector passed to Quaternion::Set()");
     // get axis of rotation
     Vector3D axis = from.cross( to );
     // get cos of angle between vectors
@@ -309,7 +309,7 @@ Quaternion inverse( const Quaternion& quat )
     // if we're the zero quaternion, just return identity
     if (isZero(norm))
     {
-		throw MathException(string("zero quaternion passed to Quaternion::Rotate()"));
+		throw MathException("zero quaternion passed to Quaternion::Rotate()");
         return Quaternion();
     }
 
@@ -422,7 +422,7 @@ float dot( const Quaternion& quat1, const Quaternion& quat2 )
 // Rotate vector by quaternion - assumes quaternion is normalized!
 Vector3D Quaternion::rotate( const Vector3D& vector ) const
 {
-    if (!isUnit()) throw MathException(string("non-unit vector passed to Quaternion::Rotate()"));
+    if (!isUnit()) throw MathException("non-unit vector passed to Quaternion::Rotate()");
 
     float pMult = w*w - x*x - y*y - z*z;
     float vMult = 2.0f*(x*vector.x + y*vector.y + z*vector.z);

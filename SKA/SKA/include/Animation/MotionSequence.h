@@ -12,192 +12,110 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef MOTIONSEQUENCE_DOT_H
 #define MOTIONSEQUENCE_DOT_H
-#include "Core/SystemConfiguration.h"
-#include <vector>
-using namespace std;
-#include "Math/Math.h"
-#include "Core/Array2D.h"
-#include "Animation/SkeletonDefinition.h"
-#include "Animation/Channel.h"
-#include "Signals/SignalSpec.h"
-#include "Signals/Signals.h"
-#include "Core/SystemLog.h"
+#include <Core/SystemConfiguration.h>
+#include <Math/Math.h>
+#include <Core/Array2D.h>
+#include <Animation/Skeleton.h>
+#include <Animation/Channel.h>
+#include <Core/SystemLog.h>
 
-class AnimSkeleton;
 class ChannelMap;
 
 class SKA_LIB_DECLSPEC MotionSequence
 {
-	friend ostream& operator<<(ostream& out, MotionSequence& ms);
-	friend class FFTfilter;
-	friend class DatabaseLoader;
+	SKA_LIB_DECLSPEC friend ostream& operator<<(ostream& out, MotionSequence& ms);
 
 private:
-	string motion_id;
-	string documentation;
-	string source;
+	char* motion_id;
+	char* documentation;
+	char* source;
 
-	ChannelMap* channel_index;
+	ChannelMap* channel_map;
 	Array2D<float> data;
-	int num_frames;
+	long num_frames;
 	float frame_rate;  // frames / sec
 	float duration;    // total time of sequence in seconds
-	bool data_is_deltas;
 
-	// FIXIT! This should be handled by a subclass
-	/*
-	bool has_generators;
-	bool use_generators;
-	map<CHANNEL_ID, vector<SignalSpec> > generator_specs;
-	map<CHANNEL_ID, SignalGenerator*> generators;
-	*/
 public:
 
+// ----------- construction methods -----------------
 	MotionSequence();
 	MotionSequence(const MotionSequence& rhs);
 	virtual ~MotionSequence();
-
 	void clear();
 
-	bool analyzeSignals();
-	/*
-	float getGeneratedValue(CHANNEL_ID c, int frame);
-	void printGenerators(ostream& out);
-	bool hasGenerators() { return has_generators; }
-	bool enableGenerators()
-	{ 
-		if (!has_generators) return false; 
-		use_generators = true;
-		return true;
-	}
-	void disableGenerators()
-	{ 
-		use_generators = false;
-	}
-	*/
-	bool convertData(Array2D<float>& amc_data, SkeletonDefinition* skeleton);
-	bool copyDataWithoutConversion(Array2D<float>& bvh_data);
+	// bulkBuild: (re)constructs this motion sequence.
+	//   Any previous channel map or data is erased.
+	//   The channel map is built from _cid array.
+	//   Columns in _raw_data are assumed to match the channel indexes in _cid array
+	void bulkBuild(CHANNEL_ID* _cid, short _num_channels, Array2D<float>& _raw_data);
 
-	int numFrames()
-	{
-		return num_frames; 
-	}
+	// bulkLoad: replaces the data in this motion sequence with _raw_data.
+	//   FAILURE PRONE: There are no checks to see that the new data is properly sized.
+	//   to match the configuration of this motion sequence.
+	//   Previous channel map is preserved.
+	void bulkLoad(Array2D<float>& _raw_data);
 
-	int numChannels();
-
-	short addChannel(CHANNEL_ID& channel);
-
-	void buildChannelsFromSkeleton(SkeletonDefinition* skeleton);
+	// bulkLoad: replaces the data in this motion sequence with _raw_data.
+	//   FAILURE PRONE: There are no checks to see that the new data is properly sized.
+	//   to match the configuration of this motion sequence.
+	//   Previous channel map is preserved.
+	void bulkLoad(long _rows, long _columns, void* _raw_data);
 	
+	// following methods are only used by the Blender class. 
+	// addChannel creates an index for a channel, but does not currently create storage space for the channel
+	// adjustStorage resizes the Array2D, wiping out any data
+	short addChannel(CHANNEL_ID& channel);
 	void adjustStorage();
+	void removeChannel(CHANNEL_ID& channel);
 
-	string getId() { return motion_id; }
-	void setId(string& _id) { motion_id = _id; }
+// ----------- modifier methods -----------------
+	void setId(char* _id);
+	void clearDocumentation();
+	void addDocumentation(const char* d);
+	void setSource(const char* s);
+	void setFrameRate(float f);
+	void setNumFrames(long n);
+	void scaleChannel(CHANNEL_ID channel, float scale);
+	void setValue(CHANNEL_ID channel, long frame, float value);
+	void setValue(short channel_index, long frame, float value);
 
-	void clearDocumentation() { documentation = string(""); }
-	void addDocumentation(const string& d) { documentation += d; }
-	string getDocumentation() { return documentation; }
-
-	void setSource(const string& s) { source = s; }
-	string getSource() { return source; }
-
-	float getDuration() 
-	{ 
-		return duration; 
-	}
-
-	void setFrameRate(float f) 
-	{ 
-		frame_rate = f; 
-		duration = num_frames/frame_rate;
-	}
-
-	void setNumFrames(short n);
-
-	float getFrameRate() 
-	{ 
-		return frame_rate; 
-	}
+// ----------- accessor methods -----------------
+	long numFrames()	{ return num_frames; }
+	short numChannels();
+	char* getId() { return motion_id; }
+	char* getDocumentation() { return documentation; }
+	char* getSource() { return source; }
+	float getDuration() { return duration; }
+	float getFrameRate() { return frame_rate; }
 
 	bool isValidChannel(CHANNEL_ID& c);
+	short getChannelIndex(CHANNEL_ID& c);
+	CHANNEL_ID getChannelID(short channel_index);
 
-	int getChannelIndex(CHANNEL_ID& c);
-	
+	short getChannelIndexSize();
+	float* getChannelPtr(CHANNEL_ID& c);
+	float* getChannelPtr(short _channel_index);
+	float getValue(CHANNEL_ID c, long frame);
+
+	// specialty functions for extracting from a motion sequence
+	bool extractAngleMatrix(Array2D<float>& amat);
+
+	// needs to be reimplemented
+	//MotionSequence* extractMotionSegment(int i, int j, Skeleton* skeleton);
+
+// ----------- debugging methods -----------------
+	void dumpChannelList(ostream& ostr);
+
+private:
 	// get the first num_channels channels
 	// channels is assumed to be large enough to hold num_channels channels
 	// returns number of channels actually retrieved, which may be <= num_channels
 	short getChannelList(CHANNEL_ID* channels, short num_channels);
-
-	int getChannelIndexSize();
-
-	void dumpChannelList(ostream& ostr, AnimSkeleton* skel);
-
-	float* getChannelPtr(CHANNEL_ID& c);
-
-	bool isDeltaData() 
-	{ 
-		return data_is_deltas; 
-	}
-
-	bool isAbsoluteData() 
-	{ 
-		return !data_is_deltas; 
-	}
-
-	float getValue(CHANNEL_ID c, int frame)
-	{
-		short i = getChannelIndex(c);
-		if (i < 0) return 0.0f;
-		/*
-		//if (use_generators && (i>5)) 
-		if (use_generators) 
-		{
-			if (c.bone_id == 2)
-				logout << c.bone_id << " " << c.dof_id << " " << frame
-					<< " " << getGeneratedValue(c, frame) << " " << data.element(frame, i) << endl;
-			return getGeneratedValue(c, frame);
-		}
-		*/
-		return data.element(frame, i);
-	}
-
-	void setValue(CHANNEL_ID c, int frame, float value)
-	{
-		short i = getChannelIndex(c);
-		if (i < 0) return; // FIXIT! throw exception
-		data.element(frame, i) = value;
-	}
-
-	void setValueByChannelIndex(int c, int frame, float value)
-	{
-		data.element(frame, c) = value;
-	}
-
-	bool extractAngleMatrix(Array2D<float>& amat);
-
-	/*
-	CHANNEL_ID makeChannelId(string bone_name, DOF_ID d)
-	{
-		// FIXIT! This does nothing at the moment
-		//return channel_index.makeChannelId(bone_name, d);
-		return CHANNEL_ID();
-	}
-	*/
-
-	// computeDeltas creates sets the current MotionSequence (*this) to
-	// be computed from the frame deltas of the parameter motion.
-	void computeDeltas(MotionSequence& motion);
-
-	void scaleChannel(CHANNEL_ID channel, float scale);
-
-	MotionSequence* extractMotionSegment(int i, int j, SkeletonDefinition* skeleton);
-
 };
-
-ostream& operator<<(ostream& out, MotionSequence& ms);
 
 #endif

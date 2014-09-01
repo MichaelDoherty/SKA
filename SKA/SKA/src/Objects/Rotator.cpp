@@ -11,10 +11,10 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Objects/Rotator.h"
+#include <Core/SystemConfiguration.h>
+#include <Objects/Rotator.h>
 
 static Vector3D x_axis(1.0f, 0.0f, 0.0f);
 static Vector3D y_axis(0.0f, 1.0f, 0.0f);
@@ -46,7 +46,7 @@ void Rotator::rotate(const Quaternion& q)
 void Rotator::resetOrientation(const Quaternion& q)
 {
 	qrot = q;
-	// make sure the quaternion is normalize
+	// make sure the quaternion is normalized
 	qrot.normalize();
 }
 

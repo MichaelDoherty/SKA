@@ -1,0 +1,8 @@
+#! base pose for IK test arm
+:FULLY-SPECIFIED
+:DEGREES
+1
+root  0 10 0 0 0
+bone1 0 0 0
+bone2 0 0 0
+bone3 0 0 0

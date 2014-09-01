@@ -11,61 +11,71 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Objects/BoneSequence.h"
-#include "Objects/BoneObject.h"
-#include "Core/SystemLog.h"
+#include <Core/SystemConfiguration.h>
+#include <vector>
+using namespace std;
+#include <Objects/BoneSequence.h>
+#include <Objects/BoneObject.h>
+#include <Core/SystemLog.h>
+#include <Models/ModelFactory.h>
+
+struct BoneStore {
+	vector<BoneObject*> bones;
+};
 
 BoneSequence::BoneSequence()
 {
+	bone_store = new BoneStore;
 }
 	
 BoneSequence::~BoneSequence()
 {
-	for (unsigned int b=0; b<bones.size(); b++)
+	for (unsigned int b=0; b<bone_store->bones.size(); b++)
 	{
-		if (bones[b] != NULL) delete bones[b];
+		if (bone_store->bones[b] != NULL) delete bone_store->bones[b];
 	}
+	delete bone_store;
 }
+
+int BoneSequence::numBones() { return bone_store->bones.size(); }
 
 void BoneSequence::addBone(float _length)
 {
-	ModelSpecification bonespec;
-	bonespec.model_name = "Bone";
-	if (bones.size() == 0) bonespec.color = Color(1.0f, 0.0f, 1.0f);
-	else bonespec.color = Color(1.0f, 0.7f, 0.0f);
+	Color bonecolor = Color(1.0f, 0.7f, 0.0f);
+	if (bone_store->bones.size() == 0) bonecolor = Color(1.0f, 0.0f, 1.0f);
+	ModelSpecification bonespec("Bone", bonecolor);
 	BoneObject* newbone = new BoneObject(bonespec,
 			Vector3D(0.0f, 0.0f, 0.0f), 
 			Vector3D(0.0f, 0.0f, 0.0f));
 	newbone->setLength(_length);
 	newbone->drawAsMesh();
-	bones.push_back(newbone);
+	bone_store->bones.push_back(newbone);
 }
 
 Vector3D BoneSequence::getAngles(int bone_index)
 {
-	return bones[bone_index]->currRotation();
+	return bone_store->bones[bone_index]->currRotation();
 }
 
 void BoneSequence::setAngles(int bone_index, const Vector3D& angles)
 {
-	bones[bone_index]->rotateTo(angles);
+	bone_store->bones[bone_index]->rotateTo(angles);
 }
 
 Vector3D BoneSequence::getEndpoint(int bone_index)
 {
-	return bones[bone_index]->getEndpoint();
+	return bone_store->bones[bone_index]->getEndpoint();
 }
 
 
 void BoneSequence::render(Matrix4x4& world_xform)
 {
-	for (unsigned int b=0; b<bones.size(); b++)
+	for (unsigned int b=0; b<bone_store->bones.size(); b++)
 	{
 		Matrix4x4 xform;
-		bones[b]->render(xform);
+		bone_store->bones[b]->render(xform);
 	}
 }
 
@@ -74,12 +84,12 @@ void BoneSequence::updateState(float time_delta)
 	Vector3D prev_endpoint(0.0f, 0.0f, 0.0f);
 	Matrix4x4 global_xform = Matrix4x4::identity();
 
-	for (unsigned int b=0; b<bones.size(); b++)
+	for (unsigned int b=0; b<bone_store->bones.size(); b++)
 	{
-		Vector3D bone_angles = bones[b]->currRotation();
+		Vector3D bone_angles = bone_store->bones[b]->currRotation();
 		Matrix4x4 r_xform = Matrix4x4::rotationRPY(bone_angles);
 				
-		Vector3D bone_translation(0.0f,0.0f,bones[b]->currLength());
+		Vector3D bone_translation(0.0f,0.0f,bone_store->bones[b]->currLength());
 		Matrix4x4 t_xfrom = Matrix4x4::translationXYZ(bone_translation);
 			
 		Matrix4x4 bone_xform = r_xform * t_xfrom;
@@ -87,7 +97,7 @@ void BoneSequence::updateState(float time_delta)
 
 		Vector3D startpoint = prev_endpoint;
 		Vector3D endpoint(global_xform.m[12], global_xform.m[13], global_xform.m[14]);
-		bones[b]->setEndpoints(startpoint, endpoint);
+		bone_store->bones[b]->setEndpoints(startpoint, endpoint);
 		prev_endpoint = endpoint;
 	
 	}

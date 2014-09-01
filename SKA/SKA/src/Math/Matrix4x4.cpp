@@ -14,11 +14,11 @@
 // Some code in this file is derived from the works attributed below.
 // Use of this code may be restricted by their ownership.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Math/Matrix4x4.h"
-#include "Math/Quaternion.h"
+#include <Core/SystemConfiguration.h>
+#include <Math/Matrix4x4.h>
+#include <Math/Quaternion.h>
 
 //-----------------------------------------------------------------------------
 // Method Matrix4x4::rotationFromQuaternion() is based on code supplied with 
@@ -46,7 +46,7 @@ ostream& operator<<(ostream& out, Matrix4x4& m)
 Matrix4x4 Matrix4x4::rotationFromQuaternion(const Quaternion& q)
 {
 	if (!q.isUnit())
-		throw MathException(string("non-unit quaternion passed to Matrix4x4::rotationFromQuaternion()"));
+		throw MathException("non-unit quaternion passed to Matrix4x4::rotationFromQuaternion()");
 
 	Matrix4x4 m;
     float xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;

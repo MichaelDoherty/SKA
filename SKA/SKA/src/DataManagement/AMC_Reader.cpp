@@ -11,30 +11,30 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cstdlib>
-#include "DataManagement/AMC_Reader.h"
-#include "DataManagement/ASF_AMC_ParseUtils.h"
-#include "Core/Array2D.h"
-#include "Animation/SkeletonDefinition.h"
-#include "Animation/MotionSequence.h"
+#include <DataManagement/AMC_Reader.h>
+#include <DataManagement/ParsingUtilities.h>
+#include <Core/Array2D.h>
+#include <Animation/Skeleton.h>
+#include <Animation/MotionSequence.h>
 	
-MotionSequence* AMC_Reader::readAMC(const char* motionFilename, SkeletonDefinition* skeleton)
+MotionSequence* AMC_Reader::readAMC(const char* motionFilename, Skeleton* skeleton)
 {
 	string line;
 
 	// read once, just to get the number of frames
 	LineScanner line_scanner1(motionFilename);
-	if (!line_scanner1.fileIsOpen()) return false;
+	if (!line_scanner1.fileIsOpen()) return NULL;
 	int frame_count = 0;
 	while (line_scanner1.getNextLine(line))
 	{
 		int frame;
-		if (AAPU::linePrefix(line, string("#"))) continue;
-		if (AAPU::lineIsEmpty(line)) continue;
-		if (AAPU::lineIsSingleInt(line, frame))
+		if (ParsingUtilities::linePrefix(line, string("#"))) continue;
+		if (ParsingUtilities::lineIsEmpty(line)) continue;
+		if (ParsingUtilities::lineIsSingleInt(line, frame))
 			frame_count = frame;	
 	}
 	line_scanner1.close();
@@ -49,32 +49,48 @@ MotionSequence* AMC_Reader::readAMC(const char* motionFilename, SkeletonDefiniti
 	int frame;
 
 	LineScanner line_scanner2(motionFilename);
-	if (!line_scanner2.fileIsOpen()) return false;
+	if (!line_scanner2.fileIsOpen()) return NULL;
 	while (line_scanner2.getNextLine(line))
 	{
-		if (AAPU::linePrefix(line, string("#"))) 
-			processComment(line_scanner2, line);
+		if (ParsingUtilities::linePrefix(line, string("#"))) 
+		{
+			//processComment(line_scanner2, line);
+			if (ParsingUtilities::linePrefix(line, string("# Documentation:"))) 
+			{
+				ParsingUtilities::stripPrefix(line, string("# Documentation:"));
+				motion->addDocumentation(line.c_str());
+			}
+			else if (ParsingUtilities::linePrefix(line, string("# Source:"))) 
+			{
+				ParsingUtilities::stripPrefix(line, string("# Source:"));
+				motion->setSource(line.c_str());
+			}
+			else if (ParsingUtilities::linePrefix(line, string("# Framerate: "))) 
+			{
+				ParsingUtilities::stripPrefix(line, string("# Framerate: "));
+				motion->setFrameRate((float)atof(line.c_str()));
+			}
+		}
+		else if (ParsingUtilities::lineIsEmpty(line)) continue;
 
-		else if (AAPU::lineIsEmpty(line)) continue;
+		// Is it necessary to store this flag?
+		else if (ParsingUtilities::linePrefix(line, string(":FULLY-SPECIFIED"))) continue;
 
-		// FIXIT! is there any need to store this flag?
-		else if (AAPU::linePrefix(line, string(":FULLY-SPECIFIED"))) continue;
-
-		else if (AAPU::linePrefix(line, string(":DEGREES")))
+		else if (ParsingUtilities::linePrefix(line, string(":DEGREES")))
 			AMC_angles_are_degrees = true;
 
-		else if (AAPU::lineIsSingleInt(line, frame)) continue;
+		else if (ParsingUtilities::lineIsSingleInt(line, frame)) continue;
 		
 		else
 		{
 			string name, rest;
-			AAPU::splitLine(line, name, rest);
+			ParsingUtilities::splitLine(line, name, rest);
 			list<float> values;
-			AAPU::parseFloats(rest, values);
+			ParsingUtilities::parseFloats(rest, values);
 
 			Vector3D p;
 			Vector3D a;
-			short bone_id = skeleton->boneIdFromName(name);
+			short bone_id = skeleton->boneIdFromName(name.c_str());
 			float linedata[6] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 			list<float>::iterator iter = values.begin();
 			int i=0;
@@ -102,27 +118,36 @@ MotionSequence* AMC_Reader::readAMC(const char* motionFilename, SkeletonDefiniti
 	}
 	line_scanner2.close();
 	
-	motion->convertData(data, skeleton);
+	// parsing is done
+	// Convert the data into a MotionSequence
+
+	vector<CHANNEL_ID> channel_ids;
+	for (short b=0; b<skeleton->numBones(); b++)
+	{
+		for (short channel_type=0; channel_type<6; channel_type++)
+		{
+			CHANNEL_ID c(b, CHANNEL_TYPE(channel_type));
+			if (skeleton->isActiveChannel(b,channel_type)) //|| (force_angle_channels_active && (channel_type>=4)))
+				channel_ids.push_back(c);
+		}
+	}
+	
+	int frames = data.getRows();
+	motion->setNumFrames(frames);
+	motion->setFrameRate(120);
+
+	int chans = channel_ids.size();
+	Array2D<float> data2; // data with "false" channels removed.
+	data2.resize(frames, chans);
+
+	CHANNEL_ID* cid = new CHANNEL_ID[chans];
+	for (unsigned short c=0; c<chans; c++)	
+	{
+		cid[c] = channel_ids[c];
+		memcpy(data2.getColumnPtr(c), data.getColumnPtr(cid[c].bone_id*6+cid[c].channel_type), frames*sizeof(float));
+	}
+	motion->bulkBuild(cid, chans, data2);
+	delete cid;
 
 	return motion;
-}
-
-bool AMC_Reader::processComment(LineScanner& line_scanner, string& line)
-{
-	if (AAPU::linePrefix(line, string("# Documentation:"))) 
-	{
-		AAPU::stripPrefix(line, string("# Documentation:"));
-		motion->addDocumentation(line);
-	}
-	else if (AAPU::linePrefix(line, string("# Source:"))) 
-	{
-		AAPU::stripPrefix(line, string("# Source:"));
-		motion->setSource(line);
-	}
-	else if (AAPU::linePrefix(line, string("# Framerate: "))) 
-	{
-		AAPU::stripPrefix(line, string("# Framerate: "));
-		motion->setFrameRate((float)atof(line.c_str()));
-	}
-	return true;
 }

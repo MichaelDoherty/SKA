@@ -12,20 +12,20 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef POINT2D_DOT_H
 #define POINT2D_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cmath>
 #include <fstream>
 #include <cstring> // (for memcpy)
 using namespace std;
-#include "Math/Math.h"
+#include <Math/Math.h>
 
 class SKA_LIB_DECLSPEC Point2D
 {
-	friend ostream& operator<<(ostream& out, Point2D& p);
+	SKA_LIB_DECLSPEC friend ostream& operator<<(ostream& out, Point2D& p);
 public:
 	// store as an array
 	float p[2];

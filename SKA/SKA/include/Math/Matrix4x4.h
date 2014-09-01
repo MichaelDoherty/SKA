@@ -11,22 +11,23 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef MATRIX4x4_DOT_H
 #define MATRIX4x4_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cmath>
 #include <fstream>
 using namespace std;
-#include "Math/Math.h"
-#include "Math/Vector3D.h"
+#include <Math/Math.h>
+#include <Math/Vector3D.h>
 
 class SKA_LIB_DECLSPEC Quaternion;
 
 class SKA_LIB_DECLSPEC Matrix4x4
 {
-	friend ostream& operator<<(ostream& out, Matrix4x4& m);
+	SKA_LIB_DECLSPEC friend ostream& operator<<(ostream& out, Matrix4x4& m);
+
 public:
 	// column major storage
 	//  0  4  8 12    [0,0] [0,1] [0,2] [0,3]
@@ -96,7 +97,7 @@ public:
 	{
 		Matrix4x4 mout = transpose();
 		if (check && !testIfInverse(mout))
-			throw MathException(string("Math: Use of Transpose as Inverse Failed"));
+			throw MathException("Math: Use of Transpose as Inverse Failed");
 		return mout;
 	}
 

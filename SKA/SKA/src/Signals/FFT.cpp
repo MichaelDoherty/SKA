@@ -14,16 +14,15 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
 using namespace std;
-#include "Signals/FFT.h"
-#include "Animation/SkeletonDefinition.h"
+#include <Signals/FFT.h>
+#include <Animation/Skeleton.h>
 #if ENABLE_FFTW==1
 #include <fftw3.h>
 #endif
@@ -311,7 +310,7 @@ void FFTfilter::initialize(MotionSequence* _motion)
 
 	for (int channel=0; channel<num_channels; channel++)
 	{
-		float* ptr = motion->data.getColumnPtr(channel);
+		float* ptr = motion->getChannelPtr(channel);
 		memcpy(original.getColumnPtr(channel), ptr, num_frames*sizeof(float));
 		memcpy(filtered.getColumnPtr(channel), ptr, num_frames*sizeof(float));
 	}

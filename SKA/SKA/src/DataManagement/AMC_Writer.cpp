@@ -11,25 +11,25 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "DataManagement/AMC_Writer.h"
-#include "DataManagement/FileSystem.h"
-#include "Animation/SkeletonDefinition.h"
-#include "Animation/MotionSequence.h"
-#include "Core/Array2D.h"
-#include "Core/Utilities.h"
-#include "Math/Math.h"
+#include <Core/SystemConfiguration.h>
+#include <DataManagement/AMC_Writer.h>
+#include <DataManagement/FileSystem.h>
+#include <Animation/Skeleton.h>
+#include <Animation/MotionSequence.h>
+#include <Core/Array2D.h>
+#include <Core/Utilities.h>
+#include <Math/Math.h>
 #include <fstream>
 using namespace std;
 
 bool AMC_Writer::writeAMC(const char* outputFilename, 
-		SkeletonDefinition* skeleton, 
+		Skeleton* skeleton, 
 		MotionSequence* motion,
 		bool overwrite)
 {
-	if (!overwrite && FileSystem::fileExists(string(outputFilename))) 
+	if (!overwrite && FileSystem::fileExists(outputFilename))
 		return false;
 
 	ofstream ofs(outputFilename);
@@ -52,19 +52,19 @@ bool AMC_Writer::writeAMC(const char* outputFilename,
 		for (int bone_id=0; bone_id<skeleton->numBones(); bone_id++)
 		{
 			string bone_name = skeleton->boneNameFromId(bone_id);
-			BoneDefinition* bone = skeleton->getBoneDescription(bone_id);
+			Bone* bone = skeleton->getBone(bone_id);
 			// skip bones with no valid DOF
-			if (bone->channel_order[0] == DOF_INVALID) continue;
+			if (bone->getChannelOrder(0) == CT_INVALID) continue;
 			ofs << bone_name << " ";
 			for (int d=0; d<6; d++)
 			{
 				// FIXIT! do not write bones that have 0 DOF
-				DOF_ID dof_id = bone->channel_order[d];
-				if (dof_id != DOF_INVALID)
+				CHANNEL_TYPE dof_id = bone->getChannelOrder(d);
+				if (dof_id != CT_INVALID)
 				{
 					CHANNEL_ID channel_id(bone_id, dof_id);
 					float value = motion->getValue(channel_id, frame);
-					if ((dof_id==DOF_PITCH) || (dof_id==DOF_YAW) || (dof_id==DOF_ROLL))
+					if ((dof_id==CT_RX) || (dof_id==CT_RY) || (dof_id==CT_RZ))
 						value = rad2deg(value);
 					ofs << value << " ";
 				}

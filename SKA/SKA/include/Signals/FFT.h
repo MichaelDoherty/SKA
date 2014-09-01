@@ -14,18 +14,18 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef FFT_DOT_H
 #define FFT_DOT_H
 
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <complex>
 #include <vector>
 using namespace std;
-#include "Animation/MotionSequence.h"
-#include "Core/Array2D.h"
-#include "Signals/SignalSpec.h"
+#include <Animation/MotionSequence.h>
+#include <Core/Array2D.h>
+#include <Signals/SignalSpec.h>
 
 int extractSignalsFromSpectrum(complex<float>* spectrum, int n,
 							   vector<SignalSpec>& signals, int num_signals);

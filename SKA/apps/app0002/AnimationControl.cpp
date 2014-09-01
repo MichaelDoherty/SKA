@@ -1,17 +1,8 @@
 //-----------------------------------------------------------------------------
-// app0002: Demo program illustrating various useful things that aren't
-//          directly related to the character animation.
-//          (1) additional objects, such as ground, sky and coordinate axes
-//          (2) moveable camera, controlled by the camera and mouse.
-//          (3) keyboard filtering, to avoid multiple responses when
-//              a single keystroke is expected.
-//          (4) animation speed control (freeze, single step, time warp)
-//          (5) heads-up display (2D text on screen)
+// app0002 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.cpp
-//    Object that is the interface to the animation subsystem.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
+//    Animation controller for a single character defined by a BVH file.
 //-----------------------------------------------------------------------------
 // SKA configuration
 #include <Core/SystemConfiguration.h>
@@ -22,7 +13,7 @@
 #include <Core/Utilities.h>
 #include <Animation/MotionSequenceController.h>
 #include <Animation/AnimationException.h>
-#include <Animation/AnimSkeleton.h>
+#include <Animation/Skeleton.h>
 #include <DataManagement/DataManager.h>
 #include <DataManagement/DataManagementException.h>
 // local application
@@ -33,11 +24,26 @@
 AnimationControl anim_ctrl;
 
 // This example will create and animate one character.
-// The character's skeleton will be defined by an ASF file.
-// The character's skeleton will be defined by an AMC file.
+// The character's skeleton and motion will be defined by a BVH file.
 
-static string skeleton_id("02"); // ID of the ASF file
-static string motion_id("01");   // ID of the AMC file
+static string character_BVH("UOP_lab_01.bvh");
+
+// scale the character to about 20%
+// Most things in SKA were developed to fit the CMU ASF skeletons.
+// The BVH files from Pacific's mocap lab are about 5 times to large 
+// for this world. In particular, bones will be too thin if stretched
+// to 500% of expected size, since the bone width does not currently scale.
+float character_size_scale = 0.2f;
+
+AnimationControl::AnimationControl() 
+	: ready(false), run_time(0.0f), character(NULL), 
+	single_step(false), freeze(false), time_warp(1.0f)
+{ } 
+
+AnimationControl::~AnimationControl()	
+{ 
+	if (character != NULL) delete character; 
+}
 
 bool AnimationControl::updateAnimation(float _elapsed_time)
 {
@@ -49,7 +55,7 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	if (!freeze || single_step) // 
 	{
 		run_time += _elapsed_time;
-		if (character->skeleton != NULL) character->skeleton->update(run_time);
+		if (character != NULL) character->update(run_time);
 	}
 	if (single_step) // single step then freeze AFTER this frame
 	{
@@ -61,54 +67,57 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 
 void AnimationControl::loadCharacters(list<Object*>& render_list)
 {
-	char s[2000];
-	data_manager.setFilePathRoot(string(AMC_MOTION_FILE_PATH));
-
-	// read the ASF file to create a skeleton definition instance
-	SkeletonDefinition* skel = data_manager.loadSkeleton(skeleton_id);
-	if (skel == NULL) 
+	data_manager.addFileSearchPath(BVH_MOTION_FILE_PATH);
+	char* BVH_filename = NULL;
+	try
 	{
-		sprintf(s, "Could not load ASF %s", skeleton_id.c_str());
-		logout << s << endl;
-		throw AnimationException();
-	}
+		BVH_filename = data_manager.findFile(character_BVH.c_str());
+		if (BVH_filename == NULL)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to find character BVH file <" << character_BVH << ">. Aborting load." << endl;
+			throw BasicException("ABORT");
+		}
+		pair<Skeleton*, MotionSequence*> read_result;
+		try
+		{
+			read_result = data_manager.readBVH(BVH_filename);
+		}
+		catch (const DataManagementException& dme)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to load character data files. Aborting load." << endl;
+			logout << "   Failure due to " << dme.msg << endl;
+			throw BasicException("ABORT");
+		}
 
-	// read the AMC file and store it as a motion sequence in a motion controller
-	MotionSequence* ms = data_manager.loadMotion(skeleton_id, motion_id, skel);
-	if (ms == NULL) 
-	{ 
-		sprintf(s, "Could not load AMC %s.%s", skeleton_id.c_str(), motion_id.c_str());
-		logout << s << endl;
-		throw AnimationException();			
-	}
-	MotionSequenceController* controller = new MotionSequenceController(ms);
+		Skeleton* skel = read_result.first;
+		MotionSequence* ms = read_result.second;
 
-	// create a character to link all the pieces together.
-	character =  new Character;
-	character->description1 = string("UNDEFINED");
-	character->description2 = string("UNDEFINED");
-	data_manager.getDescriptions(skeleton_id, motion_id,
-		character->description1, character->description2);
+		// scale the bones lengths and translation distances
+		skel->scaleBoneLengths(character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TX), character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TY), character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TZ), character_size_scale);
 
-	// create an animated skeleton for this character.
-	character->skeleton_definition = skel;
-	character->skeleton = new AnimSkeleton(character->skeleton_definition);
-	if (character->skeleton == NULL) 
-	{
-		sprintf(s, "Failed to build AnimSkeleton for %s", skeleton_id.c_str());
-		logout << s << endl;
-		throw AnimationException();
-	}
+		MotionSequenceController* controller = new MotionSequenceController(ms);
+		
+		// create rendering model for the character and put the character's 
+		// bone objects in the rendering list
+		Color color(0.0f,0.4f,1.0f);
+		skel->constructRenderObject(render_list, color);
 
-	// create rendering model for the character and put the character's 
-	// bone objects in the rendering list
-	Color color(1.0f,0.4f,0.3f);
-	character->skeleton->constructRenderObject(render_list, color);
+		// attach motion controller to animated skeleton
+		skel->attachMotionController(controller);
+		
+		// create a character to link all the pieces together.
+		string d1 = string("skeleton: ") + character_BVH;
+		string d2 = string("motion: ") + character_BVH;
+		skel->setDescription1(d1.c_str());
+		skel->setDescription2(d2.c_str());
+		character = skel;
+	} 
+	catch (BasicException&) { }
 
-	// attach motion controller to character
-	character->skeleton->attachMotionController(controller);
-	
+	strDelete(BVH_filename); BVH_filename = NULL;
+
 	ready = true;
 }
-
-

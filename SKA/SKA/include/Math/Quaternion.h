@@ -19,15 +19,15 @@
 // Original file name: IvQuat.{h,cpp}
 // Original code: Copyright (C) 2004 by Elsevier, Inc. All rights reserved.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef QUATERNION_DOT_H
 #define QUATERNION_DOT_H
-#include "Core/SystemConfiguration.h"
+#include <Core/SystemConfiguration.h>
 #include <iostream>
 using namespace std;
-#include "Math/Math.h"
-#include "Math/Matrix4x4.h"
+#include <Math/Math.h>
+#include <Math/Matrix4x4.h>
 
 class SKA_LIB_DECLSPEC Quaternion
 {
@@ -54,7 +54,7 @@ public:
     Quaternion& operator=(const Quaternion& other);
 
     // text output
-    friend ostream& operator<<(ostream& out, const Quaternion& source);
+    SKA_LIB_DECLSPEC friend ostream& operator<<(ostream& out, const Quaternion& source);
 
     // accessors
     inline float& operator[](unsigned int i)         { return (&x)[i]; }
@@ -85,11 +85,11 @@ public:
     inline void identity();    // sets to identity quaternion
 
     // complex conjugate
-    friend Quaternion conjugate( const Quaternion& quat );
+    SKA_LIB_DECLSPEC friend Quaternion conjugate( const Quaternion& quat );
     const Quaternion& conjugate();
 
     // invert quaternion
-    friend Quaternion inverse( const Quaternion& quat );
+    SKA_LIB_DECLSPEC friend Quaternion inverse( const Quaternion& quat );
     const Quaternion& inverse();
 
     // operators
@@ -103,7 +103,7 @@ public:
     Quaternion operator-() const;
 
     // scalar multiplication
-    friend Quaternion operator*( float scalar, const Quaternion& vector );
+    SKA_LIB_DECLSPEC friend Quaternion operator*( float scalar, const Quaternion& vector );
     Quaternion& operator*=( float scalar );
 
     // quaternion multiplication
@@ -112,15 +112,15 @@ public:
 
     // dot product
     float dot( const Quaternion& vector ) const;
-    friend float dot( const Quaternion& vector1, const Quaternion& vector2 );
+    SKA_LIB_DECLSPEC friend float dot( const Quaternion& vector1, const Quaternion& vector2 );
 
     // vector rotation
     Vector3D rotate( const Vector3D& vector ) const;
 
     // interpolation
-    friend void lerp( Quaternion& result, const Quaternion& start, const Quaternion& end, float t );
-    friend void slerp( Quaternion& result, const Quaternion& start, const Quaternion& end, float t );
-    friend void approxSlerp( Quaternion& result, const Quaternion& start, const Quaternion& end, float t );
+    SKA_LIB_DECLSPEC friend void lerp( Quaternion& result, const Quaternion& start, const Quaternion& end, float t );
+    SKA_LIB_DECLSPEC friend void slerp( Quaternion& result, const Quaternion& start, const Quaternion& end, float t );
+    SKA_LIB_DECLSPEC friend void approxSlerp( Quaternion& result, const Quaternion& start, const Quaternion& end, float t );
 
 	// conversions to/from other rotation formats (testing March 2013)
 	void fromRotationMatrix(const Matrix4x4& rotMatrix);

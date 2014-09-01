@@ -6,31 +6,26 @@ TARGETDIR = ../lib
 TARGET = libska.a
 
 SOURCES = \
-AnimBone.cpp \
-AnimDebug.cpp \
-AnimSkeleton.cpp \
 Blender.cpp \
-BoneDefinition.cpp \
-Character.cpp \
-MotionSequenceController.cpp \
+Bone.cpp \
 MotionSequence.cpp \
+MotionSequenceController.cpp \
 MultiSequenceController.cpp \
 RawMotionController.cpp \
-SkeletonDefinition.cpp \
+Skeleton.cpp \
+Camera.cpp \
 SystemLog.cpp \
 SystemTimer.cpp \
-Camera.cpp \
 AMC_Reader.cpp \
 AMC_Writer.cpp \
-ASF_AMC_ParseUtils.cpp \
 ASF_Reader.cpp \
 ASF_Writer.cpp \
 BVH_Reader.cpp \
-Database.cpp \
-DatabaseLoader.cpp \
-DataIndex.cpp \
 DataManager.cpp \
 FileSystem.cpp \
+ParsingUtilities.cpp \
+SKM_ReaderWriter.cpp \
+SKS_ReaderWriter.cpp \
 EasyBMP.cpp \
 Graphics2D.cpp \
 GraphicsInterface.cpp \

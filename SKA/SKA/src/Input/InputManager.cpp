@@ -11,10 +11,10 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Input/InputManager.h"
+#include <Core/SystemConfiguration.h>
+#include <Input/InputManager.h>
 #include <GL/glut.h>
 
 void mouseHandler(int button, int state, int x, int y)

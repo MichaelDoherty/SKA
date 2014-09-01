@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------------
-// app0003: Adds a second character, defined and controlled by a BVH file.
+// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AppConfig.h
 //    Define application specific things, such as file locations.
-//-----------------------------------------------------------------------------
-// Builds with SKA Version 3.0 - July 22, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef APPCONFIG_DOT_H
 #define APPCONFIG_DOT_H

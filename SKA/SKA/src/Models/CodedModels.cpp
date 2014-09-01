@@ -12,14 +12,14 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Models/CodedModels.h"
-#include "Graphics/GraphicsInterface.h"
-#include "Graphics/Textures.h"
-#include "Core/SystemLog.h"
-#include "Math/Math.h"
+#include <Core/SystemConfiguration.h>
+#include <Models/CodedModels.h>
+#include <Graphics/GraphicsInterface.h>
+#include <Graphics/Textures.h>
+#include <Core/SystemLog.h>
+#include <Math/Math.h>
 
 BoxModel::BoxModel(float _width, float _height, float _length, Color _color)
 	: MeshModel()

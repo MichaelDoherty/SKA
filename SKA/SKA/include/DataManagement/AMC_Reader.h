@@ -11,25 +11,23 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef AMC_READER_DOT_H
 #define AMC_READER_DOT_H
-#include "Core/SystemConfiguration.h"
-#include "DataManagement/LineScanner.h"
+#include <Core/SystemConfiguration.h>
 
-class SkeletonDefinition;
+class Skeleton;
 class MotionSequence;
 
-class AMC_Reader
+class SKA_LIB_DECLSPEC AMC_Reader
 {
 public:
 	AMC_Reader() : motion(NULL), AMC_angles_are_degrees(true) { }
 
-	MotionSequence* readAMC(const char* motionFilename, SkeletonDefinition* skeleton);
+	MotionSequence* readAMC(const char* motionFilename, Skeleton* skeleton);
 	
 private:
-	bool processComment(LineScanner& line_scanner, string& line);
 	MotionSequence* motion;
 	bool AMC_angles_are_degrees;
 };

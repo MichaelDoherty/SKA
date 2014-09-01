@@ -11,10 +11,10 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
-#include "Core/SystemConfiguration.h"
-#include "Objects/QObject.h"
+#include <Core/SystemConfiguration.h>
+#include <Objects/QObject.h>
 
 static Vector3D x_axis(1.0f, 0.0f, 0.0f);
 static Vector3D y_axis(0.0f, 1.0f, 0.0f);

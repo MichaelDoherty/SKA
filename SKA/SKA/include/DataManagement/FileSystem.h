@@ -12,20 +12,18 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef FILESYSTEM_DOT_H
 #define FILESYSTEM_DOT_H
-#include "Core/SystemConfiguration.h"
-#include <string>
-using namespace std;
+#include <Core/SystemConfiguration.h>
 
-class FileSystem
+class SKA_LIB_DECLSPEC FileSystem
 {
 public:
-	static bool makeDir(const string& path);
-	static bool dirExists(const string& path);
-	static bool fileExists(const string& path);
+	static bool makeDir(const char* path);
+	static bool dirExists(const char* path);
+	static bool fileExists(const char* path);
 };
 
 #endif

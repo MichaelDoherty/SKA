@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------------
 // DataManager.h
-//	 Wrapper class around the various file and database interfaces.
+//	 Interface for reading and writing the various types of 
+//   motion and skeleton files.
 //-----------------------------------------------------------------------------
 // This software is part of the Skeleton Animation Toolkit (SKA) developed 
 // at the University of the Pacific, under the guidance of Michael Doherty.
@@ -11,25 +12,17 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.0 - July 18, 2014 - Michael Doherty
+// Version 3.1 - September 1, 2014 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef DATA_MANAGER_DOT_H
 #define DATA_MANAGER_DOT_H
-#include "Core/SystemConfiguration.h"
-#include <vector>
-#include <map>
-#include <string>
+#include <Core/SystemConfiguration.h>
+#include <utility>
 using namespace std;
 
-class Database;
-class DatabaseLoader;
-class SkeletonDefinition;
+class Skeleton;
 class MotionSequence;
-class Character;
-class DataIndex;
-
-template class SKA_LIB_DECLSPEC std::allocator<char>;
-template class SKA_LIB_DECLSPEC std::basic_string<char, std::char_traits<char>, std::allocator<char> >;
+struct DataManagerData;
 
 class SKA_LIB_DECLSPEC DataManager
 {
@@ -37,49 +30,88 @@ public:
 	DataManager();
 	virtual ~DataManager();
 
-	bool setupDatabase(const string& host, const string& user, const string& pw, const string& db);
-	void useDatabase(bool flag=true);
+//---------- simple file search interface -------------------
 
-	void setFilePathRoot(const string& root_path);
-	string buildSkeletonDirname(const string& skel_id);
-	string buildSkeletonFilename(const string& skel_id);
-	string buildMotionFilename(const string& skel_id, const string& motion_id);
+	void addFileSearchPath(const char* _path);
+	char* findFile(const char* _file);
 
-	SkeletonDefinition* loadSkeletonFromFile(const string& skel_id);
-	SkeletonDefinition* loadSkeletonFromDatabase(const string& skel_id);
-	SkeletonDefinition* loadSkeleton(const string& skel_id);
+//---------- ASF/AMC file management -------------------
 
-	// SkeletonDefinition is required to build the channel definitions
-	// skel_id is used for definining the motion file name, and may be different
-	//   from the skel_id of the SkeletonDefinition. If they are different, there is no check that they are compatible.
-	MotionSequence* loadMotionFromFile(const string& skel_id, const string& motion_id, SkeletonDefinition* skel);
-	MotionSequence* loadMotionFromDatabase(const string& skel_id, const string& motion_id, SkeletonDefinition* skel);
-	MotionSequence* loadMotion(const string& skel_id, const string& motion_id, SkeletonDefinition* skel);
+	// A Skeleton is required to build the channel definitions
+	//   when reading an AMC file.
+	//   There is no check that the skeleton and the motion are compatible.
+	//
+	// force_angle_channels_active forces allocation of data space for all three angles
+	//   for every bone, even when the ASF specfies limited DOF.
+	//   This obviously wastes space, but it makes the motion compatible 
+	//   for conversions to other formats.
+	pair<Skeleton*, MotionSequence*> readASFAMC(
+		const char* _asf_file, 
+		const char* _amc_file);
+	Skeleton* readASF(
+		const char* _asf_file);
+	MotionSequence* readAMC(
+		Skeleton* _skel,
+		const char* _amc_file);
 
-	bool getDescriptions(const string& skel_id, const string& motion_id, 
-		string& skel_description, string& motion_description);
-	//Character* loadCharacter(const string& skel_id, const string& motion_id, SkeletonDefinition* skel);
+	void writeASFAMC(
+		Skeleton* _skel, 
+		MotionSequence* _ms, 
+		const char* _asf_file,
+		const char* _amc_file);
+	void writeASF(
+		Skeleton* _skel,
+		const char* _asf_file);
+	void writeAMC(
+		Skeleton* _skel, 
+		MotionSequence* _ms, 
+		const char* _amc_file);
 
-	bool writeSkeletonToFile(SkeletonDefinition* skel);
-	bool writeMotionToFile(SkeletonDefinition* skel, MotionSequence* ms);
+//---------- BVH file management -------------------
 
-	void copyDataFromFilesToDatabase();
+	pair<Skeleton*, MotionSequence*> readBVH(
+		const char* _bvh_file);
 
-	DataIndex* getDataIndex() { return data_index; }
+	void writeBVH(
+		Skeleton* _skel, 
+		MotionSequence* _ms, 
+		const char* _bvh_file);
+
+//---------- SKS/SKM file management -------------------
+
+	pair<Skeleton*, MotionSequence*> readSKSSKM(
+		const char* _asf_file, 
+		const char* _amc_file);
+	Skeleton* readSKS(
+		const char* _asf_file);
+	MotionSequence* readSKM(
+		Skeleton* _skel,
+		const char* _amc_file);
+
+	void writeSKSSKM(
+		Skeleton* _skel, 
+		MotionSequence* _ms, 
+		const char* _asf_file,
+		const char* _amc_file);
+	void writeSKS(
+		Skeleton* _skel,
+		const char* _asf_file);
+	void writeSKM(
+		Skeleton* _skel, 
+		MotionSequence* _ms, 
+		const char* _amc_file);
+
+//---------- Format Conversion Utilities -------------------
+
+	// This converts from formats that use an axis to avoid needing 
+	// three channels for joints with less than 3 DOF (such as ASF)
+	// to formats that simply use all three channels all the time (such as BVH).
+	void openAllEulerChannels(
+		Skeleton* _skel, 
+		MotionSequence* _ms);
 
 private:
-	string file_root;
-
-	Database* database;
-	string db_host;
-	string db_user;
-	string db_pw;
-	string db_db;
-
-	bool use_database;
-	DatabaseLoader* database_loader;
-
-	DataIndex* data_index;
+	DataManagerData* data;
 };
 
 SKA_LIB_DECLSPEC extern DataManager data_manager;
