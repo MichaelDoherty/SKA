@@ -1,0 +1,10 @@
+#generated files by make
+*.o
+libska*
+
+#system logs
+system_log.txt
+
+#Temparary files
+.DS_Store
+*.swp
