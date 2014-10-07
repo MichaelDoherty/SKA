@@ -1,2 +1,2 @@
-cp ..\Debug\skadll.lib ..\..\SKA\lib
-cp ..\Debug\skadll.dll ..\..\SKA\lib
+copy ..\Debug\skadll.lib ..\..\SKA\lib
+copy ..\Debug\skadll.dll ..\..\SKA\lib
