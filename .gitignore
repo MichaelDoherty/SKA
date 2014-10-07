@@ -8,3 +8,10 @@ system_log.txt
 #Temparary files
 .DS_Store
 *.swp
+
+#Visual Studio
+*.suo
+*.sdf
+*.obj
+*.opensdf
+Debug/
