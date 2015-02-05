@@ -1,7 +1,16 @@
 //-----------------------------------------------------------------------------
-// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app0002 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
-// app0003 animates multiple characters.
+// app0002: Demo program demonstrates how to animate a character based on
+//          a BVH file.
+//          It also illustrated various useful things that aren't
+//          directly related to the character animation.
+//          (1) additional objects, such as ground, sky and coordinate axes
+//          (2) moveable camera, controlled by the camera and mouse.
+//          (3) keyboard filtering, to avoid multiple responses when
+//              a single keystroke is expected.
+//          (4) animation speed control (freeze, single step, time warp)
+//          (5) heads-up display (2D text on screen)
 //-----------------------------------------------------------------------------
 // AppMain.cpp
 //    The main program is mostly the connection between openGL, 
@@ -44,9 +53,9 @@ static int window_height = 800;
 static int window_width = 800;
 
 // which objects background objects do we want to see?
-static bool SHOW_SKY = false;
+static bool SHOW_SKY = true;
 static bool SHOW_GROUND = true;
-static bool SHOW_COORD_AXIS = false;
+static bool SHOW_COORD_AXIS = true;
 
 //  background color (black)
 static float clear_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f};

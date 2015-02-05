@@ -5,6 +5,7 @@ all:
 	cd apps/app0003; make
 	cd apps/app0004; make	
 	cd apps/app0005; make
+	cd apps/app1001; make
 	
 clean:
 	cd SKA/build; make clean
@@ -13,4 +14,5 @@ clean:
 	cd apps/app0003; make clean
 	cd apps/app0004; make clean	
 	cd apps/app0005; make clean
+	cd apps/app1001; make clean	
 	-rm *~
