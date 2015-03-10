@@ -1,12 +1,12 @@
 #ifndef MOTIONGRAPHCONTROLLER_DOT_H
 #define MOTIONGRAPHCONTROLLER_DOT_H
-#include "MotionGraph.h"
 #include <Core/SystemConfiguration.h>
 #include <Animation/MotionController.h>
 #include <Animation/MotionSequence.h>
 //#include <Windows.h>
 #include <vector>
 #include "AppConfig.h"
+#include "MotionGraph.h"
 #include <boost/filesystem.hpp>
 #include "boost/filesystem/path.hpp"
 #include "DataManagement/DataManager.h"

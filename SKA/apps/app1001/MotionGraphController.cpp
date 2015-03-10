@@ -1,3 +1,5 @@
+#include <Core/SystemConfiguration.h>
+#include <Core/SystemLog.h>
 #include "MotionGraphController.h"
 #include "Connector.h"
 
@@ -6,7 +8,7 @@ MotionGraphController::MotionGraphController(MotionGraph &input)
 {
 	g = input;
 	//Connector(g.allFrames.at(0), g.allFrames.at(1));
-	cout << "initializing Motion Graph Controller \n Reading all frames to test first \n then Checking for neighbors \n" << endl;
+	logout << "initializing Motion Graph Controller \n Reading all frames to test first \n then Checking for neighbors \n" << endl;
 	// pretty much tests to see if all frames are readable in the graph;
 	readAllFrames();
 	//read in the motion sequences
@@ -70,9 +72,9 @@ long MotionGraphController::computeCurrentFrame(float _time)
 	long frames_in_sequence = long(time_in_sequence * frame_rate);
 	//offset frames played by the start frame in the current motion
 	long current_frame = frames_in_sequence + last_transition_frame;
-	//cout << "last_transition_time " << last_transition_time << endl;
-	//cout << "last_transition_frame " << last_transition_frame << endl;
-	//cout << "COMPUTE CURRENT FRAME" << current_frame << endl;
+	//logout << "last_transition_time " << last_transition_time << endl;
+	//logout << "last_transition_frame " << last_transition_frame << endl;
+	//logout << "COMPUTE CURRENT FRAME" << current_frame << endl;
 	return(current_frame);
 }
 
@@ -251,7 +253,7 @@ MotionGraph::DirectedGraph::vertex_descriptor MotionGraphController::FindVertex(
 			}
 		}
 	}
-	cout << "could not find vertex" << endl;
+	logout << "could not find vertex" << endl;
 	return 0;
 }
 
@@ -299,16 +301,16 @@ bool MotionGraphController::isTransitionPoint(MotionGraph::DirectedGraph::vertex
 	int neighborCount = 0;
 	for (; neighbors.first != neighbors.second; ++neighbors.first)
 	{
-		//	std::cout << "neighbors for  " << g.dgraph[m].frame_data.fileName << g.dgraph[m].frame_data.frame_number << " is" << g.dgraph[*neighbors.first].frame_data.fileName << g.dgraph[*neighbors.first].frame_data.frame_number << endl;
+		//	logout << "neighbors for  " << g.dgraph[m].frame_data.fileName << g.dgraph[m].frame_data.frame_number << " is" << g.dgraph[*neighbors.first].frame_data.fileName << g.dgraph[*neighbors.first].frame_data.frame_number << endl;
 		neighborCount++;
 	}
 	// if it has 2 or more neighbors then that means it is a transition
 	if (neighborCount >= 2)
 	{
-		cout << "IS TRANSITION POINT" << endl;
+		logout << "IS TRANSITION POINT" << endl;
 		return(true);
 	}
-	//cout << "not a transition point" << endl;
+	//logout << "not a transition point" << endl;
 	return(false);
 }
 
@@ -361,12 +363,12 @@ list<MotionGraphController::vertexTargets> MotionGraphController::getPath()
 }
 void MotionGraphController::readInMotionSequences()
 {
-	cout << "reading motion Sequences" << endl;
+	logout << "reading motion Sequences" << endl;
 	namespace fs = ::boost::filesystem;
 
 	fs::path p(BVH_MOTION_FILE_PATHMOTIONS);
 	if (!exists(p))    // does p actually exist?
-		cout << "doesn't exist" << endl;
+		logout << "doesn't exist" << endl;
 	fs::directory_iterator end_itr;
 
 	// cycle through the directory
@@ -378,7 +380,7 @@ void MotionGraphController::readInMotionSequences()
 			string current_file = itr->path().string();
 			current_file = itr->path().filename().string();
 
-			cout << current_file << endl;
+			logout << "Current File: " << current_file << endl;
 
 			DataManager dataman;
 			dataman.addFileSearchPath(BVH_MOTION_FILE_PATHMOTIONS);
@@ -389,7 +391,7 @@ void MotionGraphController::readInMotionSequences()
 				BVH_filename = dataman.findFile(character_BVH2.c_str());
 				if (BVH_filename == NULL)
 				{
-					logout << "AnimationControl::loadCharacters: Unable to find character BVH file <" << character_BVH2 << ">. Aborting load." << endl;
+					logout << "MotionGraphController::readInMotionSequences: Unable to find character BVH file <" << character_BVH2 << ">. Aborting load." << endl;
 					throw BasicException("ABORT");
 				}
 				pair<Skeleton*, MotionSequence*> read_result;
@@ -399,7 +401,7 @@ void MotionGraphController::readInMotionSequences()
 				}
 				catch (const DataManagementException& dme)
 				{
-					logout << "AnimationControl::loadCharacters: Unable to load character data files. Aborting load." << endl;
+					logout << "MotionGraphController::readInMotionSequences: Unable to load character data files. Aborting load." << endl;
 					logout << "   Failure due to " << dme.msg << endl;
 					throw BasicException("ABORT");
 				}
@@ -423,19 +425,19 @@ void MotionGraphController::readInMotionSequences()
 				test.MS = ms;
 				test.SeqID = current_file;
 				MsVector.push_back(test);
-				cout << "done loading:  "<<current_file << MsVector.size() << endl;
+				logout << "done loading:  "<<current_file << MsVector.size() << endl;
 			}
-			catch (BasicException& e) { cout << e.msg << endl; }
+			catch (BasicException& e) { logout << "EXCEPTION: " << e.msg << endl; }
 		}
 	}
-	cout << "the size of the vector is : " << MsVector.size() << endl;
+	logout << "the size of the vector is : " << MsVector.size() << endl;
 }
 
 void MotionGraphController::readAllSequenceIDs()
 {
 	for (unsigned long i = 0; i < MsVector.size(); i++)
 	{
-		cout << "names " << i << " :" << MsVector.at(i).SeqID << endl;
+		logout << "names " << i << " :" << MsVector.at(i).SeqID << endl;
 	}
 }
 
@@ -458,12 +460,12 @@ void MotionGraphController::readAllFrames()
 	int jo = 0;
 	for (vp = vertices(g.dgraph); vp.first != vp.second; vp.first++)
 	{
-		//cout << "FileName: " << g.dgraph[*vp.first].frame_data.fileName << endl;
-		//cout << "Frame Number" << g.dgraph[*vp.first].frame_data.frame_number << endl;
-		//cout << "Vertex Name" << g.dgraph[*vp.first].frame_data.vertexName << endl;
-		//cout << jo << endl;
-		//cout << endl;
-		//cout << endl;
+		//logout << "FileName: " << g.dgraph[*vp.first].frame_data.fileName << endl;
+		//logout << "Frame Number" << g.dgraph[*vp.first].frame_data.frame_number << endl;
+		//logout << "Vertex Name" << g.dgraph[*vp.first].frame_data.vertexName << endl;
+		//logout << jo << endl;
+		//logout << endl;
+		//logout << endl;
 		testLinearOfMotionGraph(*vp.first);
 		jo++;
 		//	Sleep(2000);
@@ -473,26 +475,20 @@ void MotionGraphController::readAllFrames()
 
 void MotionGraphController::printStatus()
 {
-
-
-	/*cout << "STATUS VARIABLE" << endl;
-	cout << "SeqID: " << status.SeqID << endl;
-	cout << "FrameNumber: " << status.FrameNumber << endl;
-	cout << "FrameNumberTransition: " << status.FrameNumberTransition << endl;
-	cout << "TransitionToSeqId: " << status.TransitionToSeqId << endl;
-	cout << "FrameNumberTransitionTo: " << status.FrameNumberTransitionTo << endl;
-	cout << "isTransitioning: " << status.isTransitioning << endl;*/
-	std::ofstream outfile;
-
-	outfile.open("test.txt", std::ios_base::app);
-	outfile << "STATUS VARIABLE" << endl;
-	outfile << "SeqID: " << status.SeqID << endl;
-	outfile << "FrameNumber: " << status.FrameNumber << endl;
-	outfile << "FrameNumberTransition: " << status.FrameNumberTransition << endl;
-	outfile << "TransitionToSeqId: " << status.TransitionToSeqId << endl;
-	outfile << "FrameNumberTransitionTo: " << status.FrameNumberTransitionTo << endl;
-	outfile << "isTransitioning: " << status.isTransitioning << endl;
-
+	logout << endl << "MotionGraphController::printStatus" << endl;
+	logout << "SeqID: " << status.SeqID << endl;
+	logout << "FrameNumber: " << status.FrameNumber << endl;
+	logout << "FrameNumberTransition: " << status.FrameNumberTransition << endl;
+	logout << "TransitionToSeqId: " << status.TransitionToSeqId << endl;
+	logout << "FrameNumberTransitionTo: " << status.FrameNumberTransitionTo << endl;
+	logout << "isTransitioning: " << status.isTransitioning << endl;
+	logout << "STATUS VARIABLE" << endl;
+	logout << "SeqID: " << status.SeqID << endl;
+	logout << "FrameNumber: " << status.FrameNumber << endl;
+	logout << "FrameNumberTransition: " << status.FrameNumberTransition << endl;
+	logout << "TransitionToSeqId: " << status.TransitionToSeqId << endl;
+	logout << "FrameNumberTransitionTo: " << status.FrameNumberTransitionTo << endl;
+	logout << "isTransitioning: " << status.isTransitioning << endl;
 }
 
 bool MotionGraphController::testLinearOfMotionGraph(MotionGraph::DirectedGraph::vertex_descriptor m)
@@ -504,7 +500,7 @@ bool MotionGraphController::testLinearOfMotionGraph(MotionGraph::DirectedGraph::
 	int neighborCount = 0;
 	for (; neighbors.first != neighbors.second; ++neighbors.first)
 	{
-		//	std::cout << "neighbors for  " << g.dgraph[m].frame_data.fileName << g.dgraph[m].frame_data.frame_number << " is" << g.dgraph[*neighbors.first].frame_data.fileName << g.dgraph[*neighbors.first].frame_data.frame_number << endl;
+		//	logout << "neighbors for  " << g.dgraph[m].frame_data.fileName << g.dgraph[m].frame_data.frame_number << " is" << g.dgraph[*neighbors.first].frame_data.fileName << g.dgraph[*neighbors.first].frame_data.frame_number << endl;
 		neighborCount++;
 
 	}
@@ -512,14 +508,14 @@ bool MotionGraphController::testLinearOfMotionGraph(MotionGraph::DirectedGraph::
 	if (neighborCount == 0)
 	{
 		//for no neighbors aka end of linear file
-		std::cout << "No neighbors for  " << g.dgraph[m].frame_data.fileName << "frame number: " << g.dgraph[m].frame_data.frame_number << endl;
+		logout << "No neighbors for  " << g.dgraph[m].frame_data.fileName << "frame number: " << g.dgraph[m].frame_data.frame_number << endl;
 	}
 	// if it has 2 or more neighbors then that means it is a transition
 	if (neighborCount >= 2)
 	{
-		cout << "IS TRANSITION POINT" << endl;
+		logout << "IS TRANSITION POINT" << endl;
 		return(true);
 	}
-	//cout << "not a transition point" << endl;
+	//logout << "not a transition point" << endl;
 	return(false);
 }

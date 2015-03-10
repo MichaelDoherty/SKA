@@ -88,7 +88,6 @@ void Bone::computeRotationTransform()
 {
 	M = Matrix4x4::identity();
 	Matrix4x4 r;
-	logout << "B " << id << " " << name;
 	for (short d=0; d<6; d++)
 	{
 		if (channel_order[d] != CT_INVALID)
@@ -117,7 +116,6 @@ void Bone::computeRotationTransform()
 			}
 		}
 	}
-	logout << endl;
 }
 
 //====================================================================

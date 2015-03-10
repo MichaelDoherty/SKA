@@ -84,7 +84,6 @@
     <ClInclude Include="..\..\apps\app1001\InputProcessing.h" />
     <ClInclude Include="..\..\apps\app1001\MotionGraph.h" />
     <ClInclude Include="..\..\apps\app1001\MotionGraphController.h" />
-    <ClInclude Include="..\..\apps\app1001\testclass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\apps\app1001\AnimationControl.cpp" />
@@ -94,7 +93,6 @@
     <ClCompile Include="..\..\apps\app1001\InputProcessing.cpp" />
     <ClCompile Include="..\..\apps\app1001\MotionGraph.cpp" />
     <ClCompile Include="..\..\apps\app1001\MotionGraphController.cpp" />
-    <ClCompile Include="..\..\apps\app1001\testclass.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

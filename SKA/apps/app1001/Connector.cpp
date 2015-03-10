@@ -1,15 +1,18 @@
+// SKA configuration
+#include <Core/SystemConfiguration.h>
+#include <Core/SystemLog.h>
 #include "Connector.h"
-
 
 std::vector<vector<int> > Connector(std::vector<MotionGraph::Frame> motion1, std::vector<MotionGraph::Frame> motion2)
 {
+	logout << "Connector starting" << endl;
 	float comparisonMax = 12.0;  //Comparison value to be the max difference between two frame in the two motions
 	float comparison;
 	std::vector<node> unsortedComparisons; //Holds nodes of frame pairs with their comparison value
 	for (unsigned int i = 0; i < motion1.size(); i += 1) //Loop through each frame of first passed motion
 	//for (int i = 100; i <= 101; i++)
 	{
-		cout << "Looking at frame " << i << " of the first motion\n";
+		logout << "Looking at frame " << i << " of the first motion\n";
 		for (unsigned int j = motion1.size(); j < motion2.size(); j += 1) //Loop through each frame of second passed motion
 		//for (int j = 400; j <= 450; j+=20)
 		{
@@ -29,7 +32,7 @@ std::vector<vector<int> > Connector(std::vector<MotionGraph::Frame> motion1, std
 
 			}
 			if (j%100 == 0)
-				cout << i << " " << j << " " << abs(comparison) << endl;
+				logout << i << " " << j << " " << abs(comparison) << endl;
 			//If the comparison is less than the comparisonMax value, store the transition frames and comparison value
 			if (abs(comparison) < comparisonMax && comparison != 0 && j < motion2.size() - 30 && i < motion1.size() - 30
 				&& i > 30 && j > 30)
@@ -89,8 +92,9 @@ std::vector<vector<int> > Connector(std::vector<MotionGraph::Frame> motion1, std
 
 	for (unsigned int i = 0; i < returnList.size(); i++)
 	{
-		cout << endl << "(" << returnList.at(i).at(0) << "," << returnList.at(i).at(1) << ")" << endl;
+		logout << endl << "(" << returnList.at(i).at(0) << "," << returnList.at(i).at(1) << ")" << endl;
 	}
-
+	
+	logout << "Connector finished" << endl;
 	return returnList;
 }

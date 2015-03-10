@@ -21,7 +21,6 @@ private:
 	vector<string> filenames;
 	int vertexNumber;
 	
-
 public:
 	// contains an entire motion sequence
 	struct Frame
@@ -48,15 +47,17 @@ public:
 	//// The only way for me to access these things is through public:
 	vector<Frame> frames;
 	vector<vector<int> > transitionPoints;
-		//use vecS to to iterate for more than plus one
-		//	this is the real one used
-				//typedef adjacency_list<listS, listS, directedS, GraphNode, GraphEdge> DirectedGraph;
-		typedef adjacency_list<listS, vecS, directedS, GraphNode, GraphEdge> DirectedGraph;
-		typedef graph_traits<DirectedGraph>::vertex_iterator vertex_iter;
-		//this is used to find the next following vertex
-		typedef graph_traits < DirectedGraph >::adjacency_iterator neighbor_iterator;
-		DirectedGraph dgraph;
-		vector<vector<Frame> > allFrames;
+	
+	//use vecS to to iterate for more than plus one
+	//	this is the real one used
+	//typedef adjacency_list<listS, listS, directedS, GraphNode, GraphEdge> DirectedGraph;
+	typedef adjacency_list<listS, vecS, directedS, GraphNode, GraphEdge> DirectedGraph;
+	typedef graph_traits<DirectedGraph>::vertex_iterator vertex_iter;
+	//this is used to find the next following vertex
+	typedef graph_traits < DirectedGraph >::adjacency_iterator neighbor_iterator;
+	DirectedGraph dgraph;
+	vector<vector<Frame> > allFrames;
+	
 	////////////
 	MotionGraph(int x);
 	MotionGraph();

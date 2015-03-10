@@ -1,3 +1,7 @@
+// SKA configuration
+#include <Core/SystemConfiguration.h>
+#include <Core/SystemLog.h>
+
 #include "MotionGraph.h"
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/iteration_macros.hpp>
@@ -6,17 +10,15 @@
 
 // so that in motion graph controller when it creates its motion graph , it doesn't create a whole new one. It keeps it blank. but for one we need to updload the files we update with MotionGraph a(1); or any int
 MotionGraph::MotionGraph()
+	: vertexNumber(0)
 {
 	//fileLoader();
-
-
 }
 // can be used if you wanted to specify number of files to load
 MotionGraph::MotionGraph(int x)
+	: vertexNumber(0)
 {
 	fileLoader();
-
-
 }
 
 //This is called by fileLoader and inputs data from a single file as a motion into the motion graph
@@ -57,8 +59,8 @@ void MotionGraph::fileReader(string filename)
 	}
 	//int size = frames.size();
 	
-	//	cout << endl << "vertexNumber is " << vertexNumber << endl;
-	//cout << endl << "num frames is " << size << endl;
+	//	logout << endl << "vertexNumber is " << vertexNumber << endl;
+	//logout << endl << "num frames is " << size << endl;
 
 	//Now we can initialize our graph using iterators from our above vector
 	unsigned int i;
@@ -80,36 +82,36 @@ void MotionGraph::fileReader(string filename)
 		dgraph[v].frame_data = frames[i];
 		if (i < 0)
 		{
-			cout << frames[i].frame_number << " = " << dgraph[v].frame_data.frame_number << endl;
-			cout << "frame " << i << " root position = " << frames[i].root_position << endl;
-			cout << "frame " << i << " root joint = " << frames[i].joints[0] << endl;
-			cout << "frame " << i << " joint 5 = " << frames[i].joints[5] << endl;
+			logout << frames[i].frame_number << " = " << dgraph[v].frame_data.frame_number << endl;
+			logout << "frame " << i << " root position = " << frames[i].root_position << endl;
+			logout << "frame " << i << " root joint = " << frames[i].joints[0] << endl;
+			logout << "frame " << i << " joint 5 = " << frames[i].joints[5] << endl;
 		}
 	}
 
 	// prints out the contents of the graph
-	//	cout << "Checking contents of the graph: " << endl;
+	//	logout << "Checking contents of the graph: " << endl;
 	for (vp = vertices(dgraph); vp.first != vp.second; ++vp.first)
 	{
 		DirectedGraph::vertex_descriptor v = *vp.first;
 		i = dgraph[v].frame_data.frame_number;
 		if (i < 0)
 		{
-			cout << "frame " << i << " root position = " << dgraph[v].frame_data.root_position << endl;
-			cout << "frame " << i << " root joint = " << dgraph[v].frame_data.joints[0] << endl;
-			cout << "frame " << i << " joint 5 = " << dgraph[v].frame_data.joints[5] << endl;
+			logout << "frame " << i << " root position = " << dgraph[v].frame_data.root_position << endl;
+			logout << "frame " << i << " root joint = " << dgraph[v].frame_data.joints[0] << endl;
+			logout << "frame " << i << " joint 5 = " << dgraph[v].frame_data.joints[5] << endl;
 		}
 	}
 
-	//cout << "count " << vertexNumber << endl;
+	//logout << "count " << vertexNumber << endl;
 	// sets edges across all the new verticies
 	setLinear(tempFrameCount, vertexNumber);
-	//cout << endl << endl;
+	//logout << endl << endl;
 	//system("pause");
 	allFrames.push_back(frames);
 
-	cout << "All Frame size: "<<allFrames.size()<<endl;
-	cout << "All Frame at " << allFrames.size()-1 << " size: " << allFrames.at(allFrames.size()-1).size() << endl;
+	logout << "All Frame size: "<<allFrames.size()<<endl;
+	logout << "All Frame at " << allFrames.size()-1 << " size: " << allFrames.at(allFrames.size()-1).size() << endl;
 }
 
 // handles calling files
@@ -125,7 +127,7 @@ void MotionGraph::fileLoader()
 		//sprintf(temp, "../../data/motion/BVH/Baseball_Swings/swing%d.bvh", i);
 		sprintf(temp, "../../data/motion/BVH/converted/testQuaternion%d.bvh", i);
 		// need to split this 
-		cout << endl << temp << endl;
+		logout << endl << temp << endl;
 		baseball.push_back(temp);
 	}
 
@@ -138,19 +140,17 @@ void MotionGraph::fileLoader()
 	transitionPoints = Connector(allFrames.at(0), allFrames.at(1));
 }
 
-
-
-
 MotionGraph::DirectedGraph MotionGraph::exportGraph()
 {
 	return(dgraph);
 }
+
 // only can be used if verticies are stored in a vecS
 void MotionGraph::setLinear(int tempFrameCount, int vertexNumber)
 {
 	//the frame to start iterating from
 	int startFrame = vertexNumber - tempFrameCount;
-	//cout << "start frame start " << startFrame << endl;
+	//logout << "start frame start " << startFrame << endl;
 	pair<vertex_iter, vertex_iter> vp;
 	int i = 0;
 	for (vp = vertices(dgraph), i = 0; vp.first + startFrame != vp.second; ++vp.first, i++)
@@ -169,16 +169,16 @@ void MotionGraph::setLinear(int tempFrameCount, int vertexNumber)
 			//if (startFrame + i > vertexNumber - 2)
 			//{
 				/*
-				cout << "vp second" << *vp.second << endl;
-				cout << "vp first" << *vp.first << endl;
-				cout << "vp first" << *vp.first+startFrame << endl;
-				cout << "frame: " << startFrame + i << endl;
-				cout << dgraph[v1].frame_data.frame_number << endl;
-				cout << dgraph[v].frame_data.frame_number << endl;
+				logout << "vp second" << *vp.second << endl;
+				logout << "vp first" << *vp.first << endl;
+				logout << "vp first" << *vp.first+startFrame << endl;
+				logout << "frame: " << startFrame + i << endl;
+				logout << dgraph[v1].frame_data.frame_number << endl;
+				logout << dgraph[v].frame_data.frame_number << endl;
 				*/
 			//}
-			//cout << dgraph[v1].frame_data.frame_number << endl;
-			//cout << dgraph[v].frame_data.frame_number << endl;
+			//logout << dgraph[v1].frame_data.frame_number << endl;
+			//logout << dgraph[v].frame_data.frame_number << endl;
 			
 			/////////////////////****************** end of edge iteration debug*************/////////////////
 			
@@ -192,8 +192,8 @@ void MotionGraph::setLinear(int tempFrameCount, int vertexNumber)
 			//iterate through all neighbors---MORE DEBUG CODE
 			//for (; neighbors.first != neighbors.second; ++neighbors.first)
 			//{
-				//std::cout << "neighbors for  " << dgraph[v1].frame_data.frame_number << " ";
-				//cout << dgraph[*neighbors.first].frame_data.frame_number << endl;
+				//logout << "neighbors for  " << dgraph[v1].frame_data.frame_number << " ";
+				//logout << dgraph[*neighbors.first].frame_data.frame_number << endl;
 			//}
 			
 			/// end of debug code

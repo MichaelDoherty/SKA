@@ -24,7 +24,6 @@
 #include "MotionGraph.h"
 #include "MotionGraphController.h"
 #include <vector>
-#include "testclass.h"
 using namespace std;
 //#include "DataInput.h"
 // global single instance of the animation controller
@@ -33,23 +32,7 @@ AnimationControl anim_ctrl;
 // This example will create and animate one character.
 // The character's skeleton and motion will be defined by a BVH file.
 
-//static string character_BVH("UOP_lab_01.bvh");
-
-	static string character_BVH("Baseball_Swings - old/swing5.bvh");
-
-	//DOESNT ACTUALLY READ THIS FILE/ IT JUST READS WHATS HARDCODED
-//	DataInput abbaJack("../../data/motion/BVH/Baseball_Swings/swing5.bvh");
-	
-	MotionGraph a(1);
-	MotionGraphController *b = new MotionGraphController(a);
-	testclass*c = new testclass(b, a.transitionPoints);
-	//static string character_BVH("avoid/Avoid 11.bvh");
-	
-	
-	//DataInput abbaJack();
-	//abbaJack.
-	//abbaJack
-	//abbaJack.printFrames();
+static string character_BVH("Baseball_Swings - old/swing5.bvh");
 
 // scale the character to about 20%
 // Most things in SKA were developed to fit the CMU ASF skeletons.
@@ -88,8 +71,37 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	return true;
 }
 
+void connectMotionGraphToController(MotionGraphController* mgc, vector<vector<int> > TransitionPoints)
+{
+	// These hard-code file names need to come from somewhere external.
+	string seqID1("swing1.bvh");
+	string seqID2("swing2.bvh");
+	int startFrame = 0;
+
+	list<MotionGraphController::vertexTargets> path;
+	MotionGraphController::vertexTargets temp;
+	for (unsigned long i = 0; i < TransitionPoints.size(); i++)
+	{
+		temp.SeqID = seqID1;
+		temp.SeqID2 = seqID2;
+		temp.FrameNumber = TransitionPoints[i][0];// MS->numFrames();
+		temp.FrameNumber2 = TransitionPoints[i][1];// 0;
+		path.push_back(temp);
+	}
+
+	mgc->setPath(seqID1, startFrame, path);
+}
+
 void AnimationControl::loadCharacters(list<Object*>& render_list)
 {
+	logout << "Constructing MotionGraph" << endl;
+	MotionGraph a(1);
+	logout << "Constructing MotionGraphController" << endl;
+	MotionGraphController *b = new MotionGraphController(a);
+	logout << "Connecting MotionGraph to MotionGraphController" << endl;
+	connectMotionGraphToController(b, a.transitionPoints);
+	logout << "MotionGraph initialization complete" << endl;
+
 	data_manager.addFileSearchPath(BVH_MOTION_FILE_PATH);
 	char* BVH_filename = NULL;
 	try
@@ -129,9 +141,7 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 		skel->constructRenderObject(render_list, color);
 
 		// attach motion controller to animated skeleton
-
-		//skel->attachMotionController(controller);
-	skel->attachMotionController(b);
+		skel->attachMotionController(b);
 
 		// create a character to link all the pieces together.
 		string d1 = string("skeleton: ") + character_BVH;
