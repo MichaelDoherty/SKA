@@ -26,7 +26,16 @@ AnimationControl anim_ctrl;
 // This example will create and animate one character.
 // The character's skeleton and motion will be defined by a BVH file.
 
-static string character_BVH("UOP_lab_01.bvh");
+//static string character_BVH("UOP_lab_01.bvh");
+//static string character_BVH("mocapdata.com/greeting-02-bye-azumi.bvh");
+static string character_BVH("mocapdata.com/greeting-05-salute (chest)-takiguchi.bvh");
+//static string character_BVH("mocapdata.com/greeting-08-shakehands-azumi.bvh");
+//static string character_BVH("mocapdata.com/throw_toss-11-disc-yokoyama.bvh");
+//static string character_BVH("mocapdata.com/throw_toss-16-pass to left heavy-azumi.bvh");
+//static string character_BVH("mocapdata.com/throw_toss-17-pass to back light-azumi.bvh");
+//static string character_BVH("mocapdata.com/walk-09-handbag-takiguchi.bvh");
+//static string character_BVH("mocapdata.com/walk-13-baggage on the shoulder-azumi.bvh"); // problem
+//static string character_BVH("mocapdata.com/walk-18-shuffle forward-yokoyama.bvh");
 
 // scale the character to about 20%
 // Most things in SKA were developed to fit the CMU ASF skeletons.
