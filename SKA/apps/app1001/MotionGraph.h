@@ -12,6 +12,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include "AnimationControl.h"
 using namespace boost;
 using namespace std;
 
@@ -59,14 +60,14 @@ public:
 	vector<vector<Frame> > allFrames;
 	
 	////////////
-	MotionGraph(int x);
-	MotionGraph();
+	//MotionGraph(int x);
+	MotionGraph(MotionDataSpecification& motion_data_specs);
 	void graphToFile();
 	void fileReader(string filename);
-	void fileLoader();
+	void fileLoader(MotionDataSpecification& motion_data_specs);
 	
 	//used to set a specific file's verticies edges to each other linearly
-	 void setLinear(int tempFrameCount, int vertexNumber);
+	void setLinear(int tempFrameCount, int vertexNumber);
 	// used to send data of the graph.
 	DirectedGraph exportGraph();
 	//TO EXPORT TO GRAPH VIZ FILE

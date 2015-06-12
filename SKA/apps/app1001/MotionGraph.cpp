@@ -6,27 +6,30 @@
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/iteration_macros.hpp>
 #include <Core/Utilities.h>
+#include <DataManagement/DataManager.h>
 #include "Connector.h"
 
-// so that in motion graph controller when it creates its motion graph , it doesn't create a whole new one. It keeps it blank. but for one we need to updload the files we update with MotionGraph a(1); or any int
-MotionGraph::MotionGraph()
+MotionGraph::MotionGraph(MotionDataSpecification& motion_data_specs)
 	: vertexNumber(0)
 {
-	//fileLoader();
-}
-// can be used if you wanted to specify number of files to load
-MotionGraph::MotionGraph(int x)
-	: vertexNumber(0)
-{
-	fileLoader();
+	fileLoader(motion_data_specs);
 }
 
 //This is called by fileLoader and inputs data from a single file as a motion into the motion graph
 void MotionGraph::fileReader(string filename)
 {
+
+	string filepath = data_manager.findFile(filename.c_str());
+
+	cout << "MotionGraph::fileReader is opening: " << filepath << endl;
 	long tempFrameCount = 0;
 
-	ifstream data(filename.c_str());
+	ifstream data(filepath.c_str());
+	if (!data) 
+	{
+		cout << "cannot open file " << filepath << endl;
+		return;
+	}
 	std::string line;
 	Frame tmp_frame;
 	Quaternion tmp_quat;
@@ -115,26 +118,12 @@ void MotionGraph::fileReader(string filename)
 }
 
 // handles calling files
-void MotionGraph::fileLoader()
-{	// HARD CODED NEED FIX
+void MotionGraph::fileLoader(MotionDataSpecification& motion_data_specs)
+{	
+	for (unsigned short i=0; i<motion_data_specs.size(); i++)
+		fileReader(motion_data_specs.getQuatFilename(i));
 
-	//To test motion graph builder we will be loading in a vector of filenames related to baseball MoCAP
-	vector<string>baseball;
-	
-	for (int i = 0; i < 2; i++)
-	{
-		char temp[255];
-		//sprintf(temp, "../../data/motion/BVH/Baseball_Swings/swing%d.bvh", i);
-		sprintf(temp, "../../data/motion/BVH/converted/testQuaternion%d.bvh", i);
-		// need to split this 
-		logout << endl << temp << endl;
-		baseball.push_back(temp);
-	}
-
-	//int size = baseball.size();
-	fileReader(baseball.at(0));
-	fileReader(baseball.at(1));
-	//prints out graph 
+	//print out graph 
 	outPutGraphViz();
 	// transition points is a vector of integers which basically tells which vertex in motion1 connects to in motion 2
 	transitionPoints = Connector(allFrames.at(0), allFrames.at(1));

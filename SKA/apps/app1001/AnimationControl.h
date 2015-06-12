@@ -10,11 +10,38 @@
 #include <Core/SystemConfiguration.h>
 // C/C++ libraries
 #include <list>
+#include <vector>
 using namespace std;
 // SKA modules
 #include <Objects/Object.h>
 
 class Skeleton;
+
+class MotionDataSpecification
+{
+private:
+	struct MotionDataSpec 
+	{
+		string seqID;
+		string BVH_file;
+		string quat_file;
+		MotionDataSpec(string _seqID, string _BVH_file, string _quat_file)
+		{
+			seqID = _seqID; BVH_file = _BVH_file; quat_file = _quat_file;
+		}
+	};
+	vector<MotionDataSpec> specs;
+
+public:
+	short size() { return specs.size(); }
+	void addSpec(string _seqID, string _BVH_file, string _quat_file)
+	{
+		specs.push_back(MotionDataSpec(_seqID, _BVH_file, _quat_file));
+	}
+	string getSeqID(short i) { return specs[i].seqID; }
+	string getBvhFilename(short i) { return specs[i].BVH_file; }
+	string getQuatFilename(short i) { return specs[i].quat_file; }
+};
 
 struct AnimationControl
 {
@@ -26,6 +53,11 @@ private:
 	bool single_step;
 	bool freeze;
 	float time_warp;
+
+	// in each pair: first name is the regular BVH for playback, second name is the quaterion file.
+	MotionDataSpecification motion_data_specs;
+	void initializeMotionFileList();
+
 public:
 	AnimationControl();
 	virtual ~AnimationControl();
@@ -47,11 +79,6 @@ public:
 	void normalSpeed()  { time_warp = 1.0f; }
 	bool isFrozen()     { return freeze; }
 	float getTimeWarp() { return time_warp; }
-
-
-
-
-
 };
 
 // global single instance of the animation controller

@@ -3,24 +3,24 @@
 #include "MotionGraphController.h"
 #include "Connector.h"
 
-MotionGraphController::MotionGraphController(MotionGraph &input)
+MotionGraphController::MotionGraphController(MotionGraph* input_motion_graph, MotionDataSpecification& motion_data_specs)
 : last_transition_time(0), last_transition_frame(0), frame_rate(120.0f), character_size_scale(0.2f)
 {
-	g = input;
+	g = input_motion_graph;
 	//Connector(g.allFrames.at(0), g.allFrames.at(1));
 	logout << "initializing Motion Graph Controller \n Reading all frames to test first \n then Checking for neighbors \n" << endl;
 	// pretty much tests to see if all frames are readable in the graph;
 	readAllFrames();
 	//read in the motion sequences
-	readInMotionSequences();
-	//read all the ids in the vector of MsVNames
-	readAllSequenceIDs();
+	readInMotionSequences(motion_data_specs);
+	//log all the ids in the vector of MsVNames
+	logAllSequenceIDs();
 
 	/* test code*/
 	status.FrameNumber = 0;
-	status.SeqID = "swing5.bvh";
+	status.SeqID = motion_data_specs.getSeqID(0); // DOHERTY: not clear whether this initialization is correct or even necessary
 	status.isTransitioning = true;
-	status.TransitionToSeqId = "swing5.bvh";
+	status.TransitionToSeqId = motion_data_specs.getSeqID(1); // DOHERTY: not clear whether this initialization is correct or even necessary
 	MotionSequence *MS;
 	//MotionSequence *MS2;
 	//MotionSequence *MS3;
@@ -242,12 +242,12 @@ MotionGraph::DirectedGraph::vertex_descriptor MotionGraphController::FindVertex(
 {
 	pair<MotionGraph::vertex_iter, MotionGraph::vertex_iter> vp;
 	int i;
-	for (vp = vertices(g.dgraph), i = 0; vp.first != vp.second; ++vp.first, i++)
+	for (vp = vertices(g->dgraph), i = 0; vp.first != vp.second; ++vp.first, i++)
 	{
 		MotionGraph::DirectedGraph::vertex_descriptor v = *(vp.first);
-		if (g.dgraph[v].frame_data.fileName == sequenceID)
+		if (g->dgraph[v].frame_data.fileName == sequenceID)
 		{
-			if (g.dgraph[v].frame_data.frame_number == frameNumber)
+			if (g->dgraph[v].frame_data.frame_number == frameNumber)
 			{
 				return(v);
 			}
@@ -261,11 +261,11 @@ void MotionGraphController::iterateMotionGraph()
 {
 
 	std::pair<MotionGraph::neighbor_iterator, MotionGraph::neighbor_iterator> neighbors =
-		boost::adjacent_vertices(CurrentVertex, g.dgraph);
+		boost::adjacent_vertices(CurrentVertex, g->dgraph);
 	for (; neighbors.first != neighbors.second; ++neighbors.first)
 	{
 		//if the neighbor has the same name as the vertex we are currently on and has the same frame number as the vertex we are on;
-		if (g.dgraph[*neighbors.first].frame_data.fileName == status.SeqID&&g.dgraph[*neighbors.first].frame_data.frame_number == status.FrameNumber)
+		if (g->dgraph[*neighbors.first].frame_data.fileName == status.SeqID&&g->dgraph[*neighbors.first].frame_data.frame_number == status.FrameNumber)
 		{
 			// set it to the neighbor with the correct filename
 			CurrentVertex = *neighbors.first;
@@ -280,11 +280,11 @@ void MotionGraphController::transitionGraph()
 	//uses status info
 
 	std::pair<MotionGraph::neighbor_iterator, MotionGraph::neighbor_iterator> neighbors =
-		boost::adjacent_vertices(CurrentVertex, g.dgraph);
+		boost::adjacent_vertices(CurrentVertex, g->dgraph);
 	for (; neighbors.first != neighbors.second; ++neighbors.first)
 	{
 		//if the neighbor has the same name as the vertex we are currently transitioning to and has the same frame number as the vertex we are transitioning to;
-		if (g.dgraph[*neighbors.first].frame_data.fileName == status.TransitionToSeqId&&g.dgraph[*neighbors.first].frame_data.frame_number == status.FrameNumberTransitionTo)
+		if (g->dgraph[*neighbors.first].frame_data.fileName == status.TransitionToSeqId&&g->dgraph[*neighbors.first].frame_data.frame_number == status.FrameNumberTransitionTo)
 		{
 			// set it to the neighbor with the correct filename
 			CurrentVertex = *neighbors.first;
@@ -296,7 +296,7 @@ void MotionGraphController::transitionGraph()
 bool MotionGraphController::isTransitionPoint(MotionGraph::DirectedGraph::vertex_descriptor m)
 {
 	// adjacency iterators or neighbors
-	std::pair<MotionGraph::neighbor_iterator, MotionGraph::neighbor_iterator> neighbors =boost::adjacent_vertices(m, g.dgraph);
+	std::pair<MotionGraph::neighbor_iterator, MotionGraph::neighbor_iterator> neighbors =boost::adjacent_vertices(m, g->dgraph);
 	//iterate through all neighbors
 	int neighborCount = 0;
 	for (; neighbors.first != neighbors.second; ++neighbors.first)
@@ -361,96 +361,90 @@ list<MotionGraphController::vertexTargets> MotionGraphController::getPath()
 {
 	return(path);
 }
-void MotionGraphController::readInMotionSequences()
+void MotionGraphController::readInMotionSequences(MotionDataSpecification& motion_data_specs)
 {
-	logout << "reading motion Sequences" << endl;
-	namespace fs = ::boost::filesystem;
-
-	fs::path p(BVH_MOTION_FILE_PATHMOTIONS);
-	if (!exists(p))    // does p actually exist?
-		logout << "doesn't exist" << endl;
-	fs::directory_iterator end_itr;
-
-	// cycle through the directory
-	for (fs::directory_iterator itr(p); itr != end_itr; ++itr)
+	logout << "MotionGraphController::readInMotionSequences starting ..." << endl;
+	
+	for (unsigned short i = 0; i<motion_data_specs.size(); i++)
 	{
-		// If it's not a directory, list it. If you want to list directories too, just remove this check.
-		if (is_regular_file(itr->path())) {
-			// assign current file name to current_file and echo it out to the console.
-			string current_file = itr->path().string();
-			current_file = itr->path().filename().string();
-
-			logout << "Current File: " << current_file << endl;
-
-			DataManager dataman;
-			dataman.addFileSearchPath(BVH_MOTION_FILE_PATHMOTIONS);
-			char* BVH_filename = NULL;
-			string character_BVH2(current_file);
+		// assign current file name to current_file and echo it out to the console.
+		string current_file = motion_data_specs.getBvhFilename(i);
+		logout << "Current File: " << current_file << endl;
+		
+		char* BVH_filename = NULL;
+		string character_BVH2(current_file);
+		try
+		{
+			BVH_filename = data_manager.findFile(character_BVH2.c_str());
+			if (BVH_filename == NULL)
+			{
+				logout << "MotionGraphController::readInMotionSequences: Unable to find character BVH file <" << character_BVH2 << ">. Aborting load." << endl;
+				throw BasicException("ABORT");
+			}
+			pair<Skeleton*, MotionSequence*> read_result;
 			try
 			{
-				BVH_filename = dataman.findFile(character_BVH2.c_str());
-				if (BVH_filename == NULL)
-				{
-					logout << "MotionGraphController::readInMotionSequences: Unable to find character BVH file <" << character_BVH2 << ">. Aborting load." << endl;
-					throw BasicException("ABORT");
-				}
-				pair<Skeleton*, MotionSequence*> read_result;
-				try
-				{
-					read_result = data_manager.readBVH(BVH_filename);
-				}
-				catch (const DataManagementException& dme)
-				{
-					logout << "MotionGraphController::readInMotionSequences: Unable to load character data files. Aborting load." << endl;
-					logout << "   Failure due to " << dme.msg << endl;
-					throw BasicException("ABORT");
-				}
-
-				//Skeleton* skel = read_result.first;
-				MotionSequence * ms = read_result.second;
-				
-				std::string x = current_file;
-				char *y = new char[x.length() + 1];
-				std::strcpy(y, x.c_str());
-				//set the ID aka filename
-				ms->setId(y);
-				delete[] y;
-
-				//scale each motion sequence once
-				ms->scaleChannel(CHANNEL_ID(0, CT_TX), character_size_scale);
-				ms->scaleChannel(CHANNEL_ID(0, CT_TY), character_size_scale);
-				ms->scaleChannel(CHANNEL_ID(0, CT_TZ), character_size_scale);
-
-				MotionSequenceContainer test;
-				test.MS = ms;
-				test.SeqID = current_file;
-				MsVector.push_back(test);
-				logout << "done loading:  "<<current_file << MsVector.size() << endl;
+				read_result = data_manager.readBVH(BVH_filename);
 			}
-			catch (BasicException& e) { logout << "EXCEPTION: " << e.msg << endl; }
+			catch (const DataManagementException& dme)
+			{
+				logout << "MotionGraphController::readInMotionSequences: Unable to load character data files. Aborting load." << endl;
+				logout << "   Failure due to " << dme.msg << endl;
+				throw BasicException("ABORT");
+			}
+			
+			//Skeleton* skel = read_result.first;
+			MotionSequence * ms = read_result.second;
+			
+			string seqID = motion_data_specs.getSeqID(i);
+			char* tmp = new char[strlen(seqID.c_str())+1];
+			strcpy(tmp, seqID.c_str());
+			ms->setId(tmp);
+			delete [] tmp;
+
+			//scale each motion sequence once
+			ms->scaleChannel(CHANNEL_ID(0, CT_TX), character_size_scale);
+			ms->scaleChannel(CHANNEL_ID(0, CT_TY), character_size_scale);
+			ms->scaleChannel(CHANNEL_ID(0, CT_TZ), character_size_scale);
+			
+			MotionSequenceContainer test;
+			test.MS = ms;
+			test.SeqID = seqID;
+			MsVector.push_back(test);
+			logout << "done loading:  "<<current_file << MsVector.size() << endl;
 		}
+		catch (BasicException& e) { logout << "EXCEPTION: " << e.msg << endl; }
 	}
 	logout << "the size of the vector is : " << MsVector.size() << endl;
+	logout << "... MotionGraphController::readInMotionSequences finished" << endl;
+
 }
 
-void MotionGraphController::readAllSequenceIDs()
+void MotionGraphController::logAllSequenceIDs()
 {
+	logout << "MotionGraphController::logAllSequenceIDs starting ..." << endl;
 	for (unsigned long i = 0; i < MsVector.size(); i++)
 	{
 		logout << "names " << i << " :" << MsVector.at(i).SeqID << endl;
 	}
+	logout << "... MotionGraphController::logAllSequenceIDs finished" << endl;
 }
 
 // 150201::DOHERTY - We shouldn't return copies of MotionSequenceContainers.
 //                   This should return a reference or pointer.
 MotionGraphController::MotionSequenceContainer MotionGraphController::returnMotionSequenceContainerFromID(string ID)
 {
+	logout << "MotionGraphController::returnMotionSequenceContainerFromID request for seqID " << ID << endl;
 	for (unsigned long i = 0; i < MsVector.size(); i++)
 	{
 		if (MsVector.at(i).SeqID == ID)
+		{
+			logout << "MotionGraphController::returnMotionSequenceContainerFromID found seqID " << ID << endl;
 			return MsVector.at(i);
+		}
 	}
 	// 150201::DOHERTY failsafe - just return the first one.
+	logout << "MotionGraphController::returnMotionSequenceContainerFromID DID NOT FIND seqID " << ID << endl;
 	return MsVector.at(0);
 }
 
@@ -458,7 +452,7 @@ void MotionGraphController::readAllFrames()
 {
 	pair<MotionGraph::vertex_iter, MotionGraph::vertex_iter> vp;
 	int jo = 0;
-	for (vp = vertices(g.dgraph); vp.first != vp.second; vp.first++)
+	for (vp = vertices(g->dgraph); vp.first != vp.second; vp.first++)
 	{
 		//logout << "FileName: " << g.dgraph[*vp.first].frame_data.fileName << endl;
 		//logout << "Frame Number" << g.dgraph[*vp.first].frame_data.frame_number << endl;
@@ -495,7 +489,7 @@ bool MotionGraphController::testLinearOfMotionGraph(MotionGraph::DirectedGraph::
 {
 
 	// adjacency iterators or neighbors
-	std::pair<MotionGraph::neighbor_iterator, MotionGraph::neighbor_iterator> neighbors = boost::adjacent_vertices(m, g.dgraph);
+	std::pair<MotionGraph::neighbor_iterator, MotionGraph::neighbor_iterator> neighbors = boost::adjacent_vertices(m, g->dgraph);
 	//iterate through all neighbors
 	int neighborCount = 0;
 	for (; neighbors.first != neighbors.second; ++neighbors.first)
@@ -508,7 +502,7 @@ bool MotionGraphController::testLinearOfMotionGraph(MotionGraph::DirectedGraph::
 	if (neighborCount == 0)
 	{
 		//for no neighbors aka end of linear file
-		logout << "No neighbors for  " << g.dgraph[m].frame_data.fileName << "frame number: " << g.dgraph[m].frame_data.frame_number << endl;
+		logout << "No neighbors for  " << g->dgraph[m].frame_data.fileName << "frame number: " << g->dgraph[m].frame_data.frame_number << endl;
 	}
 	// if it has 2 or more neighbors then that means it is a transition
 	if (neighborCount >= 2)

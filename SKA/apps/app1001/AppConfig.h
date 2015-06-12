@@ -13,9 +13,5 @@
 #define BVH_MOTION_FILE_PATH "../../data/motion/BVH"
 // textures are BMP files that are used to color some objects (such as the sky)
 #define TEXTURE_FILE_PATH "../../data/textures"
-//files that we are going to be loading
-#define BVH_MOTION_FILE_PATHMOTIONS "../../data/motion/BVH/Baseball_Swings"
-//directory of where we are goign to store converted files. 
-#define QUAT_BVH_MOTION_FILE_PATHMOTIONS "../../data/motion/BVH/Baseball_Swings/QuatConverted"
 
 #endif // APPCONFIG_DOT_H

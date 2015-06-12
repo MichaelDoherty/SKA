@@ -45,11 +45,9 @@ public:
 		 int FrameNumber2;
 	};
 
-	
-
 private:
 	vector<MotionSequenceContainer> MsVector;// contains all the motion sequences
-	MotionGraph g;
+	MotionGraph* g;
 	state status;//status of the current playing animation
 	list<vertexTargets> path; // path the motion graph controller will take when animating
 	list<vertexTargets> pathBackup;// used to loop through the path once again;
@@ -61,7 +59,7 @@ private:
 	float character_size_scale;//the amount we need to scale the motion sequence
 
 public:
-	MotionGraphController(MotionGraph &input);
+	MotionGraphController(MotionGraph* input_motion_graph, MotionDataSpecification& motion_data_specs);
 
 	~MotionGraphController();
 
@@ -79,7 +77,7 @@ public:
 	bool isTransitionPoint(MotionGraph::DirectedGraph::vertex_descriptor m);
 
 	//reads in all the motion sequences
-	void readInMotionSequences();
+	void readInMotionSequences(MotionDataSpecification& motion_data_specs);
 
 	//searches whole graph for a specific point. 
 	MotionGraph::DirectedGraph::vertex_descriptor FindVertex(string sequenceID, int frameNumber);
@@ -121,8 +119,8 @@ public:
 	//reads all the frames of the graph
 	void readAllFrames();
 
-	//reads all the names of the MotionSequences MsVector
-	void readAllSequenceIDs();
+	//logs all the names of the MotionSequences MsVector
+	void logAllSequenceIDs();
 
 	// this is for testing with motion sequences
 	// only to be used if looping the same motion sequence, not if we are using multiple different motion sequences

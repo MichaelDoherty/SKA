@@ -29,11 +29,6 @@ using namespace std;
 // global single instance of the animation controller
 AnimationControl anim_ctrl;
 
-// This example will create and animate one character.
-// The character's skeleton and motion will be defined by a BVH file.
-
-static string character_BVH("Baseball_Swings - old/swing5.bvh");
-
 // scale the character to about 20%
 // Most things in SKA were developed to fit the CMU ASF skeletons.
 // The BVH files from Pacific's mocap lab are about 5 times to large 
@@ -44,11 +39,19 @@ float character_size_scale = 0.2f;
 AnimationControl::AnimationControl() 
 	: ready(false), run_time(0.0f), character(NULL), 
 	single_step(false), freeze(false), time_warp(1.0f)
-{ } 
+{ 
+	initializeMotionFileList();
+} 
 
 AnimationControl::~AnimationControl()	
 { 
 	if (character != NULL) delete character; 
+}
+
+void AnimationControl::initializeMotionFileList()
+{
+	motion_data_specs.addSpec(string("swing1"), string("Baseball_Swings/swing1.bvh"), string("converted/testQuaternion0.bvh"));
+	motion_data_specs.addSpec(string("swing2"), string("Baseball_Swings/swing2.bvh"), string("converted/testQuaternion1.bvh"));
 }
 
 bool AnimationControl::updateAnimation(float _elapsed_time)
@@ -71,18 +74,20 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	return true;
 }
 
-void connectMotionGraphToController(MotionGraphController* mgc, vector<vector<int> > TransitionPoints)
+void connectMotionGraphToController(MotionGraphController* mgc, 
+	vector<vector<int> >& TransitionPoints, 
+	MotionDataSpecification& motion_data_specs)
 {
 	// These hard-code file names need to come from somewhere external.
-	string seqID1("swing1.bvh");
-	string seqID2("swing2.bvh");
+	string seqID1 = motion_data_specs.getSeqID(0);  //("swing1.bvh");
+	string seqID2 = motion_data_specs.getSeqID(1);  //("swing2.bvh");
 	int startFrame = 0;
 
 	list<MotionGraphController::vertexTargets> path;
 	MotionGraphController::vertexTargets temp;
 	for (unsigned long i = 0; i < TransitionPoints.size(); i++)
 	{
-		temp.SeqID = seqID1;
+		temp.SeqID = seqID1;	// DOHERTY 150611 - Shouldn't these IDs come from the motion graph itself?
 		temp.SeqID2 = seqID2;
 		temp.FrameNumber = TransitionPoints[i][0];// MS->numFrames();
 		temp.FrameNumber2 = TransitionPoints[i][1];// 0;
@@ -94,15 +99,22 @@ void connectMotionGraphToController(MotionGraphController* mgc, vector<vector<in
 
 void AnimationControl::loadCharacters(list<Object*>& render_list)
 {
-	logout << "Constructing MotionGraph" << endl;
-	MotionGraph a(1);
-	logout << "Constructing MotionGraphController" << endl;
-	MotionGraphController *b = new MotionGraphController(a);
-	logout << "Connecting MotionGraph to MotionGraphController" << endl;
-	connectMotionGraphToController(b, a.transitionPoints);
-	logout << "MotionGraph initialization complete" << endl;
-
 	data_manager.addFileSearchPath(BVH_MOTION_FILE_PATH);
+
+	logout << "MotionGraphController initialization starting" << endl;
+	logout << "Constructing MotionGraph" << endl;
+	MotionGraph* motion_graph = new MotionGraph(motion_data_specs);
+	logout << "Constructing MotionGraphController" << endl;
+	MotionGraphController *motion_graph_controller = new MotionGraphController(motion_graph, motion_data_specs);
+	logout << "Connecting MotionGraph to MotionGraphController" << endl;
+	connectMotionGraphToController(motion_graph_controller, motion_graph->transitionPoints, motion_data_specs);
+	logout << "destroying motion graph" << endl;
+	delete motion_graph;
+	logout << "MotionGraphController initialization complete" << endl;
+
+
+	string character_BVH = motion_data_specs.getBvhFilename(0);
+	cout << "AnimationControl::loadCharacters is opening: " << character_BVH << endl;
 	char* BVH_filename = NULL;
 	try
 	{
@@ -141,7 +153,7 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 		skel->constructRenderObject(render_list, color);
 
 		// attach motion controller to animated skeleton
-		skel->attachMotionController(b);
+		skel->attachMotionController(motion_graph_controller);
 
 		// create a character to link all the pieces together.
 		string d1 = string("skeleton: ") + character_BVH;
