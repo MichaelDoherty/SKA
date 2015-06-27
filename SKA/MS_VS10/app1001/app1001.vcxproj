@@ -79,8 +79,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\apps\app1001\AnimationControl.h" />
     <ClInclude Include="..\..\apps\app1001\AppConfig.h" />
+    <ClInclude Include="..\..\apps\app1001\BVH2Quaternion.h" />
     <ClInclude Include="..\..\apps\app1001\CameraControl.h" />
-    <ClInclude Include="..\..\apps\app1001\Connector.h" />
     <ClInclude Include="..\..\apps\app1001\InputProcessing.h" />
     <ClInclude Include="..\..\apps\app1001\MotionGraph.h" />
     <ClInclude Include="..\..\apps\app1001\MotionGraphController.h" />
@@ -88,8 +88,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\apps\app1001\AnimationControl.cpp" />
     <ClCompile Include="..\..\apps\app1001\AppMain.cpp" />
+    <ClCompile Include="..\..\apps\app1001\BVH2Quaternion.cpp" />
     <ClCompile Include="..\..\apps\app1001\CameraControl.cpp" />
-    <ClCompile Include="..\..\apps\app1001\Connector.cpp" />
     <ClCompile Include="..\..\apps\app1001\InputProcessing.cpp" />
     <ClCompile Include="..\..\apps\app1001\MotionGraph.cpp" />
     <ClCompile Include="..\..\apps\app1001\MotionGraphController.cpp" />

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// app0002 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.cpp
 //    Animation controller for a single character defined by a BVH file.
@@ -16,16 +16,15 @@
 #include <Animation/Skeleton.h>
 #include <DataManagement/DataManager.h>
 #include <DataManagement/DataManagementException.h>
-// local application
+#include <Math/Quaternion.h>
+// Application
 #include "AppConfig.h"
-#include "Connector.h"
 #include "AnimationControl.h"
-#include "DataInput.h"
 #include "MotionGraph.h"
 #include "MotionGraphController.h"
 #include <vector>
 using namespace std;
-//#include "DataInput.h"
+
 // global single instance of the animation controller
 AnimationControl anim_ctrl;
 
@@ -38,7 +37,8 @@ float character_size_scale = 0.2f;
 
 AnimationControl::AnimationControl() 
 	: ready(false), run_time(0.0f), character(NULL), 
-	single_step(false), freeze(false), time_warp(1.0f)
+	single_step(false), freeze(false), time_warp(1.0f),
+	motion_graph_controller(NULL), motion_graph(NULL)
 { 
 	initializeMotionFileList();
 } 
@@ -46,12 +46,15 @@ AnimationControl::AnimationControl()
 AnimationControl::~AnimationControl()	
 { 
 	if (character != NULL) delete character; 
+	if (motion_graph != NULL) delete motion_graph;
+	if (motion_graph_controller != NULL) delete motion_graph_controller;
 }
 
 void AnimationControl::initializeMotionFileList()
 {
-	motion_data_specs.addSpec(string("swing1"), string("Baseball_Swings/swing1.bvh"), string("converted/testQuaternion0.bvh"));
-	motion_data_specs.addSpec(string("swing2"), string("Baseball_Swings/swing2.bvh"), string("converted/testQuaternion1.bvh"));
+	motion_data_specs.addSpec(string("swing1"), string("swing1.bvh"), string("swing1quat.bvh"));
+	motion_data_specs.addSpec(string("swing2"), string("swing2.bvh"), string("swing2quat.bvh"));
+	motion_data_specs.addSpec(string("swing3"), string("swing3.bvh"), string("swing3quat.bvh"));
 }
 
 bool AnimationControl::updateAnimation(float _elapsed_time)
@@ -74,44 +77,23 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	return true;
 }
 
-void connectMotionGraphToController(MotionGraphController* mgc, 
-	vector<vector<int> >& TransitionPoints, 
-	MotionDataSpecification& motion_data_specs)
-{
-	// These hard-code file names need to come from somewhere external.
-	string seqID1 = motion_data_specs.getSeqID(0);  //("swing1.bvh");
-	string seqID2 = motion_data_specs.getSeqID(1);  //("swing2.bvh");
-	int startFrame = 0;
-
-	list<MotionGraphController::vertexTargets> path;
-	MotionGraphController::vertexTargets temp;
-	for (unsigned long i = 0; i < TransitionPoints.size(); i++)
-	{
-		temp.SeqID = seqID1;	// DOHERTY 150611 - Shouldn't these IDs come from the motion graph itself?
-		temp.SeqID2 = seqID2;
-		temp.FrameNumber = TransitionPoints[i][0];// MS->numFrames();
-		temp.FrameNumber2 = TransitionPoints[i][1];// 0;
-		path.push_back(temp);
-	}
-
-	mgc->setPath(seqID1, startFrame, path);
-}
-
 void AnimationControl::loadCharacters(list<Object*>& render_list)
 {
+	data_manager.addFileSearchPath(".");
 	data_manager.addFileSearchPath(BVH_MOTION_FILE_PATH);
 
 	logout << "MotionGraphController initialization starting" << endl;
-	logout << "Constructing MotionGraph" << endl;
-	MotionGraph* motion_graph = new MotionGraph(motion_data_specs);
-	logout << "Constructing MotionGraphController" << endl;
-	MotionGraphController *motion_graph_controller = new MotionGraphController(motion_graph, motion_data_specs);
-	logout << "Connecting MotionGraph to MotionGraphController" << endl;
-	connectMotionGraphToController(motion_graph_controller, motion_graph->transitionPoints, motion_data_specs);
-	logout << "destroying motion graph" << endl;
-	delete motion_graph;
+
+	motion_graph = new MotionGraph(motion_data_specs);
+
+	motion_graph_controller = new MotionGraphController(motion_graph, motion_data_specs, character_size_scale);
+
 	logout << "MotionGraphController initialization complete" << endl;
 
+	// Read the skeleton from the first BVH file.
+	// Throw away the motion, since MotionGraphController reads all the motions.
+	// FUTUREWORK (150618) - For consistency with other app, should all motion file reads be here,
+	//                       rather than in the controller?
 
 	string character_BVH = motion_data_specs.getBvhFilename(0);
 	cout << "AnimationControl::loadCharacters is opening: " << character_BVH << endl;
@@ -122,7 +104,7 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 		if (BVH_filename == NULL)
 		{
 			logout << "AnimationControl::loadCharacters: Unable to find character BVH file <" << character_BVH << ">. Aborting load." << endl;
-			throw BasicException("ABORT");
+			throw AppException("ABORT");
 		}
 		pair<Skeleton*, MotionSequence*> read_result;
 		try
@@ -133,19 +115,14 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 		{
 			logout << "AnimationControl::loadCharacters: Unable to load character data files. Aborting load." << endl;
 			logout << "   Failure due to " << dme.msg << endl;
-			throw BasicException("ABORT");
+			throw AppException("ABORT");
 		}
 
 		Skeleton* skel = read_result.first;
-		MotionSequence* ms = read_result.second;
-
-		// scale the bones lengths and translation distances
 		skel->scaleBoneLengths(character_size_scale);
-		ms->scaleChannel(CHANNEL_ID(0,CT_TX), character_size_scale);
-		ms->scaleChannel(CHANNEL_ID(0,CT_TY), character_size_scale);
-		ms->scaleChannel(CHANNEL_ID(0,CT_TZ), character_size_scale);
 
-		//MotionSequenceController* controller = new MotionSequenceController(ms);
+		// throw away the motion sequence, only using the skeleton.
+		delete read_result.second;
 		
 		// create rendering model for the character and put the character's 
 		// bone objects in the rendering list
@@ -169,3 +146,44 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 	ready = true;
 }
 
+vector<string> AnimationControl::statusReport()
+{
+	stringstream ss[10];
+	vector<string> report;
+
+	ss[0] << "time warp: " << anim_ctrl.getTimeWarp();
+	if (anim_ctrl.isFrozen()) ss[0] << " (frozen)";
+	report.push_back(ss[0].str());
+
+	if (motion_graph_controller == NULL)
+	{
+		report.push_back(string("No active motion graph controller"));
+	}
+	else
+	{
+		MotionGraphController::State mgcstate = motion_graph_controller->getState();
+		
+		ss[2] << "current time: " << mgcstate.current_time;
+		report.push_back(ss[2].str());
+
+		ss[3] << "frame zero time: " << mgcstate.frame_zero_time;
+		report.push_back(ss[3].str());
+
+		ss[4] << "active sequence: " << mgcstate.active_seqID;
+		report.push_back(ss[4].str());
+
+		ss[5] << "active frame: " << mgcstate.active_frame;
+		report.push_back(ss[5].str());
+
+		ss[6] << "transition trigger frame: " << mgcstate.transition_trigger_frame;
+		report.push_back(ss[6].str());
+
+		ss[7] << "transition sequence: " << mgcstate.transition_seqID;
+		report.push_back(ss[7].str());
+	
+		ss[8] << "transition frame: " << mgcstate.transition_frame;
+		report.push_back(ss[8].str());
+	}
+
+	return report;
+}

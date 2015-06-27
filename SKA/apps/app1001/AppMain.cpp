@@ -1,16 +1,7 @@
 //-----------------------------------------------------------------------------
-// app0002 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
-// app0002: Demo program demonstrates how to animate a character based on
-//          a BVH file.
-//          It also illustrated various useful things that aren't
-//          directly related to the character animation.
-//          (1) additional objects, such as ground, sky and coordinate axes
-//          (2) moveable camera, controlled by the camera and mouse.
-//          (3) keyboard filtering, to avoid multiple responses when
-//              a single keystroke is expected.
-//          (4) animation speed control (freeze, single step, time warp)
-//          (5) heads-up display (2D text on screen)
+// app1001: Uses motion graphs to cycle between multiple motion sequences.
 //-----------------------------------------------------------------------------
 // AppMain.cpp
 //    The main program is mostly the connection between openGL, 
@@ -68,16 +59,15 @@ void drawHUD()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Color color(1.0f,1.0f,0.0f,1.0f);
+	float x = -0.9f;
 	float y = 0.9f;
 	string s;
 
-	s = "Time Warp: " + toString(anim_ctrl.getTimeWarp());
-	renderString(0.5f, y, 0.0f, color, s.c_str());
-	y -= 0.05f;
-	if (anim_ctrl.isFrozen())
+	vector<string> report = anim_ctrl.statusReport();
+	for (unsigned short i = 0; i<report.size(); i++)
 	{
-		s = "Animation Frozen";
-		renderString(0.5f, y, 0.0f, color, s.c_str());
+		renderString(x, y, 0.0f, color, report[i].c_str());
+		y -= 0.05f;
 	}
 }
 
@@ -223,9 +213,28 @@ int main(int argc, char **argv)
 {
 	// initialize the animation subsystem, which reads the
 	// mocap data files and sets up the character(s)
-	anim_ctrl.loadCharacters(anim_render_list);
+	try
+	{
+		anim_ctrl.loadCharacters(anim_render_list);
+	}
+	catch (AppException& appex)
+	{
+		cout << appex.msg << endl;
+		logout << appex.msg << endl;
+		logout << "main(): AppException caught while loading characters. Aborting program." << endl;
+		return 1;
+	}
+	catch (BasicException& appex)
+	{
+		cout << appex.msg << endl;
+		logout << appex.msg << endl;
+		logout << "main(): BasicException caught while loading characters. Aborting program." << endl;
+		return 1;
+	}
+
 	if (!anim_ctrl.isReady()) 
 	{
+		cout << "main(): Unable to load characters. Aborting program." << endl;
 		logout << "main(): Unable to load characters. Aborting program." << endl;
 		return 1;
 	}

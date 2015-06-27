@@ -1,50 +1,171 @@
+//-----------------------------------------------------------------------------
+// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+//-----------------------------------------------------------------------------
+// MotionGraph.cpp
+// Based on MotionGraph and Connector classes developed by COMP 259 students, fall 2014
+
 // SKA configuration
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
-
-#include "MotionGraph.h"
-#include <boost/graph/graphviz.hpp>
-#include <boost/graph/iteration_macros.hpp>
 #include <Core/Utilities.h>
+#include <string>
+#include <iostream>
+#include <sstream>
+using namespace std;
+// SKA modules
 #include <DataManagement/DataManager.h>
-#include "Connector.h"
+#include <Math/Quaternion.h>
+#include "AppConfig.h"
+#include "MotionGraph.h"
+#include "BVH2Quaternion.h"
 
 MotionGraph::MotionGraph(MotionDataSpecification& motion_data_specs)
-	: vertexNumber(0)
-{
-	fileLoader(motion_data_specs);
+{	
+	buildMotionGraph(motion_data_specs);
 }
 
-//This is called by fileLoader and inputs data from a single file as a motion into the motion graph
-void MotionGraph::fileReader(string filename)
+void MotionGraph::findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions)
 {
+	for (unsigned long g=0; g<graph.size(); g++)
+	{
+		for (unsigned long i = 0; i < graph[g].transitions.size(); i++)
+		{
+			// FUTUREWORK (150626) - The +10 is to avoid jumping too soon. 
+			//                       It should be parameterized.
+			if ((graph[g].from_seq_ID == from_seqID) && 
+				(graph[g].transitions[i].from_frame > from_frame+10))
+			{
+				Transition t;
+				t.from_seqID = graph[g].transitions[i].from_seqID;	
+				t.to_seqID = graph[g].transitions[i].to_seqID;	
+				t.from_frame = graph[g].transitions[i].from_frame;
+				t.to_frame = graph[g].transitions[i].to_frame;
+				transitions.push_back(t);
+			}
+		}
+	}
+}
 
-	string filepath = data_manager.findFile(filename.c_str());
+void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
+{
+	vector<Sequence> sequences;
 
-	cout << "MotionGraph::fileReader is opening: " << filepath << endl;
-	long tempFrameCount = 0;
+	for (unsigned short i=0; i<motion_data_specs.size(); i++)
+	{
+		Sequence seq = fileReader(motion_data_specs, i);
+		sequences.push_back(seq);
+	}
 
-	ifstream data(filepath.c_str());
+	// find transitions between each pair of sequences
+	// FUTUREWORK (150618) - does not currently allow for any transitions to self
+	for (unsigned short i=0; i<motion_data_specs.size(); i++) 
+	{
+		TransitionSet ts;
+		for (unsigned short j=0; j<motion_data_specs.size(); j++)
+		{
+			if (i == j) continue;
+			ts.from_seq_ID = motion_data_specs.getSeqID(i);
+			computeTransitions(sequences[i], sequences[j], ts.transitions);
+		}
+		graph.push_back(ts);
+	}
+}
+
+static string verifyQuaternionFile(string& bvh_filename, string& quat_filename)
+{
+	if (bvh_filename == quat_filename)
+	{
+		stringstream ss;
+		ss << "MotionGraph::fileReader bvh file and quat file have the same name " 
+			<< quat_filename << " == " << bvh_filename;
+		throw AppException(ss.str().c_str());
+	}
+
+	char* quat_filepath = data_manager.findFile(quat_filename.c_str());
+
+	// if we can't find the quaternion file, attempt to generate it
+	if (quat_filepath == NULL)
+	{
+		char* bvh_filepath = data_manager.findFile(bvh_filename.c_str());
+		if (bvh_filepath == NULL)
+		{
+			stringstream ss;
+			ss << "MotionGraph::fileReader cannot find file " 
+				<< quat_filename << " or " << bvh_filename;
+			throw AppException(ss.str().c_str());
+		}
+		string bvh_fullfilepath = bvh_filepath;
+		
+		// extract the directory of the located bvh file
+		char* bvh_dir = strClone(bvh_filepath);
+		char* name_starts = strrchr(bvh_dir, '/');
+		if (name_starts == NULL) bvh_dir[0] = '\n';
+		else *(name_starts+1) = '\0';
+		
+		// attempt to create a new file in the same directory as the source BVH file.
+		quat_filepath = new char[strlen(bvh_dir)+quat_filename.length()+20];
+		sprintf(quat_filepath, "%s%s", bvh_dir, quat_filename.c_str());
+
+		// be careful not to override the source BVH file.
+		if (strcmp(bvh_filepath, quat_filepath) == 0)
+		{
+			sprintf(quat_filepath, "%sqq_%s", quat_filepath, quat_filename.c_str());
+		}
+
+		convertBVH2Quaternion(bvh_fullfilepath, string(quat_filepath));
+
+		// verify that the new file exists
+		char* tmp = data_manager.findFile(quat_filepath);
+		if (tmp == NULL)
+		{
+			stringstream ss;
+			ss << "MotionGraph::fileReader cannot find generated quaternion file " << quat_filepath;
+			throw AppException(ss.str().c_str());
+		}
+		delete [] tmp;
+	}
+	string filepath = quat_filepath;
+	delete [] quat_filepath;
+	return filepath;
+}
+
+// Read a quaternion format data file and store it as a Sequence
+MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_data_specs, short index)
+{
+	string seq_ID = motion_data_specs.getSeqID(index);
+	string bvh_filename = motion_data_specs.getBvhFilename(index);
+	string quat_filename = motion_data_specs.getQuatFilename(index);
+
+	string quat_filepath = verifyQuaternionFile(bvh_filename, quat_filename);
+	
+	vector<Frame> single_sequence; 
+	Sequence sequence;
+	sequence.seq_ID = seq_ID;
+	sequence.source_filename = quat_filename;
+	sequence.source_full_pathname = quat_filepath;
+
+	cout << "MotionGraph::fileReader is opening: " << quat_filepath << endl;
+
+	ifstream data(quat_filepath.c_str());
 	if (!data) 
 	{
-		cout << "cannot open file " << filepath << endl;
-		return;
+		stringstream ss;
+		ss << "MotionGraph::fileReader cannot open file " << quat_filepath;
+		throw AppException(ss.str().c_str());
 	}
-	std::string line;
+	string line;
 	Frame tmp_frame;
 	Quaternion tmp_quat;
 
 	while (!data.eof())
 	{
-		//used to store filename it can be used to identify individual motions sequences in the motion graph
-		tmp_frame.fileName = filename;
-		NameVect.push_back(filename + toString(tempFrameCount));
-
 		getline(data, line);
 		data >> tmp_frame.root_position.x;
 		data >> tmp_frame.root_position.y;
 		data >> tmp_frame.root_position.z;
-		// gather non-root joints euler angles in the frame
+
+		// FUTUREWORK (150626) - 20 joint count needs to be parameterized.
+		//   needs to be coordinated with convertBVH2Quaternion()
 		for (int j = 0; j < 20; j++)
 		{
 			data >> tmp_quat.w;
@@ -53,158 +174,127 @@ void MotionGraph::fileReader(string filename)
 			data >> tmp_quat.y;
 			tmp_frame.joints.push_back(tmp_quat);
 		}
-		tmp_frame.frame_number = vertexNumber;
-		//push each individual frame onto a vector of frames
-		frames.push_back(tmp_frame);
+
+		single_sequence.push_back(tmp_frame);
 		tmp_frame.joints.clear();
-		vertexNumber++;
-		tempFrameCount++;
 	}
-	//int size = frames.size();
+
+	sequence.frames = single_sequence; 
+	return sequence;
+}
+
+struct CandidateTransition {
+	int motion1_frame;
+	int motion2_frame;
+	float distance;
+};
+
+// FUTUREWORK (150618) 
+// This function would probably be more efficient if we used lists instead of vectors,
+// since it is often erasing the first element in the vector/list.
+void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result)
+{
+	logout << "MotionGraph::findTransitions starting" << endl;
 	
-	//	logout << endl << "vertexNumber is " << vertexNumber << endl;
-	//logout << endl << "num frames is " << size << endl;
+	vector<CandidateTransition> candidate_transitions;
 
-	//Now we can initialize our graph using iterators from our above vector
-	unsigned int i;
+	// Calculate distances between each pair of frames from the two motions
 
-	//if we have already added to that graph
-	// added empty nodes to the motion graph
-	for (int k = 0; k < tempFrameCount; k++)
+	// Upper theshold for initial threshold culling
+	// FUTUREWORK (150618) - max_distance should be a parameter
+	float max_distance = 12.0; 
+
+	// loop through all frame pairs <i,j>, where i is from motion 1 and j is from motion 2
+	for (unsigned int i = 0; i < motion1.frames.size(); i += 1) 
 	{
-		add_vertex(dgraph);
-	}
-
-	//initializes graph vertex iterators (vertex and nodes refer to the same thing)
-	pair<vertex_iter, vertex_iter> vp;
-	// iterate through motion graph and make each empty node equal to a specific element of our frame vector
-	// basicaly each node in the motion graph refers to a specific frame read in from a motion file
-	for (vp = vertices(dgraph), i = 0; vp.first != vp.second; ++vp.first, i++) {
-		DirectedGraph::vertex_descriptor v = *(vp.first);
-		// code to set a node equal to element of the frame vector 
-		dgraph[v].frame_data = frames[i];
-		if (i < 0)
+		for (unsigned int j = 0; j < motion2.frames.size(); j += 1) 
 		{
-			logout << frames[i].frame_number << " = " << dgraph[v].frame_data.frame_number << endl;
-			logout << "frame " << i << " root position = " << frames[i].root_position << endl;
-			logout << "frame " << i << " root joint = " << frames[i].joints[0] << endl;
-			logout << "frame " << i << " joint 5 = " << frames[i].joints[5] << endl;
+			float distance = 0;
+			
+			if (motion1.frames[i].joints.size() != motion2.frames[j].joints.size())
+			{
+				stringstream ss;
+				ss << "Error in MotionGraph::findTransitions. Different number of joints. " 
+					<< motion1.seq_ID << " frame " << i << " to " << motion2.seq_ID << " frame " << j;
+				throw AppException(ss.str().c_str());
+			}
+
+			// distance is the sum of the quaterian differences of each joint
+			for (unsigned short k = 0; k < motion1.frames[i].joints.size(); k++) 
+			{
+				Quaternion diffq = motion1.frames[i].joints[k] - motion2.frames[j].joints[k];
+				distance += diffq.magnitude();
+			}
+
+			// store this pair as a candidate transition if it meets the criteria
+			// FUTUREWORK (150618) - 30 should be a parameter
+			if (abs(distance) < max_distance && 
+				distance != 0 && 
+				j < motion2.frames.size() - 30 && 
+				i < motion1.frames.size() - 30 && 
+				i > 30 && 
+				j > 30)
+			{
+				CandidateTransition transition;
+				transition.motion1_frame = i;
+				transition.motion2_frame = j;
+				transition.distance = distance;
+				candidate_transitions.push_back(transition);
+			}
 		}
 	}
 
-	// prints out the contents of the graph
-	//	logout << "Checking contents of the graph: " << endl;
-	for (vp = vertices(dgraph); vp.first != vp.second; ++vp.first)
+	// sort the candidate transitions in order of increasing distance
+
+	vector<CandidateTransition> ordered_transitions;
+	while (candidate_transitions.size() > 0)
 	{
-		DirectedGraph::vertex_descriptor v = *vp.first;
-		i = dgraph[v].frame_data.frame_number;
-		if (i < 0)
+		int lowestCompValLocation = 0;
+		for (unsigned int i = 1; i < candidate_transitions.size(); i++)
 		{
-			logout << "frame " << i << " root position = " << dgraph[v].frame_data.root_position << endl;
-			logout << "frame " << i << " root joint = " << dgraph[v].frame_data.joints[0] << endl;
-			logout << "frame " << i << " joint 5 = " << dgraph[v].frame_data.joints[5] << endl;
+			if (candidate_transitions[lowestCompValLocation].distance > candidate_transitions[i].distance)
+				lowestCompValLocation = i;
 		}
+		ordered_transitions.push_back(candidate_transitions[lowestCompValLocation]);
+		candidate_transitions.erase(candidate_transitions.begin() + lowestCompValLocation);
 	}
 
-	//logout << "count " << vertexNumber << endl;
-	// sets edges across all the new verticies
-	setLinear(tempFrameCount, vertexNumber);
-	//logout << endl << endl;
-	//system("pause");
-	allFrames.push_back(frames);
+	// select the best pairs from local sequences of pairs
 
-	logout << "All Frame size: "<<allFrames.size()<<endl;
-	logout << "All Frame at " << allFrames.size()-1 << " size: " << allFrames.at(allFrames.size()-1).size() << endl;
-}
-
-// handles calling files
-void MotionGraph::fileLoader(MotionDataSpecification& motion_data_specs)
-{	
-	for (unsigned short i=0; i<motion_data_specs.size(); i++)
-		fileReader(motion_data_specs.getQuatFilename(i));
-
-	//print out graph 
-	outPutGraphViz();
-	// transition points is a vector of integers which basically tells which vertex in motion1 connects to in motion 2
-	transitionPoints = Connector(allFrames.at(0), allFrames.at(1));
-}
-
-MotionGraph::DirectedGraph MotionGraph::exportGraph()
-{
-	return(dgraph);
-}
-
-// only can be used if verticies are stored in a vecS
-void MotionGraph::setLinear(int tempFrameCount, int vertexNumber)
-{
-	//the frame to start iterating from
-	int startFrame = vertexNumber - tempFrameCount;
-	//logout << "start frame start " << startFrame << endl;
-	pair<vertex_iter, vertex_iter> vp;
-	int i = 0;
-	for (vp = vertices(dgraph), i = 0; vp.first + startFrame != vp.second; ++vp.first, i++)
+	vector<CandidateTransition> selected_transitions;
+	selected_transitions.push_back(ordered_transitions[0]);
+	ordered_transitions.erase(ordered_transitions.begin());
+	while (ordered_transitions.size() > 0)
 	{
-		DirectedGraph::vertex_descriptor v = *(vp.first + startFrame);
-		DirectedGraph::vertex_descriptor v1 = *(vp.first + (startFrame - 1));
-
-		if (i > 0)
+		bool addToList = true;
+		for (unsigned int i = 0; i < selected_transitions.size(); i++)
 		{
-			// add edge from  the first to the next
-			add_edge(v1, v, dgraph);
-			//now lets add the info to the edge
-			DirectedGraph::edge_descriptor e = *out_edges(v1, dgraph).first;
-			// changing the first edge. its not a specific selector. like if there are 2 edges, this just chooses the first one.
-			///////////////*************************Debug code to check edge iteration*********////////////
-			//if (startFrame + i > vertexNumber - 2)
-			//{
-				/*
-				logout << "vp second" << *vp.second << endl;
-				logout << "vp first" << *vp.first << endl;
-				logout << "vp first" << *vp.first+startFrame << endl;
-				logout << "frame: " << startFrame + i << endl;
-				logout << dgraph[v1].frame_data.frame_number << endl;
-				logout << dgraph[v].frame_data.frame_number << endl;
-				*/
-			//}
-			//logout << dgraph[v1].frame_data.frame_number << endl;
-			//logout << dgraph[v].frame_data.frame_number << endl;
-			
-			/////////////////////****************** end of edge iteration debug*************/////////////////
-			
-			string name = dgraph[v1].frame_data.frame_number + "-" + dgraph[v].frame_data.frame_number;
-			dgraph[e].StartFrame = dgraph[v1].frame_data.frame_number;
-			dgraph[e].EndFrame = dgraph[v].frame_data.frame_number;
-
-
-			//std::pair<neighbor_iterator, neighbor_iterator> neighbors =
-				boost::adjacent_vertices(v1, dgraph);
-			//iterate through all neighbors---MORE DEBUG CODE
-			//for (; neighbors.first != neighbors.second; ++neighbors.first)
-			//{
-				//logout << "neighbors for  " << dgraph[v1].frame_data.frame_number << " ";
-				//logout << dgraph[*neighbors.first].frame_data.frame_number << endl;
-			//}
-			
-			/// end of debug code
+			// If the lowest comparison value in sortedComparisons frame 1 and 2 are within 10 frames 
+			// of any motion already stored then don't add to final list
+			// FUTUREWORK (150618) - 5 should be a parameter
+			if (ordered_transitions[0].motion1_frame < selected_transitions[i].motion1_frame + 5 &&
+				ordered_transitions[0].motion1_frame > selected_transitions[i].motion1_frame - 5 &&
+				ordered_transitions[0].motion2_frame < selected_transitions[i].motion2_frame + 5 &&
+				ordered_transitions[0].motion2_frame < selected_transitions[i].motion2_frame - 5)
+				addToList = false;
 		}
-
+		if (addToList)
+			selected_transitions.push_back(ordered_transitions[0]);
+		ordered_transitions.erase(ordered_transitions.begin());
 	}
-}
 
-// output graph to file-- use graph viz to check output(graphViz is a seperate program)
-void MotionGraph::outPutGraphViz()
-{
-	//dp.property("node_id", get(&GraphNode::frame_data, dgraph));
-	//boost::dynamic_properties dp;
-	//boost::property_map<DirectedGraph, boost::vertex_name_t>::type name = boost::get(boost::vertex_name, dgraph);
-	//dp.property("node_id", name);
-	//auto score = boost::get(&GraphNode::color, dgraph);
-	//dp.property("score", score);
+	logout << "MotionGraph::findTransitions found " << selected_transitions.size() << " transitions " << endl;
 
-	string google = "GRAPHOUTPUT.dot";
-	std::ofstream dotfile(google.c_str());
+	for (unsigned int i = 0; i < selected_transitions.size(); i++)
+	{
+		Transition t;
+		t.from_seqID = motion1.seq_ID;
+		t.from_frame = selected_transitions[i].motion1_frame;
+		t.to_seqID = motion2.seq_ID;
+		t.to_frame = selected_transitions[i].motion2_frame;
+		t.distance = selected_transitions[i].distance;
+		result.push_back(t);
+	}
 
-	// 120101::DOHERTY next line is causing some extensive template error, maybe from boost?
-	write_graphviz(dotfile, dgraph, make_label_writer(&NameVect[0]));
-
+	logout << "MotionGraph::findTransitions finished" << endl;
 }

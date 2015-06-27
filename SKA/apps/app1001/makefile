@@ -8,7 +8,7 @@ SKALIB = -lska
 GLLIBS = -lglut -lGLU -lGL
 BOOSTLIBS = -lboost_system -lboost_filesystem
 
-SOURCES = AppMain.cpp AnimationControl.cpp CameraControl.cpp InputProcessing.cpp Connector.cpp DataInput.cpp MotionGraph.cpp MotionGraphController.cpp testclass.cpp
+SOURCES = AppMain.cpp AnimationControl.cpp CameraControl.cpp InputProcessing.cpp DataInput.cpp MotionGraph.cpp MotionGraphController.cpp testclass.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

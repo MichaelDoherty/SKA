@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// app0002 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
 //-----------------------------------------------------------------------------
 // AnimationControl.h
 //    Animation controller for a single character defined by a BVH file.
@@ -58,6 +58,10 @@ private:
 	MotionDataSpecification motion_data_specs;
 	void initializeMotionFileList();
 
+	// keep a pointer to the motion graph controller, so that state reports can be easily extracted
+	class MotionGraphController* motion_graph_controller;
+	class MotionGraph* motion_graph;
+
 public:
 	AnimationControl();
 	virtual ~AnimationControl();
@@ -79,6 +83,9 @@ public:
 	void normalSpeed()  { time_warp = 1.0f; }
 	bool isFrozen()     { return freeze; }
 	float getTimeWarp() { return time_warp; }
+
+	// format a report on the state of the motion graph controller
+	vector<string> statusReport();
 };
 
 // global single instance of the animation controller

@@ -33,7 +33,7 @@
     <ClInclude Include="..\..\apps\app1001\MotionGraphController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\apps\app1001\Connector.h">
+    <ClInclude Include="..\..\apps\app1001\BVH2Quaternion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClCompile Include="..\..\apps\app1001\MotionGraphController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\apps\app1001\Connector.cpp">
+    <ClCompile Include="..\..\apps\app1001\BVH2Quaternion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,78 +1,66 @@
+//-----------------------------------------------------------------------------
+// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+//-----------------------------------------------------------------------------
+// MotionGraph.h
+// Based on MotionGraph and Connector classes developed by COMP 259 students, fall 2014.
+
 #ifndef MOTIONGRAPH_DOT_H
 #define MOTIONGRAPH_DOT_H
 // SKA configuration
 #include <Core/SystemConfiguration.h>
-// SKA modules
-#include <Math/Vector3D.h>
-#include <Math/Quaternion.h>
-// local application
-#include "DataInput.h"
-#include "boost/graph/graph_traits.hpp"
-#include "boost/graph/adjacency_list.hpp"
-#include <iostream>
-#include <algorithm>
 #include <vector>
-#include "AnimationControl.h"
-using namespace boost;
 using namespace std;
+#include "AnimationControl.h"
 
 class MotionGraph
 {	
-private:
-	vector<string> filenames;
-	int vertexNumber;
-	
 public:
-	// contains an entire motion sequence
+
+	MotionGraph(MotionDataSpecification& motion_data_specs);
+	
+	// FUTUREWORK (150618) - optimize the graph storage for faster retrieval 
+	//                       of queries through findTransitions()
+	struct Transition
+	{ 
+		string from_seqID;
+		int from_frame;
+		string to_seqID;
+		int to_frame;
+		float distance;
+	};
+
+	struct TransitionSet
+	{
+		string from_seq_ID;
+		vector<Transition> transitions;
+	};
+
+	vector<TransitionSet> graph;
+
+	// find all transitions from the given motion sequence at some frame later than the given frame
+	void findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions);
+
+private:
+		
 	struct Frame
 	{
-		string vertexName;
 		Vector3D root_position;
-		std::vector<Quaternion> joints;
-		int frame_number;
-		string fileName;
+		std::vector<Quaternion> joints; 
 	};
-	struct GraphNode
+
+	struct Sequence
 	{
-		Frame frame_data;
-		//	string color;
+		vector<Frame> frames;
+		string seq_ID;
+		string source_filename;
+		string source_full_pathname;
 	};
-	// need to add GraphEdge to have edges tell where we are going
-	struct GraphEdge
-	{
-		string StartFilename;
-		string EndFilename;
-		int StartFrame;
-		int EndFrame;
-	};
-	//// The only way for me to access these things is through public:
-	vector<Frame> frames;
-	vector<vector<int> > transitionPoints;
+
+	void buildMotionGraph(MotionDataSpecification& motion_data_specs);
+
+	Sequence fileReader(MotionDataSpecification& motion_data_specs, short index);
 	
-	//use vecS to to iterate for more than plus one
-	//	this is the real one used
-	//typedef adjacency_list<listS, listS, directedS, GraphNode, GraphEdge> DirectedGraph;
-	typedef adjacency_list<listS, vecS, directedS, GraphNode, GraphEdge> DirectedGraph;
-	typedef graph_traits<DirectedGraph>::vertex_iterator vertex_iter;
-	//this is used to find the next following vertex
-	typedef graph_traits < DirectedGraph >::adjacency_iterator neighbor_iterator;
-	DirectedGraph dgraph;
-	vector<vector<Frame> > allFrames;
-	
-	////////////
-	//MotionGraph(int x);
-	MotionGraph(MotionDataSpecification& motion_data_specs);
-	void graphToFile();
-	void fileReader(string filename);
-	void fileLoader(MotionDataSpecification& motion_data_specs);
-	
-	//used to set a specific file's verticies edges to each other linearly
-	void setLinear(int tempFrameCount, int vertexNumber);
-	// used to send data of the graph.
-	DirectedGraph exportGraph();
-	//TO EXPORT TO GRAPH VIZ FILE
-	void outPutGraphViz();
-	vector<string> NameVect;
-	void selectColor();
+	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result);
 };
+
 #endif
