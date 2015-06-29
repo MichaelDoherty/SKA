@@ -60,7 +60,7 @@ private:
 
 	Sequence fileReader(MotionDataSpecification& motion_data_specs, short index);
 	
-	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result);
+	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, size_t transition_frame_outter_limit);
 };
 
 #endif

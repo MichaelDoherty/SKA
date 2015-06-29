@@ -49,6 +49,8 @@ void MotionGraph::findTransitions(string& from_seqID, int from_frame, vector<Tra
 void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
 {
 	vector<Sequence> sequences;
+	float m_dist = 12.0;
+	size_t o_lim = 30;
 
 	for (unsigned short i=0; i<motion_data_specs.size(); i++)
 	{
@@ -65,7 +67,7 @@ void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
 		{
 			if (i == j) continue;
 			ts.from_seq_ID = motion_data_specs.getSeqID(i);
-			computeTransitions(sequences[i], sequences[j], ts.transitions);
+			computeTransitions(sequences[i], sequences[j], ts.transitions, m_dist, o_lim);
 		}
 		graph.push_back(ts);
 	}
@@ -211,7 +213,7 @@ struct CandidateTransition {
 // FUTUREWORK (150618) 
 // This function would probably be more efficient if we used lists instead of vectors,
 // since it is often erasing the first element in the vector/list.
-void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result)
+void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, size_t transition_frame_outter_limit)
 {
 	logout << "MotionGraph::findTransitions starting" << endl;
 	
@@ -219,9 +221,7 @@ void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vecto
 
 	// Calculate distances between each pair of frames from the two motions
 
-	// Upper theshold for initial threshold culling
-	// FUTUREWORK (150618) - max_distance should be a parameter
-	float max_distance = 12.0; 
+	// Upper theshold for initial threshold culling -> transition_max_distance
 
 	// loop through all frame pairs <i,j>, where i is from motion 1 and j is from motion 2
 	for (unsigned int i = 0; i < motion1.frames.size(); i += 1) 
@@ -246,13 +246,12 @@ void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vecto
 			}
 
 			// store this pair as a candidate transition if it meets the criteria
-			// FUTUREWORK (150618) - 30 should be a parameter
-			if (abs(distance) < max_distance && 
+			if (abs(distance) < transition_max_distance && 
 				distance != 0 && 
-				j < motion2.frames.size() - 30 && 
-				i < motion1.frames.size() - 30 && 
-				i > 30 && 
-				j > 30)
+				j < motion2.frames.size() - transition_frame_outter_limit && 
+				i < motion1.frames.size() - transition_frame_outter_limit && 
+				i > transition_frame_outter_limit && 
+				j > transition_frame_outter_limit)
 			{
 				CandidateTransition transition;
 				transition.motion1_frame = i;
