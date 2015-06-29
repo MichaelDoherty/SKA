@@ -22,6 +22,8 @@
 #include "AppConfig.h"
 #include "AnimationControl.h"
 
+bool show_character_1 = false;
+
 // global single instance of the animation controller
 AnimationControl anim_ctrl;
 
@@ -32,6 +34,22 @@ static string character1_ASF("02/02.asf");
 static string character1_AMC("02/02_01.amc");  
 
 // BVH file for the 2nd (blue) character
+// beer pong - Oct 15:
+//   2ft high 8ft wide - success
+//   3ft high 4ft wide
+//   3ft high 6ft wide
+//   3ft high 8ft wide
+//   practice
+// baseball - Oct 23:
+//   baseball-Retake1
+//   baseball-Retakev1
+//   baseball-Retakev2
+//   Take 2014-10-23 05.02.52 PM
+// OTHER:
+//   UOP_lab_01
+//   Justin-run1
+//   Logan-run1
+
 static string character2_BVH("UOP_lab_01.bvh");
 // scale the character to same size as character 1
 float character2_size_scale = 0.2f;
@@ -101,6 +119,7 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 	pair<Skeleton*, MotionSequence*> read_result;
 
 // ----------- create 1st character ---------------------------
+	if (show_character_1) {
 	try
 	{
 		filename1 = data_manager.findFile(character1_ASF.c_str());
@@ -133,14 +152,14 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 		// create a character to link all the pieces together.
 		descr1 = string("skeleton: ") + character1_ASF;
 		descr2 = string("motion: ") + character1_AMC;
-		bone_color = Color(1.0f,0.4f,0.3f);
+		bone_color = Color(0.0f,0.4f,1.0f);
 		character = buildCharacter(skel, ms, bone_color, descr1, descr2, render_list);
 		if (character != NULL) characters.push_back(character);
 	}
 	catch (BasicException&) { }
 	strDelete(filename1); filename1 = NULL;
 	strDelete(filename2); filename2 = NULL;
-
+	}
 // ----------- create 2nd character ---------------------------
 	try
 	{
@@ -172,7 +191,7 @@ void AnimationControl::loadCharacters(list<Object*>& render_list)
 		// create a character to link all the pieces together.
 		descr1 = string("skeleton: ") + character2_BVH;
 		descr2 = string("motion: ") + character2_BVH;
-		bone_color = Color(0.0f,0.4f,1.0f);
+		bone_color = Color(1.0f,0.4f,0.3f);
 		character = buildCharacter(skel, ms, bone_color, descr1, descr2, render_list);
 		if (character != NULL) characters.push_back(character);
 	}

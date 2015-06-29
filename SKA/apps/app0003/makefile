@@ -21,3 +21,4 @@ clean:
 	-rm $(TARGET)
 	-rm *.o
 	-rm *~
+	-rm system_log.txt

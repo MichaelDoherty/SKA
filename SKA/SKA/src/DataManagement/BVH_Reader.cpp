@@ -36,7 +36,6 @@ This parser is based on the following grammar:
 <OFFSET_SPEC> ::= “OFFSET” <REAL> <REAL> <REAL> [ <REAL> <REAL> <REAL> ]
 <CHANNELS_SPEC> ::= “CHANNELS” <INTEGER> <CHANNEL_LABEL>
 <CHANNEL_LABEL > ::= “Xposition” | “Yposition” | “Zposition” | “Xrotation” | “Yrotation” | “Zrotation”
-
 ==========================================================================*/
 
 //===================================================================
@@ -91,12 +90,17 @@ struct BVH_HIERARCHY
 struct BVH_FILE {
 	string filename;
 	BVH_HIERARCHY* hierarchy;
+	unsigned short num_channels;
 	BVH_MOTION* motion;
 
-	BVH_FILE() : hierarchy(NULL), motion(NULL) { }
+	BVH_FILE() : hierarchy(NULL), motion(NULL), num_channels(0) { }
 	~BVH_FILE() 
 	{ if (hierarchy!=NULL) delete hierarchy; if (motion!= NULL) delete motion; }
 };
+
+ostream& operator<<(ostream& os, BVH_FILE* ptr);
+ostream& operator<<(ostream& os, BVH_HIERARCHY* ptr);
+ostream& operator<<(ostream& os, BVH_MOTION* ptr);
 
 //===================================================================
 
@@ -155,9 +159,97 @@ private:
 	short token_index;
 };
 
-//==========================================================================*/
+//==========================================================================
+void postParseProcess(BVH_DECL* decl, 
+	short* channel_remap, bool* channel_isangle, 
+	short& old_chan, short& new_chan)
+{
+	if (decl->channels != NULL)
+	{	
+		if (decl->decl_type == BVH_ROOT)
+		{
+			// keep all channels
+			for (unsigned short i=0; i<decl->channels->channel_labels.size(); i++)
+			{
+				if ((decl->channels->channel_labels[i] == "Xposition") ||
+					(decl->channels->channel_labels[i] == "Yposition") ||
+					(decl->channels->channel_labels[i] == "Zposition"))
+				{
+					channel_remap[new_chan] = old_chan;
+					channel_isangle[new_chan] = false;
+					new_chan++;
+					old_chan++;
+				}
+				else if ((decl->channels->channel_labels[i] == "Xrotation") ||
+  					(decl->channels->channel_labels[i] == "Yrotation") ||
+					(decl->channels->channel_labels[i] == "Zrotation"))
+				{
+					channel_remap[new_chan] = old_chan;
+					channel_isangle[new_chan] = true;
+					new_chan++;
+					old_chan++;
+				}
+			}
+		}
+		else if (decl->decl_type == BVH_JOINT)
+		{
+			// remove translation channels
+			unsigned short i=0;
+			while (i<decl->channels->channel_labels.size())
+			{
+				if ((decl->channels->channel_labels[i] == "Xposition") ||
+					(decl->channels->channel_labels[i] == "Yposition") ||
+					(decl->channels->channel_labels[i] == "Zposition"))
+				{
+					for (unsigned int j=i; j<decl->channels->channel_labels.size()-1; j++)
+						decl->channels->channel_labels[j] = decl->channels->channel_labels[j+1];
+					decl->channels->channel_labels.pop_back();
+					old_chan++;
+				}
+				else if ((decl->channels->channel_labels[i] == "Xrotation") ||
+  					(decl->channels->channel_labels[i] == "Yrotation") ||
+					(decl->channels->channel_labels[i] == "Zrotation"))
+				{
+					channel_remap[new_chan] = old_chan;
+					channel_isangle[new_chan] = true;
+					new_chan++;
+					old_chan++;
+					i++;
+				}
+			}
+		}
+		for (unsigned int i=0; i<decl->children.size(); i++)
+			postParseProcess(decl->children[i], channel_remap, channel_isangle, old_chan, new_chan);
+	}
+}
 
-ostream& operator<<(ostream& os, BVH_FILE* ptr);
+short postParseProcess(BVH_HIERARCHY* hier, short* channel_remap, bool* channel_isangle)
+{
+	short old_chan = 0;
+	short new_chan = 0;
+	for (unsigned short i=0; i<hier->roots.size(); i++)
+		postParseProcess(hier->roots[i], channel_remap, channel_isangle, old_chan, new_chan);
+	return new_chan;
+}
+
+BVH_MOTION* postParseProcess(BVH_MOTION* old_mo, short* channel_remap, bool* channel_isangle, short new_chans)
+{
+	BVH_MOTION* new_mo = new BVH_MOTION(old_mo->frames, new_chans);
+	new_mo->frame_time = old_mo->frame_time;
+	for (unsigned short f=0; f<new_mo->frames; f++)
+	{
+		for (unsigned short c=0; c<new_mo->channels; c++)
+		{
+			short old_chan = channel_remap[c];
+			float value = old_mo->frame_data.get(f,old_chan);
+			if (channel_isangle[c]) value = deg2rad(value);
+			new_mo->frame_data.set(f,c,value);
+		}
+	}
+	return new_mo;
+}
+
+//==========================================================================
 
 pair<Skeleton*, MotionSequence*> BVH_Reader_Local::readBVH(const char* inputFilename)
 {
@@ -169,16 +261,35 @@ pair<Skeleton*, MotionSequence*> BVH_Reader_Local::readBVH(const char* inputFile
 	line_scanner = new LineScanner(inputFilename);
 	if (!line_scanner->fileIsOpen()) return result;
 
+	// Interpret the BVH file, exactly as it is written
 	BVH_FILE* bvh_parse_tree = parse_BVH_FILE();
 	bvh_parse_tree->filename = inputFilename;
+
+	// Adjust BVH data:
+	// Remove any non-root translation channels.
+	// Convert rotation channels from degrees to radians.
+	
+	short* channel_remap = new short[bvh_parse_tree->num_channels];
+	bool* channel_isangle = new bool[bvh_parse_tree->num_channels];
+	
+	bvh_parse_tree->num_channels = postParseProcess(bvh_parse_tree->hierarchy, channel_remap, channel_isangle);
+	
+	BVH_MOTION* old_mo = bvh_parse_tree->motion;
+	BVH_MOTION* new_mo = postParseProcess(old_mo, channel_remap, channel_isangle, bvh_parse_tree->num_channels);
+	bvh_parse_tree->motion = new_mo;
+
+	delete old_mo;
+	delete [] channel_remap;
+	delete [] channel_isangle;
+
+	// Convert to SKA structures
 
 	Skeleton* skel = createSkeleton(bvh_parse_tree);
 
 	BVH_MOTION* motion = bvh_parse_tree->motion;
 	MotionSequence* ms = new MotionSequence();
 	ms->setNumFrames(motion->frames);
-	//ms->setFrameRate(1.0f/motion->frame_time);
-	ms->setFrameRate(120);
+	ms->setFrameRate(1.0f/motion->frame_time);
 
 	CHANNEL_ID* cid = new CHANNEL_ID[channel_ids.size()];
 	for (unsigned short c=0; c<channel_ids.size(); c++)	cid[c] = channel_ids[c];
@@ -392,8 +503,8 @@ BVH_FILE* BVH_Reader_Local::parse_BVH_FILE()
 	
 	BVH_FILE* file = new BVH_FILE;
 	file->hierarchy = parse_BVH_HIERARCHY();
-	short channels = countChannels(file->hierarchy);
-	file->motion = parse_BVH_MOTION(channels);
+	file->num_channels = countChannels(file->hierarchy);
+	file->motion = parse_BVH_MOTION(file->num_channels);
 	return file;
 }
 
@@ -493,10 +604,9 @@ BVH_MOTION* BVH_Reader_Local::parse_BVH_MOTION(short _channels)
 		for (c=0; c<_channels; c++)
 		{
 			float v = (float)parse_REAL();
-			// assume channels 3 and higher are angles in degrees. 
-			// (only the root has translation channels)
-			if (c > 2) v = deg2rad(v);
-			// load channels in file order. does not attempt to reorder based on DOF order.
+			// Load channels in file order.
+			// Do not reorder based on DOF order.
+			// Angles are left in degrees, they will be converted to radians during post-parse processing.
 			motion->frame_data.set(f, c, v);
 		}
 	return motion;
@@ -656,34 +766,35 @@ void print(BVH_DECL* decl, ostream& os, short indentation=0)
 			print(decl->children[i], os, indentation+1);
 	}
 }
-
-void print(BVH_HIERARCHY* ptr, ostream& os)
+ostream& operator<<(ostream& os, BVH_HIERARCHY* ptr)
 {
-	if (ptr == NULL) return;
+	if (ptr == NULL) return os;
 	for (unsigned int i=0; i<ptr->roots.size(); i++) 
 		print(ptr->roots[i], os);
+	return os;
 }
 
-void print(BVH_MOTION* ptr, ostream& os)
+ostream& operator<<(ostream& os, BVH_MOTION* ptr)
 {
-	if (ptr == NULL) return;
+	if (ptr == NULL) return os;
 	os << "MOTION frames = " << ptr->frames << " channels = " << ptr->frame_data.getColumns()
 		<< " frame time = " << ptr->frame_time << endl;
 	long f = 0;
 	long c;
 	for (c=0; c<ptr->frame_data.getColumns(); c++)
-		cout << "[" << f << "," << c << "] = " << ptr->frame_data.get(f,c) << endl;
+		os << "[" << f << "," << c << "] = " << ptr->frame_data.get(f,c) << endl;
 	f = ptr->frames-1;
 	for (c=0; c<ptr->frame_data.getColumns(); c++)
-		cout << "[" << f << "," << c << "] = " << ptr->frame_data.get(f,c) << endl;
+		os << "[" << f << "," << c << "] = " << ptr->frame_data.get(f,c) << endl;
+	return os;
 }
 
 ostream& operator<<(ostream& os, BVH_FILE* ptr)
 {
 	if (ptr == NULL) return os;
-	os << "BVH_FILE: " << ptr->filename << endl;
-	print(ptr->hierarchy, os);
-	print(ptr->motion, os);
+	os << "BVH_FILE: " << ptr->filename << " num_channels: " << ptr->num_channels << endl;
+	os << ptr->hierarchy;
+	os << ptr->motion;
 	return os;
 }
 

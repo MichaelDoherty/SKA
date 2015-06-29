@@ -44,9 +44,9 @@ static int window_height = 800;
 static int window_width = 800;
 
 // which objects background objects do we want to see?
-static bool SHOW_SKY = true;
+static bool SHOW_SKY = false;
 static bool SHOW_GROUND = true;
-static bool SHOW_COORD_AXIS = true;
+static bool SHOW_COORD_AXIS = false;
 
 //  background color (black)
 static float clear_color[4] = { 0.0f, 0.0f, 0.0f, 0.0f};
