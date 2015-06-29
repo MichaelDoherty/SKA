@@ -71,7 +71,7 @@ void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
 	}
 }
 
-static string verifyQuaternionFile(string& bvh_filename, string& quat_filename)
+static string verifyQuaternionFile(string& bvh_filename, string& quat_filename, int joint_count)
 {
 	if (bvh_filename == quat_filename)
 	{
@@ -112,7 +112,7 @@ static string verifyQuaternionFile(string& bvh_filename, string& quat_filename)
 			sprintf(quat_filepath, "%sqq_%s", quat_filepath, quat_filename.c_str());
 		}
 
-		convertBVH2Quaternion(bvh_fullfilepath, string(quat_filepath));
+		convertBVH2Quaternion(bvh_fullfilepath, string(quat_filepath), joint_count);
 
 		// verify that the new file exists
 		char* tmp = data_manager.findFile(quat_filepath);
@@ -135,8 +135,29 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 	string seq_ID = motion_data_specs.getSeqID(index);
 	string bvh_filename = motion_data_specs.getBvhFilename(index);
 	string quat_filename = motion_data_specs.getQuatFilename(index);
+	string line;
+	int joint_count = 0;
 
-	string quat_filepath = verifyQuaternionFile(bvh_filename, quat_filename);
+	string bvh_filepath = data_manager.findFile(bvh_filename.c_str());
+
+	// Get Joint count from BVH file
+	ifstream jointsearchdata(bvh_filepath.c_str());
+	if (!jointsearchdata)
+	{
+		stringstream sss;
+		sss << "MotionGraph::fileReader cannot open file " << bvh_filename;
+		throw AppException(sss.str().c_str());
+	}
+	while (!jointsearchdata.eof())
+	{
+		getline(jointsearchdata, line);
+		if (line.find("JOINT") != std::string::npos)
+		{
+			joint_count++;
+		}
+	}
+
+	string quat_filepath = verifyQuaternionFile(bvh_filename, quat_filename, joint_count);
 	
 	vector<Frame> single_sequence; 
 	Sequence sequence;
@@ -153,7 +174,7 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 		ss << "MotionGraph::fileReader cannot open file " << quat_filepath;
 		throw AppException(ss.str().c_str());
 	}
-	string line;
+	
 	Frame tmp_frame;
 	Quaternion tmp_quat;
 
@@ -164,9 +185,7 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 		data >> tmp_frame.root_position.y;
 		data >> tmp_frame.root_position.z;
 
-		// FUTUREWORK (150626) - 20 joint count needs to be parameterized.
-		//   needs to be coordinated with convertBVH2Quaternion()
-		for (int j = 0; j < 20; j++)
+		for (int j = 0; j < joint_count; j++)
 		{
 			data >> tmp_quat.w;
 			data >> tmp_quat.z;

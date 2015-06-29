@@ -1,0 +1,97 @@
+﻿Build started 6/27/2015 7:04:36 PM.
+     1>Project "C:\Users\tandrew\Documents\GitHub\SKA\SKA\MS_VS10\skadll\skadll.vcxproj" on node 2 (build target(s)).
+     1>PrepareForBuild:
+         Creating directory "C:\Users\tandrew\Documents\GitHub\SKA\SKA\MS_VS10\Release\".
+       InitializeBuildStatus:
+         Creating "Release\skadll.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\SKA\src\Animation\Blender.cpp ..\..\SKA\src\Animation\Bone.cpp ..\..\SKA\src\Animation\MotionSequence.cpp ..\..\SKA\src\Animation\MotionSequenceController.cpp ..\..\SKA\src\Animation\MultiSequenceController.cpp ..\..\SKA\src\Animation\RawMotionController.cpp ..\..\SKA\src\Animation\Skeleton.cpp ..\..\SKA\src\Camera\Camera.cpp ..\..\SKA\src\Core\SystemLog.cpp ..\..\SKA\src\Core\SystemTimer.cpp ..\..\SKA\src\DataManagement\AMC_Reader.cpp ..\..\SKA\src\DataManagement\AMC_Writer.cpp ..\..\SKA\src\DataManagement\ASF_Reader.cpp ..\..\SKA\src\DataManagement\ASF_Writer.cpp ..\..\SKA\src\DataManagement\BVH_Reader.cpp ..\..\SKA\src\DataManagement\DataManager.cpp ..\..\SKA\src\DataManagement\FileSystem.cpp ..\..\SKA\src\DataManagement\ParsingUtilities.cpp ..\..\SKA\src\DataManagement\SKM_ReaderWriter.cpp ..\..\SKA\src\DataManagement\SKS_ReaderWriter.cpp ..\..\SKA\src\EasyBMP\EasyBMP.cpp ..\..\SKA\src\Graphics\Graphics2D.cpp ..\..\SKA\src\Graphics\GraphicsInterface.cpp ..\..\SKA\src\Graphics\Lights.cpp ..\..\SKA\src\Graphics\Textures.cpp ..\..\SKA\src\Input\InputFilter.cpp ..\..\SKA\src\Input\InputManager.cpp ..\..\SKA\src\Math\Matrix4x4.cpp ..\..\SKA\src\Math\Point2D.cpp ..\..\SKA\src\Math\Quaternion.cpp ..\..\SKA\src\Math\RandomGenerator.cpp ..\..\SKA\src\Math\Vector3D.cpp ..\..\SKA\src\Models\CodedModels.cpp ..\..\SKA\src\Models\ModelFactory.cpp ..\..\SKA\src\Models\SphereModels.cpp ..\..\SKA\src\Objects\BoneSequence.cpp ..\..\SKA\src\Objects\Object.cpp ..\..\SKA\src\Objects\QObject.cpp ..\..\SKA\src\Objects\Rotator.cpp ..\..\SKA\src\Signals\FFT.cpp ..\..\SKA\src\Signals\Signals.cpp
+         Blender.cpp
+     1>..\..\SKA\src\Animation\Blender.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Bone.cpp
+     1>..\..\SKA\src\Animation\Bone.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         MotionSequence.cpp
+     1>..\..\SKA\src\Animation\MotionSequence.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         MotionSequenceController.cpp
+     1>..\..\SKA\src\Animation\MotionSequenceController.cpp(19): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         MultiSequenceController.cpp
+     1>..\..\SKA\src\Animation\MultiSequenceController.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         RawMotionController.cpp
+     1>..\..\SKA\src\Animation\RawMotionController.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Skeleton.cpp
+     1>..\..\SKA\src\Animation\Skeleton.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Camera.cpp
+     1>..\..\SKA\src\Camera\Camera.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         SystemLog.cpp
+     1>..\..\SKA\src\Core\SystemLog.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         SystemTimer.cpp
+     1>..\..\SKA\src\Core\SystemTimer.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         AMC_Reader.cpp
+     1>..\..\SKA\src\DataManagement\AMC_Reader.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         AMC_Writer.cpp
+     1>..\..\SKA\src\DataManagement\AMC_Writer.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         ASF_Reader.cpp
+     1>..\..\SKA\src\DataManagement\ASF_Reader.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         ASF_Writer.cpp
+     1>..\..\SKA\src\DataManagement\ASF_Writer.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         BVH_Reader.cpp
+     1>..\..\SKA\src\DataManagement\BVH_Reader.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         DataManager.cpp
+     1>..\..\SKA\src\DataManagement\DataManager.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         FileSystem.cpp
+     1>..\..\SKA\src\DataManagement\FileSystem.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         ParsingUtilities.cpp
+     1>..\..\SKA\src\DataManagement\ParsingUtilities.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         SKM_ReaderWriter.cpp
+     1>..\..\SKA\src\DataManagement\SKM_ReaderWriter.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         SKS_ReaderWriter.cpp
+     1>..\..\SKA\src\DataManagement\SKS_ReaderWriter.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Compiling...
+         EasyBMP.cpp
+     1>..\..\SKA\src\EasyBMP\EasyBMP.cpp(21): fatal error C1083: Cannot open include file: 'EasyBMP/EasyBMP.h': No such file or directory
+         Graphics2D.cpp
+     1>..\..\SKA\src\Graphics\Graphics2D.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         GraphicsInterface.cpp
+     1>..\..\SKA\src\Graphics\GraphicsInterface.cpp(18): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Lights.cpp
+     1>..\..\SKA\src\Graphics\Lights.cpp(17): fatal error C1083: Cannot open include file: 'Graphics/GraphicsInterface.h': No such file or directory
+         Textures.cpp
+     1>..\..\SKA\src\Graphics\Textures.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         InputFilter.cpp
+     1>..\..\SKA\src\Input\InputFilter.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         InputManager.cpp
+     1>..\..\SKA\src\Input\InputManager.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Matrix4x4.cpp
+     1>..\..\SKA\src\Math\Matrix4x4.cpp(19): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Point2D.cpp
+     1>..\..\SKA\src\Math\Point2D.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Quaternion.cpp
+     1>..\..\SKA\src\Math\Quaternion.cpp(24): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         RandomGenerator.cpp
+     1>..\..\SKA\src\Math\RandomGenerator.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Vector3D.cpp
+     1>..\..\SKA\src\Math\Vector3D.cpp(19): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         CodedModels.cpp
+     1>..\..\SKA\src\Models\CodedModels.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         ModelFactory.cpp
+     1>..\..\SKA\src\Models\ModelFactory.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         SphereModels.cpp
+     1>..\..\SKA\src\Models\SphereModels.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         BoneSequence.cpp
+     1>..\..\SKA\src\Objects\BoneSequence.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Object.cpp
+     1>..\..\SKA\src\Objects\Object.cpp(17): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         QObject.cpp
+     1>..\..\SKA\src\Objects\QObject.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Rotator.cpp
+     1>..\..\SKA\src\Objects\Rotator.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         FFT.cpp
+     1>..\..\SKA\src\Signals\FFT.cpp(19): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+         Compiling...
+         Signals.cpp
+     1>..\..\SKA\src\Signals\Signals.cpp(16): fatal error C1083: Cannot open include file: 'Core/SystemConfiguration.h': No such file or directory
+     1>Done Building Project "C:\Users\tandrew\Documents\GitHub\SKA\SKA\MS_VS10\skadll\skadll.vcxproj" (build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:01.06
