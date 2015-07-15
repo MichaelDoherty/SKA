@@ -38,7 +38,7 @@ public:
 	vector<TransitionSet> graph;
 
 	// find all transitions from the given motion sequence at some frame later than the given frame
-	void findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions);
+	void findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions, int jumping_barrier);
 
 private:
 		
@@ -46,6 +46,13 @@ private:
 	{
 		Vector3D root_position;
 		std::vector<Quaternion> joints; 
+	};
+
+	struct FrameHolder {
+		string current_seq_id;
+		Frame current_frame;
+		int original_seq_frame_location;
+		int original_seq_size;
 	};
 
 	struct Sequence
@@ -60,7 +67,7 @@ private:
 
 	Sequence fileReader(MotionDataSpecification& motion_data_specs, short index);
 	
-	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, size_t transition_frame_outter_limit);
+	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, int transition_frame_outter_limit, int transition_frame_difference_limit);
 };
 
 #endif

@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 using namespace std;
 // SKA modules
 #include <DataManagement/DataManager.h>
@@ -18,22 +19,22 @@ using namespace std;
 #include "AppConfig.h"
 #include "MotionGraph.h"
 #include "BVH2Quaternion.h"
+#include <boost\timer.hpp>
+
 
 MotionGraph::MotionGraph(MotionDataSpecification& motion_data_specs)
 {	
 	buildMotionGraph(motion_data_specs);
 }
 
-void MotionGraph::findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions)
+void MotionGraph::findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions, int jump_barrier)
 {
 	for (unsigned long g=0; g<graph.size(); g++)
 	{
 		for (unsigned long i = 0; i < graph[g].transitions.size(); i++)
 		{
-			// FUTUREWORK (150626) - The +10 is to avoid jumping too soon. 
-			//                       It should be parameterized.
 			if ((graph[g].from_seq_ID == from_seqID) && 
-				(graph[g].transitions[i].from_frame > from_frame+10))
+				(graph[g].transitions[i].from_frame > from_frame+jump_barrier))
 			{
 				Transition t;
 				t.from_seqID = graph[g].transitions[i].from_seqID;	
@@ -51,6 +52,7 @@ void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
 	vector<Sequence> sequences;
 	float m_dist = 12.0;
 	size_t o_lim = 30;
+	size_t d_lim = 5;
 
 	for (unsigned short i=0; i<motion_data_specs.size(); i++)
 	{
@@ -67,7 +69,7 @@ void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
 		{
 			if (i == j) continue;
 			ts.from_seq_ID = motion_data_specs.getSeqID(i);
-			computeTransitions(sequences[i], sequences[j], ts.transitions, m_dist, o_lim);
+			computeTransitions(sequences[i], sequences[j], ts.transitions, m_dist, o_lim, d_lim);
 		}
 		graph.push_back(ts);
 	}
@@ -205,114 +207,125 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 }
 
 struct CandidateTransition {
-	int motion1_frame;
-	int motion2_frame;
+	int primary_frame_index;
+	string primary_frame_sequence;
+	int secondary_frame_index;
+	string secondary_frame_sequence;
 	float distance;
+
+	bool operator < (const CandidateTransition& str) const{
+		return(distance < str.distance);
+	}
 };
 
-// FUTUREWORK (150618) 
-// This function would probably be more efficient if we used lists instead of vectors,
-// since it is often erasing the first element in the vector/list.
-void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, size_t transition_frame_outter_limit)
+
+
+void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, int transition_frame_outter_limit, int transition_frame_difference_limit)
 {
+	// Calculate distances between each pair of frames from the two motions
+	// Upper theshold for initial threshold culling -> transition_max_distance
 	logout << "MotionGraph::findTransitions starting" << endl;
 	
-	vector<CandidateTransition> candidate_transitions;
+	boost::timer myTimer; //remove for final revision
+	vector<CandidateTransition> candidate_transitions; //holder for the transitions
+	vector<FrameHolder> vh; // temporary frame holder
+	FrameHolder temp_holder; //FrameHolder is necessary so we can join all frame information from any amount of motion sequences
+	//then we can allow for transitions to search for frames within their own sequence and other sequences
+	
+	// FUTUREWORK (150715) - computeTransitions should allow dynamic number of frame sequences instead of hardcoded 2
+	// fill in the FrameHolder with all the frames from both sequence 1 and sequence 2
+	for (unsigned int i = 0; i < motion1.frames.size(); i++){
+		temp_holder.current_seq_id = motion1.seq_ID;
+		temp_holder.current_frame = motion1.frames[i];
+		temp_holder.original_seq_size = motion1.frames.size();
+		temp_holder.original_seq_frame_location = i;
+		vh.push_back(temp_holder);
+	}
+	for (unsigned int i = 0; i < motion2.frames.size(); i++){
+		temp_holder.current_seq_id = motion2.seq_ID;
+		temp_holder.current_frame = motion2.frames[i];
+		temp_holder.original_seq_size = motion1.frames.size();
+		temp_holder.original_seq_frame_location = i;
+		vh.push_back(temp_holder);
+	}
 
-	// Calculate distances between each pair of frames from the two motions
-
-	// Upper theshold for initial threshold culling -> transition_max_distance
-
-	// loop through all frame pairs <i,j>, where i is from motion 1 and j is from motion 2
-	for (unsigned int i = 0; i < motion1.frames.size(); i += 1) 
-	{
-		for (unsigned int j = 0; j < motion2.frames.size(); j += 1) 
-		{
+	//loop through every frame twice
+	//so that we can compare every frame to every other frame
+	for (unsigned int i = 0; i < vh.size(); i++){
+		for (unsigned int j = 0; j < vh.size(); j++){
 			float distance = 0;
 			
-			if (motion1.frames[i].joints.size() != motion2.frames[j].joints.size())
+			// if joints are differet - if skeletons don't align -> throw exception
+			if (vh[i].current_frame.joints.size() != vh[j].current_frame.joints.size())
 			{
 				stringstream ss;
 				ss << "Error in MotionGraph::findTransitions. Different number of joints. " 
-					<< motion1.seq_ID << " frame " << i << " to " << motion2.seq_ID << " frame " << j;
+					<< vh[i].current_seq_id << " frame " << i << " to " << vh[i].current_seq_id << " frame " << j;
 				throw AppException(ss.str().c_str());
 			}
 
 			// distance is the sum of the quaterian differences of each joint
-			for (unsigned short k = 0; k < motion1.frames[i].joints.size(); k++) 
+			for (unsigned short k = 0; k < vh[i].current_frame.joints.size(); k++) 
 			{
-				Quaternion diffq = motion1.frames[i].joints[k] - motion2.frames[j].joints[k];
+				Quaternion diffq = vh[i].current_frame.joints[k] - vh[j].current_frame.joints[k];
 				distance += diffq.magnitude();
 			}
 
 			// store this pair as a candidate transition if it meets the criteria
 			if (abs(distance) < transition_max_distance && 
 				distance != 0 && 
-				j < motion2.frames.size() - transition_frame_outter_limit && 
-				i < motion1.frames.size() - transition_frame_outter_limit && 
-				i > transition_frame_outter_limit && 
-				j > transition_frame_outter_limit)
+				vh[i].original_seq_frame_location < vh[i].original_seq_size - transition_frame_outter_limit && 
+				vh[j].original_seq_frame_location < vh[j].original_seq_size - transition_frame_outter_limit && 
+				vh[i].original_seq_frame_location > transition_frame_outter_limit && 
+				vh[j].original_seq_frame_location > transition_frame_outter_limit)
 			{
+
 				CandidateTransition transition;
-				transition.motion1_frame = i;
-				transition.motion2_frame = j;
+				transition.primary_frame_index = i;
+				transition.primary_frame_sequence = vh[i].current_seq_id;
+				transition.secondary_frame_index = j;
+				transition.secondary_frame_sequence = vh[j].current_seq_id;
 				transition.distance = distance;
-				candidate_transitions.push_back(transition);
+
+				// dont add frame to candidate vector if it falls within the transition_frame_difference_limit range of all other frames
+				bool ignoreTransition = false;
+				for (unsigned int m = 0; m < candidate_transitions.size(); m++)
+				{
+					if(transition.primary_frame_index < candidate_transitions[m].primary_frame_index + transition_frame_difference_limit &&
+						transition.primary_frame_index > candidate_transitions[m].primary_frame_index - transition_frame_difference_limit &&
+						transition.secondary_frame_index < candidate_transitions[m].secondary_frame_index + transition_frame_difference_limit &&
+						transition.secondary_frame_index < candidate_transitions[m].secondary_frame_index - transition_frame_difference_limit)
+					{
+						ignoreTransition = true;
+					}
+				}
+				if (!ignoreTransition){
+					candidate_transitions.push_back(transition);
+				}
 			}
+
 		}
 	}
+
 
 	// sort the candidate transitions in order of increasing distance
+	std::sort(candidate_transitions.begin(),candidate_transitions.end());
 
-	vector<CandidateTransition> ordered_transitions;
-	while (candidate_transitions.size() > 0)
-	{
-		int lowestCompValLocation = 0;
-		for (unsigned int i = 1; i < candidate_transitions.size(); i++)
-		{
-			if (candidate_transitions[lowestCompValLocation].distance > candidate_transitions[i].distance)
-				lowestCompValLocation = i;
-		}
-		ordered_transitions.push_back(candidate_transitions[lowestCompValLocation]);
-		candidate_transitions.erase(candidate_transitions.begin() + lowestCompValLocation);
-	}
+	
+	logout << "MotionGraph::findTransitions found " << candidate_transitions.size() << " transitions " << endl;
 
-	// select the best pairs from local sequences of pairs
-
-	vector<CandidateTransition> selected_transitions;
-	selected_transitions.push_back(ordered_transitions[0]);
-	ordered_transitions.erase(ordered_transitions.begin());
-	while (ordered_transitions.size() > 0)
-	{
-		bool addToList = true;
-		for (unsigned int i = 0; i < selected_transitions.size(); i++)
-		{
-			// If the lowest comparison value in sortedComparisons frame 1 and 2 are within 10 frames 
-			// of any motion already stored then don't add to final list
-			// FUTUREWORK (150618) - 5 should be a parameter
-			if (ordered_transitions[0].motion1_frame < selected_transitions[i].motion1_frame + 5 &&
-				ordered_transitions[0].motion1_frame > selected_transitions[i].motion1_frame - 5 &&
-				ordered_transitions[0].motion2_frame < selected_transitions[i].motion2_frame + 5 &&
-				ordered_transitions[0].motion2_frame < selected_transitions[i].motion2_frame - 5)
-				addToList = false;
-		}
-		if (addToList)
-			selected_transitions.push_back(ordered_transitions[0]);
-		ordered_transitions.erase(ordered_transitions.begin());
-	}
-
-	logout << "MotionGraph::findTransitions found " << selected_transitions.size() << " transitions " << endl;
-
-	for (unsigned int i = 0; i < selected_transitions.size(); i++)
+	//return the candidates as results
+	for (unsigned int i = 0; i < candidate_transitions.size(); i++)
 	{
 		Transition t;
-		t.from_seqID = motion1.seq_ID;
-		t.from_frame = selected_transitions[i].motion1_frame;
-		t.to_seqID = motion2.seq_ID;
-		t.to_frame = selected_transitions[i].motion2_frame;
-		t.distance = selected_transitions[i].distance;
+		t.from_seqID = candidate_transitions[i].primary_frame_sequence;
+		t.from_frame = candidate_transitions[i].primary_frame_index;
+		t.to_seqID = candidate_transitions[i].secondary_frame_sequence;
+		t.to_frame = candidate_transitions[i].secondary_frame_index;
+		t.distance = candidate_transitions[i].distance;
 		result.push_back(t);
 	}
 
+	logout << myTimer.elapsed() << endl;
 	logout << "MotionGraph::findTransitions finished" << endl;
 }

@@ -106,9 +106,11 @@ void MotionGraphController::update(float _time)
 
 void MotionGraphController::setupNextTransition()
 {
+	//prevent jumping from frames too soon
+	size_t j_barrier = 10;
 	// traverse the motion graph and find all transitions from remaining part of current sequence
 	vector<MotionGraph::Transition> candidate_transitions;	
-	motion_graph->findTransitions(status.active_seqID, status.active_frame, candidate_transitions);
+	motion_graph->findTransitions(status.active_seqID, status.active_frame, candidate_transitions, j_barrier);
 
 	// if nothing else is available, next transition is loop back from end of sequence
 	if (candidate_transitions.size() < 1) 
