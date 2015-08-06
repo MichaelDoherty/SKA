@@ -7,6 +7,9 @@
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
 #include "MotionGraphController.h"
+#include "stdlib.h"
+#include "time.h"
+
 
 MotionGraphController::MotionGraphController(MotionGraph* _motion_graph,
 	MotionDataSpecification& _motion_data_specs,
@@ -122,6 +125,7 @@ void MotionGraphController::setupNextTransition()
 	}
 
 	// pick a random transition
+	srand((unsigned int)time(NULL));
 	unsigned int choice = rand() % candidate_transitions.size();
 
 	// enable the selected transition
