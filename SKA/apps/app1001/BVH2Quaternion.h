@@ -14,6 +14,6 @@
 using namespace std;
 
 // File names are assumed to be relative to search paths registered with the DataManager.
-void convertBVH2Quaternion(string& inputfile, string& outputfile);
+void convertBVH2Quaternion(string& inputfile, string& outputfile, int joint_count);
 
 #endif

@@ -1,0 +1,30 @@
+Main:
+creates anim_ctrl -> global AnimationControl object
+runs anim_ctrl.loadCharacters
+-AnimationControl::loadCharacters() 
+--finds motionfiles
+--creates motion_graph
+--creates motion_graph_controller
+	--motion_graph_controller is created with motion_graph in it
+	--motion_graph_contoller has State status
+	--readInMotionSequences from motion_data_specs from anim_ctrl whic is all the motion capture files
+--creates skeleton motionsequence
+--attaches motion_graph_controller to skeleton obj
+--skel is then set to anim_ctrl.character
+--anim_ctrl.ready = true
+
+if anim_ctrl is ready goes into glutMainLoop()
+
+glutMainLoop() calls main::display() repeatedly.
+display() calls anim_ctrl.updateAnimation repeatedly.
+-updates based on time
+-calls character->update(run_time) (character is motion_graph_controller obj)
+motiongraphcontroller::update
+-update status.current_time
+-calls MotionGraphController::computeCurrentFrame()
+-if status.active_frame greater or equal to transition_trigger_frame
+--make status_active_seqid and _frame equal to transition_frame
+--computeCurrentFrame()
+--setupNextTransition()
+
+

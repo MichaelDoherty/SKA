@@ -7,6 +7,9 @@
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
 #include "MotionGraphController.h"
+#include "stdlib.h"
+#include "time.h"
+
 
 MotionGraphController::MotionGraphController(MotionGraph* _motion_graph,
 	MotionDataSpecification& _motion_data_specs,
@@ -106,9 +109,11 @@ void MotionGraphController::update(float _time)
 
 void MotionGraphController::setupNextTransition()
 {
+	//prevent jumping from frames too soon
+	size_t j_barrier = 10;
 	// traverse the motion graph and find all transitions from remaining part of current sequence
 	vector<MotionGraph::Transition> candidate_transitions;	
-	motion_graph->findTransitions(status.active_seqID, status.active_frame, candidate_transitions);
+	motion_graph->findTransitions(status.active_seqID, status.active_frame, candidate_transitions, j_barrier);
 
 	// if nothing else is available, next transition is loop back from end of sequence
 	if (candidate_transitions.size() < 1) 
@@ -120,6 +125,7 @@ void MotionGraphController::setupNextTransition()
 	}
 
 	// pick a random transition
+	srand((unsigned int)time(NULL));
 	unsigned int choice = rand() % candidate_transitions.size();
 
 	// enable the selected transition

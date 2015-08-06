@@ -19,7 +19,7 @@ public:
 	MotionGraph(MotionDataSpecification& motion_data_specs);
 	
 	// FUTUREWORK (150618) - optimize the graph storage for faster retrieval 
-	//                       of queries through findTransitions()
+	//                       of queries through computeTransition()
 	struct Transition
 	{ 
 		string from_seqID;
@@ -38,7 +38,7 @@ public:
 	vector<TransitionSet> graph;
 
 	// find all transitions from the given motion sequence at some frame later than the given frame
-	void findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions);
+	void findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions, int jumping_barrier);
 
 private:
 		
@@ -47,6 +47,7 @@ private:
 		Vector3D root_position;
 		std::vector<Quaternion> joints; 
 	};
+
 
 	struct Sequence
 	{
@@ -60,7 +61,7 @@ private:
 
 	Sequence fileReader(MotionDataSpecification& motion_data_specs, short index);
 	
-	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result);
+	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result, float transition_max_distance, unsigned int transition_frame_outter_limit, int transition_frame_difference_limit);
 };
 
 #endif

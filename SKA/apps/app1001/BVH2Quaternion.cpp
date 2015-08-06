@@ -14,7 +14,7 @@
 #include <vector>
 using namespace std;
 
-void convertBVH2Quaternion(string& inputfile, string& outputfile)
+void convertBVH2Quaternion(string& inputfile, string& outputfile, int joint_count)
 {
 	cout << "DataInput::readFile" << inputfile << " to " << outputfile << endl;
 	ifstream data(inputfile.c_str());
@@ -50,10 +50,8 @@ void convertBVH2Quaternion(string& inputfile, string& outputfile)
 		//output2 << root_pos.x << " " << root_pos.y << " " << root_pos.z << " ";
 		output2 << tempQuat.w << " " << tempQuat.z << " " << tempQuat.x << " " << tempQuat.y << " ";
 		
-		// FUTUREWORK (150626) - 20 joint count needs to be parameterized.
-		//   needs to be coordinated with MotionGraph::fileReader()
 		//output2 << root_pos.x << " " << root_pos.y << " " << root_pos.z << " ";
-		for (int j = 0; j < 20; j++)
+		for (int j = 0; j < joint_count; j++)
 		{
 			Vector3D angles;
 			data >> angles.z;

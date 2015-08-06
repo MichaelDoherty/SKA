@@ -20,7 +20,6 @@ using namespace std;
 
 // FUTUREWORK (150625)
 // 1) Add transfer of root position and orientation across transitions.
-// 2) Support for transitions back into the same sequence.
 // 3) Blending across transitions.
 
 class MotionGraphController : public MotionController
