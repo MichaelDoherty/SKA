@@ -13,6 +13,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - December 23, 2016 - Michael Doherty
+//               Added XYPlaneModel, YZPlaneModel and ZXPlaneModel
 //-----------------------------------------------------------------------------
 #ifndef CODED_MODELS_DOT_H
 #define CODED_MODELS_DOT_H
@@ -96,6 +98,37 @@ public:
 	virtual ~GroundModel() { } 
 private:
 	void buildMesh();
+};
+
+// A solid color two-sided plane.
+class SKA_LIB_DECLSPEC XYPlaneModel : public MeshModel
+{
+public:
+	XYPlaneModel();
+	XYPlaneModel(float _size, short _faces = 10, Color _color = Color(1.0f, 1.0f, 1.0f, 1.0f));
+	virtual ~XYPlaneModel() { }
+private:
+	void buildMesh(float _size, short _faces, Color _color);
+};
+
+class SKA_LIB_DECLSPEC YZPlaneModel : public MeshModel
+{
+public:
+	YZPlaneModel();
+	YZPlaneModel(float _size, short _faces = 10, Color _color = Color(1.0f, 1.0f, 1.0f, 1.0f));
+	virtual ~YZPlaneModel() { }
+private:
+	void buildMesh(float _size, short _faces, Color _color);
+};
+
+class SKA_LIB_DECLSPEC ZXPlaneModel : public MeshModel
+{
+public:
+	ZXPlaneModel();
+	ZXPlaneModel(float _size, short _faces=10, Color _color=Color(1.0f, 1.0f, 1.0f, 1.0f));
+	virtual ~ZXPlaneModel() { }
+private:
+	void buildMesh(float _size, short _faces, Color _color);
 };
 
 class SKA_LIB_DECLSPEC PointerModel : public MeshModel

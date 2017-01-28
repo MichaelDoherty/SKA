@@ -13,6 +13,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - December 23, 2016 - Michael Doherty
+//               Added XYPlaneModel, YZPlaneModel and ZXPlaneModel
 //-----------------------------------------------------------------------------
 #include <Core/SystemConfiguration.h>
 #include <Models/CodedModels.h>
@@ -202,6 +204,125 @@ void GroundModel::buildMesh()
 	}
 }
 
+XYPlaneModel::XYPlaneModel() : MeshModel()
+{
+	buildMesh(1.0f, 10, Color(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+XYPlaneModel::XYPlaneModel(float _size, short _faces, Color _color) : MeshModel()
+{
+	buildMesh(_size, _faces, _color);
+}
+
+void XYPlaneModel::buildMesh(float _size, short _faces, Color _color)
+{
+	float tile_width = _size / _faces;
+
+	Vector3D normalFront(0.0f, 0.0f,  1.0f);
+	Vector3D normalBack(0.0f, 0.0f, -1.0f);
+
+	float x = -(_size / 2.0f);
+	for (short i = 0; i<_faces; i++)
+	{
+		float y = -(_size / 2.0f);
+		for (short j = 0; j<_faces; j++)
+		{
+			Vector3D p1(x, y, 0.0f);
+			Vector3D p2(x, y + tile_width, 0.0f);
+			Vector3D p3(x + tile_width, y + tile_width, 0.0f);
+			Vector3D p4(x + tile_width, y, 0.0f);
+			ModelFace mf[4] = {
+				ModelFace(p1, p2, p3, normalFront, _color),
+				ModelFace(p3, p4, p1, normalFront, _color),
+				ModelFace(p1, p3, p2, normalBack, _color),
+				ModelFace(p3, p1, p4, normalBack, _color)
+			};
+			for (short i = 0; i<4; i++) addModelFace(mf[i]);
+			y += tile_width;
+		}
+		x += tile_width;
+	}
+}
+
+YZPlaneModel::YZPlaneModel() : MeshModel()
+{
+	buildMesh(1.0f, 10, Color(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+YZPlaneModel::YZPlaneModel(float _size, short _faces, Color _color) : MeshModel()
+{
+	buildMesh(_size, _faces, _color);
+}
+
+void YZPlaneModel::buildMesh(float _size, short _faces, Color _color)
+{
+	float tile_width = _size / _faces;
+
+	Vector3D normalLeft(1.0f, 0.0f, 0.0f);
+	Vector3D normalRight(-1.0f, 0.0f, 0.0f);
+
+	float y = -(_size / 2.0f);
+	for (short i = 0; i<_faces; i++)
+	{
+		float z = -(_size / 2.0f);
+		for (short j = 0; j<_faces; j++)
+		{
+			Vector3D p1(0.0f, y, z);
+			Vector3D p2(0.0f, y, z + tile_width);
+			Vector3D p3(0.0f, y + tile_width, z + tile_width);
+			Vector3D p4(0.0f, y + tile_width, z);
+			ModelFace mf[4] = {
+				ModelFace(p1, p2, p3, normalLeft, _color),
+				ModelFace(p3, p4, p1, normalLeft, _color),
+				ModelFace(p1, p3, p2, normalRight, _color),
+				ModelFace(p3, p1, p4, normalRight, _color)
+			};
+			for (short i = 0; i<4; i++) addModelFace(mf[i]);
+			z += tile_width;
+		}
+		y += tile_width;
+	}
+}
+
+ZXPlaneModel::ZXPlaneModel() : MeshModel()
+{
+	buildMesh(1.0f, 10, Color(1.0f,1.0f,1.0f,1.0f));
+}
+
+ZXPlaneModel::ZXPlaneModel(float _size, short _faces, Color _color) : MeshModel()
+{
+	buildMesh(_size, _faces, _color);
+}
+
+void ZXPlaneModel::buildMesh(float _size, short _faces, Color _color)
+{
+	float tile_width = _size/_faces;
+
+	Vector3D normalUp(0.0f, 1.0f, 0.0f);
+	Vector3D normalDown(0.0f, -1.0f, 0.0f);
+
+	float x = -(_size / 2.0f);
+	for (short i=0; i<_faces; i++)
+	{
+		float z = -(_size / 2.0f);
+		for (short j = 0; j<_faces; j++)
+		{
+			Vector3D p1(x, 0.0f, z);
+			Vector3D p2(x, 0.0f, z + tile_width);
+			Vector3D p3(x + tile_width, 0.0f, z + tile_width);
+			Vector3D p4(x + tile_width, 0.0f, z);
+			ModelFace mf[4] = {
+				ModelFace(p1, p2, p3, normalUp, _color),
+				ModelFace(p3, p4, p1, normalUp, _color),
+				ModelFace(p1, p3, p2, normalDown, _color),
+				ModelFace(p3, p1, p4, normalDown, _color)
+			};
+			for (short i = 0; i<4; i++) addModelFace(mf[i]);
+			z += tile_width;
+		}
+		x += tile_width;
+	}
+}
 
 VectorModel::VectorModel() : MeshModel() 
 {
@@ -335,7 +456,8 @@ void Flex13CameraModel::buildMesh(Color& c)
 	float y = tanf(vfov/2.0f) * depth;
 	float x = tanf(hfov/2.0f) * depth;
 
-	float alpha = 0.5f;
+	// set alpha
+	c.a = 0.5f;
 
 	Vector3D p[5] = // vertices
 	{
@@ -355,15 +477,15 @@ void Flex13CameraModel::buildMesh(Color& c)
 	};
 
 	// up face
-	ModelFace mf1(p[4], p[0], p[1], n[1], c, alpha); 
+	ModelFace mf1(p[4], p[0], p[1], n[1], c); 
 	addModelFace(mf1);
 	// right face
-	ModelFace mf2(p[4], p[3], p[0], n[0], c, alpha); 
+	ModelFace mf2(p[4], p[3], p[0], n[0], c); 
 	addModelFace(mf2);
 	// down face
-	ModelFace mf3(p[4], p[2], p[3], n[3], c, alpha); 
+	ModelFace mf3(p[4], p[2], p[3], n[3], c); 
 	addModelFace(mf3);
 	// left face
-	ModelFace mf4(p[4], p[1], p[2], n[2], c, alpha); 
+	ModelFace mf4(p[4], p[1], p[2], n[2], c); 
 	addModelFace(mf4);
 }

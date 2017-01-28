@@ -12,6 +12,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - December 7, 2016 - Michael Doherty
+//               Added Vector into the model builder cases
 //-----------------------------------------------------------------------------
 #include <Core/SystemConfiguration.h>
 #include <cstdlib>
@@ -49,6 +51,20 @@ Model* ModelFactory::buildModel(ModelSpecification& spec)
 		s = spec.getSpec("height");
 		if (s != NULL) height = (float)atof(s);
 		return new PointerModel(Vector3D(width, height, length));
+	}
+	else if (strMatch(model_name, "Vector"))
+	{
+		float length = 1.0f;
+		float width = 1.0f;
+		float height = 1.0f;
+		char* s;
+		s = spec.getSpec("length");
+		if (s != NULL) length = (float)atof(s);
+		s = spec.getSpec("width");
+		if (s != NULL) width = (float)atof(s);
+		s = spec.getSpec("height");
+		if (s != NULL) height = (float)atof(s);
+		return new VectorModel(length, spec.getColor());
 	}
 	else if (strMatch(model_name,"CoordinateAxis"))
 	{

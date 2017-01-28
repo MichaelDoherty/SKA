@@ -12,6 +12,7 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - December 6, 2016 - Michael Doherty
 //-----------------------------------------------------------------------------
 #ifndef SKELETON_DOT_H
 #define SKELETON_DOT_H
@@ -127,6 +128,8 @@ public:
 
 	void getBonePositions(const char* bone_name, Vector3D& start, Vector3D& end);
 	void getBonePositions(int bone_id, Vector3D& start, Vector3D& end);
+	void getBoneOrientation(const char* bone_name, Vector3D& orientation);
+	void getBoneOrientation(int bone_id, Vector3D& orientation);
 	Bone* getBone(const char* bone_name);
 	Bone* getBone(int bone_id);
 	float getChannelValue(CHANNEL_ID& _channel);

@@ -13,6 +13,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - January 25, 2017 - Michael Doherty
+//               Modify DataManager::findFile to first check for the filename with no attached path.
 //-----------------------------------------------------------------------------
 #include <Core/SystemConfiguration.h>
 #include <cstdlib>
@@ -57,6 +59,9 @@ void DataManager::addFileSearchPath(const char* _path)
 
 char* DataManager::findFile(const char* _file)
 {
+	string check_file = _file;
+	if (FileSystem::fileExists(check_file.c_str()))
+		return strClone(check_file.c_str());
 	for (unsigned int i=0; i<data->paths.size(); i++)
 	{
 		string check_file = data->paths[i] + _file;

@@ -1,0 +1,3 @@
+41 17 right arm flextion (sagital)
+42 02 right arm extension sagital
+49 30 right arm frontal plane view 

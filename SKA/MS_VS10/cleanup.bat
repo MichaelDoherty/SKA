@@ -30,6 +30,10 @@ del /q app1001\system_log.txt
 del /q app1001\*.dot
 del /q app1001\test.txt
 
+rmdir /s/q app2001\Debug
+del /q app1001\*.user
+del /q app1001\system_log.txt
+
 rmdir /s/q skadll\Debug
 del /q skadll\*.user
 

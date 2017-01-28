@@ -28,7 +28,7 @@ AnimationControl anim_ctrl;
 
 //static string character_BVH("UOP_lab_01.bvh");
 //static string character_BVH("mocapdata.com/greeting-02-bye-azumi.bvh");
-static string character_BVH("mocapdata.com/greeting-05-salute (chest)-takiguchi.bvh");
+//static string character_BVH("mocapdata.com/greeting-05-salute (chest)-takiguchi.bvh");
 //static string character_BVH("mocapdata.com/greeting-08-shakehands-azumi.bvh");
 //static string character_BVH("mocapdata.com/throw_toss-11-disc-yokoyama.bvh");
 //static string character_BVH("mocapdata.com/throw_toss-16-pass to left heavy-azumi.bvh");
@@ -36,6 +36,10 @@ static string character_BVH("mocapdata.com/greeting-05-salute (chest)-takiguchi.
 //static string character_BVH("mocapdata.com/walk-09-handbag-takiguchi.bvh");
 //static string character_BVH("mocapdata.com/walk-13-baggage on the shoulder-azumi.bvh"); // problem
 //static string character_BVH("mocapdata.com/walk-18-shuffle forward-yokoyama.bvh");
+
+//static string character_BVH("PTsubjects/40414/A/Take 2016-11-08 05.41.17 PM.bvh");
+//static string character_BVH("PTsubjects/40414/A/Take 2016-11-08 05.42.02 PM.bvh");
+static string character_BVH("PTsubjects/40414/A/Take 2016-11-08 05.49.30 PM.bvh");
 
 // scale the character to about 20%
 // Most things in SKA were developed to fit the CMU ASF skeletons.

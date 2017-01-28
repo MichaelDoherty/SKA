@@ -12,6 +12,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - December 23, 2016 - Michael Doherty  
+//               Fixed alpha in ModelFace to be part of Color attribute.
 //-----------------------------------------------------------------------------
 #ifndef MODELS_DOT_H
 #define MODELS_DOT_H
@@ -40,32 +42,29 @@ public:
 	Vector3D point[3];
 	Vector3D normal;
 	Color color;
-	float alpha;
 public:
-	ModelFace(Vector3D _point[3], Vector3D& _normal, Color& _color, float _alpha=1.0f) 
+	ModelFace(Vector3D _point[3], Vector3D& _normal, Color& _color) 
 	{
 		point[0] = _point[0];
 		point[1] = _point[1];
 		point[2] = _point[2];
 		normal = _normal;
 		color = _color;
-		alpha = _alpha;
 	}
-	ModelFace(Vector3D& _p1, Vector3D& _p2, Vector3D& _p3, Vector3D& _normal, Color& _color, float _alpha=1.0f) 
+	ModelFace(Vector3D& _p1, Vector3D& _p2, Vector3D& _p3, Vector3D& _normal, Color& _color) 
 	{
 		point[0] = _p1;
 		point[1] = _p2;
 		point[2] = _p3;
 		normal = _normal;
 		color = _color;
-		alpha = _alpha;
 	}
 	virtual ~ModelFace() { }
 	virtual bool isTextured() { return false; }
 	virtual bool isPointColored() { return false; }
-	virtual void setAlpha(float _alpha) { alpha = _alpha; }
-	virtual bool isTransparent() { return alpha < 1.0f; }
-	virtual float getAlpha() { return alpha; }
+	virtual void setAlpha(float _alpha) { color.a = _alpha; }
+	virtual bool isTransparent() { return color.a < 1.0f; }
+	virtual float getAlpha() { return color.a; }
 };
 
 class SKA_LIB_DECLSPEC PointColorModelFace

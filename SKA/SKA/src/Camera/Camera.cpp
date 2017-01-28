@@ -12,6 +12,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - January 4, 2017 - Michael Doherty
+//               Modified limits on roll in move() method.
 //-----------------------------------------------------------------------------
 #include <Core/SystemConfiguration.h>
 #include <Camera/Camera.h>
@@ -86,8 +88,8 @@ void MovingCamera::move(float elapsed_time,
     if (pitch < -1.57f) pitch = -1.57f;
 	
 	roll += roll_thrust * 0.5f * elapsed_time;
-    if (roll > 0.5f)  roll = 0.5f;
-    if (roll < -0.5f) roll = -0.5f;
+    if (roll > 1.57f)  roll = 1.57f;
+    if (roll < -1.57f) roll = -1.57f;
 	
     heading += yaw_thrust * elapsed_time;
 
@@ -109,7 +111,9 @@ void MovingCamera::move(float elapsed_time,
 
 	orientation = Vector3D(pitch, heading, roll);
 
-	viewParameters(position, position + fwd_direction, world_up_vector);
+	//viewParameters(position, position + fwd_direction, world_up_vector);
+	viewParameters(position, position + fwd_direction, vrt_direction);
+
 }
 
 void MovingCamera::moveTo(Vector3D new_position)

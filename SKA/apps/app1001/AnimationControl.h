@@ -33,7 +33,7 @@ private:
 	vector<MotionDataSpec> specs;
 
 public:
-	short size() { return specs.size(); }
+	short size() { return (short)specs.size(); }
 	void addSpec(string _seqID, string _BVH_file, string _quat_file)
 	{
 		specs.push_back(MotionDataSpec(_seqID, _BVH_file, _quat_file));

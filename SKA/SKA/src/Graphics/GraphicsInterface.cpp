@@ -86,7 +86,7 @@ void MeshModel::render(Matrix4x4& world_xform)
 		n[2] = faces->faces[i].normal.z;
 		glNormal3fv(n);
 		
-		GLfloat face_color[] = { faces->faces[i].color.r, faces->faces[i].color.g, faces->faces[i].color.b, faces->faces[i].alpha };
+		GLfloat face_color[] = { faces->faces[i].color.r, faces->faces[i].color.g, faces->faces[i].color.b, faces->faces[i].color.a };
 		fadeColor(face_color);
 		glMaterialfv(GL_FRONT, GL_AMBIENT, face_color);
 		glMaterialfv(GL_FRONT, GL_DIFFUSE, face_color);

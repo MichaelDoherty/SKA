@@ -12,6 +12,8 @@
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
 // Version 3.1 - September 1, 2014 - Michael Doherty
+// Version 3.2 - December 7, 2016 - Michael Doherty
+//               correction to Vector3D::multVector()
 //-----------------------------------------------------------------------------
 #ifndef MATRIX4x4_DOT_H
 #define MATRIX4x4_DOT_H
@@ -273,7 +275,7 @@ public:
 		x = m[0] *v.x + m[4] *v.y + m[8] *v.z;
 		y = m[1] *v.x + m[5] *v.y + m[9] *v.z;
 		z = m[2] *v.x + m[6] *v.y + m[10]*v.z;
-		w = m[3] *v.x + m[7] *v.y + m[11]*v.z;
+		w = m[3] *v.x + m[7] *v.y + m[11]*v.z + m[15];
 		vout.x = x/w;
 		vout.y = y/w;
 		vout.z = z/w;

@@ -47,7 +47,7 @@ bool MotionGraphController::isValidChannel(CHANNEL_ID _channel, float _time)
 	{
 		stringstream ss;
 		ss << "MotionGraphController::isValidChannel: MotionGraphController has no attached MotionSequence for " << status.active_seqID;
-		logout << ss;
+		logout << ss.str();
 		throw AppException(ss.str().c_str());
 	}
 	return motion_sequence->isValidChannel(_channel);
@@ -63,7 +63,7 @@ float MotionGraphController::getValue(CHANNEL_ID _channel, float _time)
 	{
 		stringstream ss;
 		ss << "MotionGraphController::getValue: MotionGraphController has no attached MotionSequence for " << status.active_seqID;
-		logout << ss << endl;
+		logout << ss.str() << endl;
 		throw AppException(ss.str().c_str());
 	}
 	if (!isValidChannel(_channel, _time))
@@ -161,7 +161,7 @@ void MotionGraphController::readInMotionSequences(MotionDataSpecification& motio
 			{
 				stringstream ss;
 				ss << "MotionGraphController::readInMotionSequences: Unable to find character BVH file <" << character_BVH2 << ">. Aborting load.";
-				logout << ss << endl;
+				logout << ss.str() << endl;
 				throw AppException(ss.str().c_str());
 			}
 			pair<Skeleton*, MotionSequence*> read_result;
@@ -173,7 +173,7 @@ void MotionGraphController::readInMotionSequences(MotionDataSpecification& motio
 			{
 				stringstream ss;
 				ss << "MotionGraphController::readInMotionSequences: Aborting due to DataManager expection: " << dme.msg;
-				logout << ss;
+				logout << ss.str();
 				throw AppException(ss.str().c_str());
 			}
 			
@@ -198,7 +198,7 @@ void MotionGraphController::readInMotionSequences(MotionDataSpecification& motio
 		{
 			stringstream ss;
 			ss << "MotionGraphController::readInMotionSequences: Aborting due to BasicException: " << e.msg;
-			logout << ss;
+			logout << ss.str();
 			throw AppException(ss.str().c_str());
 		}
 	}
