@@ -1,0 +1,268 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\SKA\include\Animation\AnimationException.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\Blender.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\Bone.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\Channel.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\MotionController.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\MotionSequence.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\MotionSequenceController.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\MultiSequenceController.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\RawMotionController.h" />
+    <ClInclude Include="..\..\SKA\include\Animation\Skeleton.h" />
+    <ClInclude Include="..\..\SKA\include\Camera\Camera.h" />
+    <ClInclude Include="..\..\SKA\include\Core\Array2D.h" />
+    <ClInclude Include="..\..\SKA\include\Core\BasicException.h" />
+    <ClInclude Include="..\..\SKA\include\Core\SystemConfiguration.h" />
+    <ClInclude Include="..\..\SKA\include\Core\SystemLog.h" />
+    <ClInclude Include="..\..\SKA\include\Core\SystemTimer.h" />
+    <ClInclude Include="..\..\SKA\include\Core\Utilities.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\AMC_Reader.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\AMC_Writer.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\ASF_Reader.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\ASF_Writer.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\BVH_Reader.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\DataManagementException.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\DataManager.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\FileSystem.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\ParsingUtilities.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\SKM_ReaderWriter.h" />
+    <ClInclude Include="..\..\SKA\include\DataManagement\SKS_ReaderWriter.h" />
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP.h" />
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP_BMP.h" />
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP_DataStructures.h" />
+    <ClInclude Include="..\..\SKA\include\EasyBMP\EasyBMP_VariousBMPutilities.h" />
+    <ClInclude Include="..\..\SKA\include\Graphics\Graphics2D.h" />
+    <ClInclude Include="..\..\SKA\include\Graphics\GraphicsInterface.h" />
+    <ClInclude Include="..\..\SKA\include\Graphics\Lights.h" />
+    <ClInclude Include="..\..\SKA\include\Graphics\Textures.h" />
+    <ClInclude Include="..\..\SKA\include\Input\InputFilter.h" />
+    <ClInclude Include="..\..\SKA\include\Input\InputManager.h" />
+    <ClInclude Include="..\..\SKA\include\Math\Math.h" />
+    <ClInclude Include="..\..\SKA\include\Math\Matrix4x4.h" />
+    <ClInclude Include="..\..\SKA\include\Math\Point2D.h" />
+    <ClInclude Include="..\..\SKA\include\Math\Quaternion.h" />
+    <ClInclude Include="..\..\SKA\include\Math\RandomGenerator.h" />
+    <ClInclude Include="..\..\SKA\include\Math\Vector3D.h" />
+    <ClInclude Include="..\..\SKA\include\Models\CodedModels.h" />
+    <ClInclude Include="..\..\SKA\include\Models\Color.h" />
+    <ClInclude Include="..\..\SKA\include\Models\ModelFactory.h" />
+    <ClInclude Include="..\..\SKA\include\Models\Models.h" />
+    <ClInclude Include="..\..\SKA\include\Models\SphereModels.h" />
+    <ClInclude Include="..\..\SKA\include\Objects\BoneObject.h" />
+    <ClInclude Include="..\..\SKA\include\Objects\BoneSequence.h" />
+    <ClInclude Include="..\..\SKA\include\Objects\Object.h" />
+    <ClInclude Include="..\..\SKA\include\Objects\QObject.h" />
+    <ClInclude Include="..\..\SKA\include\Objects\Rotator.h" />
+    <ClInclude Include="..\..\SKA\include\Signals\FFT.h" />
+    <ClInclude Include="..\..\SKA\include\Signals\Signals.h" />
+    <ClInclude Include="..\..\SKA\include\Signals\SignalSpec.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\SKA\src\Animation\Blender.cpp" />
+    <ClCompile Include="..\..\SKA\src\Animation\Bone.cpp" />
+    <ClCompile Include="..\..\SKA\src\Animation\MotionSequence.cpp" />
+    <ClCompile Include="..\..\SKA\src\Animation\MotionSequenceController.cpp" />
+    <ClCompile Include="..\..\SKA\src\Animation\MultiSequenceController.cpp" />
+    <ClCompile Include="..\..\SKA\src\Animation\RawMotionController.cpp" />
+    <ClCompile Include="..\..\SKA\src\Animation\Skeleton.cpp" />
+    <ClCompile Include="..\..\SKA\src\Camera\Camera.cpp" />
+    <ClCompile Include="..\..\SKA\src\Core\SystemLog.cpp" />
+    <ClCompile Include="..\..\SKA\src\Core\SystemTimer.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\AMC_Reader.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\AMC_Writer.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\ASF_Reader.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\ASF_Writer.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\BVH_Reader.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\DataManager.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\FileSystem.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\ParsingUtilities.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\SKM_ReaderWriter.cpp" />
+    <ClCompile Include="..\..\SKA\src\DataManagement\SKS_ReaderWriter.cpp" />
+    <ClCompile Include="..\..\SKA\src\EasyBMP\EasyBMP.cpp" />
+    <ClCompile Include="..\..\SKA\src\Graphics\Graphics2D.cpp" />
+    <ClCompile Include="..\..\SKA\src\Graphics\GraphicsInterface.cpp" />
+    <ClCompile Include="..\..\SKA\src\Graphics\Lights.cpp" />
+    <ClCompile Include="..\..\SKA\src\Graphics\Textures.cpp" />
+    <ClCompile Include="..\..\SKA\src\Input\InputFilter.cpp" />
+    <ClCompile Include="..\..\SKA\src\Input\InputManager.cpp" />
+    <ClCompile Include="..\..\SKA\src\Math\Matrix4x4.cpp" />
+    <ClCompile Include="..\..\SKA\src\Math\Point2D.cpp" />
+    <ClCompile Include="..\..\SKA\src\Math\Quaternion.cpp" />
+    <ClCompile Include="..\..\SKA\src\Math\RandomGenerator.cpp" />
+    <ClCompile Include="..\..\SKA\src\Math\Vector3D.cpp" />
+    <ClCompile Include="..\..\SKA\src\Models\CodedModels.cpp" />
+    <ClCompile Include="..\..\SKA\src\Models\ModelFactory.cpp" />
+    <ClCompile Include="..\..\SKA\src\Models\SphereModels.cpp" />
+    <ClCompile Include="..\..\SKA\src\Objects\BoneSequence.cpp" />
+    <ClCompile Include="..\..\SKA\src\Objects\Object.cpp" />
+    <ClCompile Include="..\..\SKA\src\Objects\QObject.cpp" />
+    <ClCompile Include="..\..\SKA\src\Objects\Rotator.cpp" />
+    <ClCompile Include="..\..\SKA\src\Signals\FFT.cpp" />
+    <ClCompile Include="..\..\SKA\src\Signals\Signals.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6BAE625D-0D65-4A04-904D-273BC1AA5E2D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>ska</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;SKA_LIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\SKA\include;C:\mdlibs\opengl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\mdlibs\opengl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy ..\Debug\skad.dll ..\..\SKA\lib
+copy ..\Debug\skad.lib ..\..\SKA\lib</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;SKA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SKA_EXPORTS;SKA_LIB_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\SKA\include;C:\mdlibs\opengl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\mdlibs\opengl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy ..\Release\ska.dll ..\..\SKA\lib
+copy ..\Release\ska.lib ..\..\SKA\lib</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;SKA_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

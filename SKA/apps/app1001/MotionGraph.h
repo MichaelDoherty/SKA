@@ -1,8 +1,9 @@
 //-----------------------------------------------------------------------------
-// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // MotionGraph.h
 // Based on MotionGraph and Connector classes developed by COMP 259 students, fall 2014.
+//-----------------------------------------------------------------------------
 
 #ifndef MOTIONGRAPH_DOT_H
 #define MOTIONGRAPH_DOT_H
@@ -13,15 +14,15 @@ using namespace std;
 #include "AnimationControl.h"
 
 class MotionGraph
-{	
+{
 public:
 
 	MotionGraph(MotionDataSpecification& motion_data_specs);
-	
-	// FUTUREWORK (150618) - optimize the graph storage for faster retrieval 
+
+	// FUTUREWORK (150618) - optimize the graph storage for faster retrieval
 	//                       of queries through findTransitions()
 	struct Transition
-	{ 
+	{
 		string from_seqID;
 		int from_frame;
 		string to_seqID;
@@ -41,11 +42,11 @@ public:
 	void findTransitions(string& from_seqID, int from_frame, vector<Transition>& transitions);
 
 private:
-		
+
 	struct Frame
 	{
 		Vector3D root_position;
-		std::vector<Quaternion> joints; 
+		std::vector<Quaternion> joints;
 	};
 
 	struct Sequence
@@ -59,7 +60,7 @@ private:
 	void buildMotionGraph(MotionDataSpecification& motion_data_specs);
 
 	Sequence fileReader(MotionDataSpecification& motion_data_specs, short index);
-	
+
 	void computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result);
 };
 

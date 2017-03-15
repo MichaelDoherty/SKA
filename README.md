@@ -1,16 +1,16 @@
 SKA: Skeletal Animation Toolkit
 C++/openGL library to support research in character animation.
-Ver 3.1 posted September 1, 2014
+Ver 4.0 posted March 14, 2017
 
 ===
 
 Windows/VisualStudio users: 
 
-  SKA/MS_VC10/SKA.sln - solution file to build SKA library and to
+  SKA/MS_VC14/SKA.sln - solution file to build SKA library and to
                         build and run demo apps
-  SKA/MS_VC10/cleanup.bat - batch file to remove everything create by SKA.sln
+  SKA/MS_VC14/cleanup.bat - batch file to remove everything create by SKA.sln
 
-Linux users:
+Linux users: [LINUX MAKEFILES ARE OUT OF DATE AND LIKELY NOT WORKING AS FOR SKA 4.0]
 
   SKA/makefile: "make" builds SKA library and demo apps
                 "make clean" removes everything created by "make"

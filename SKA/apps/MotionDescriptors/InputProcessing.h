@@ -1,0 +1,26 @@
+//-----------------------------------------------------------------------------
+// MotionDescriptors project - Builds with SKA Version 4.0
+// THIS FILES IN THIS PROJECT ARE CURRENTLY JUST PLACE HOLDERS FOR 
+// THE REAL CODE WHICH IS IN DEVELOPMENT (March 14 2017)
+//-----------------------------------------------------------------------------
+// InputProcessing.h
+//    Object to monitor user input from mouse and keyboard.
+//-----------------------------------------------------------------------------
+#ifndef INPUTPROCESSING_DOT_H
+#define INPUTPROCESSING_DOT_H
+// SKA configuration
+#include <Core/SystemConfiguration.h>
+
+class InputProcessor
+{
+public:
+	InputProcessor();
+	~InputProcessor();
+	// processInputs() checks input queues for keyboard and mouse
+	// Requires elapsed time to check key press times for filtered keys
+	void processInputs(float elapsed_time);
+};
+
+extern InputProcessor input_processor;
+
+#endif // INPUTPROCESSING_DOT_H

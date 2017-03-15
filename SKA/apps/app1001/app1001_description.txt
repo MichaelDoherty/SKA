@@ -1,0 +1,5 @@
+app1001: 
+  Application that uses motion graphs to cycle between multiple 
+  motion sequences.
+  This application was developed by the students in COMP 259
+  during the Fall 2014 semester.

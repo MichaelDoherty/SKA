@@ -19,8 +19,7 @@
 // Original file name: IvQuat.{h,cpp}
 // Original code: Copyright (C) 2004 by Elsevier, Inc. All rights reserved.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
 #include <Math/Quaternion.h>

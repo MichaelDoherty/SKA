@@ -2,7 +2,7 @@
 // QObject.cpp
 //    An object that is controlled by quaternions.
 //-----------------------------------------------------------------------------
-// This software is part of the Skeleton Animation Toolkit (SKA) developed 
+// This software is part of the Skeleton Animation Toolkit (SKA) developed
 // at the University of the Pacific, under the guidance of Michael Doherty.
 // For information please contact mdoherty@pacific.edu.
 //-----------------------------------------------------------------------------
@@ -11,8 +11,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <Objects/QObject.h>
 
@@ -38,7 +37,7 @@ void QObject::rotate(Vector3D& r)
 
 
 Matrix4x4 QObject::worldTransformation() const
-{	
+{
 	Matrix4x4 scale_xform;
 	scale_xform = Matrix4x4::scaleXYZ(scale);
 	Matrix4x4 translation_xform;

@@ -1,12 +1,9 @@
 //-----------------------------------------------------------------------------
-// app0004 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
-// app0004: Program controlled motion of legs using 
-//          a new motion MotionController subclass.
+// app0004 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // AppMain.cpp
-//    The main program is mostly the connection between openGL, 
-//    SKA and application specific code. It also controls the order of 
+//    The main program is mostly the connection between openGL,
+//    SKA and application specific code. It also controls the order of
 //    initialization, before control is turned over to openGL.
 //-----------------------------------------------------------------------------
 // SKA configuration.
@@ -59,7 +56,7 @@ Object* createMarkerBox(Vector3D position)
 	markerspec.addSpec("length", "0.5");
 	markerspec.addSpec("width", "0.5");
 	markerspec.addSpec("height", "0.5");
-	Object* marker = new Object(markerspec, 
+	Object* marker = new Object(markerspec,
 		position, Vector3D(0.0f,0.0f,0.0f));
 	bg_render_list.push_back(marker);
 	return marker;
@@ -93,7 +90,7 @@ void drawHUD()
 	CHANNEL_ID c02(ROOT_BONE_ID, CT_TY);
 	CHANNEL_ID c03(ROOT_BONE_ID, CT_TZ);
 	s = toString(skel->getChannelValue(c01)); renderString(x[2], y[1], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c02)); renderString(x[4], y[1], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c02)); renderString(x[4], y[1], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c03)); renderString(x[6], y[1], 0.0f, c1, s.c_str());
 
 	s = "root orientation: "; renderString(x[0], y[2], 0.0f, c1, s.c_str());
@@ -101,7 +98,7 @@ void drawHUD()
 	CHANNEL_ID c05(ROOT_BONE_ID, CT_RY);
 	CHANNEL_ID c06(ROOT_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c04)); renderString(x[2], y[2], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c05)); renderString(x[4], y[2], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c05)); renderString(x[4], y[2], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c06)); renderString(x[6], y[2], 0.0f, c1, s.c_str());
 
 	s = "lfemur orientation: "; renderString(x[0], y[3], 0.0f, c1, s.c_str());
@@ -109,7 +106,7 @@ void drawHUD()
 	CHANNEL_ID c08(LFEMUR_BONE_ID, CT_RY);
 	CHANNEL_ID c09(LFEMUR_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c07)); renderString(x[2], y[3], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c08)); renderString(x[4], y[3], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c08)); renderString(x[4], y[3], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c09)); renderString(x[6], y[3], 0.0f, c1, s.c_str());
 
 	s = "rfemur orientation: "; renderString(x[0], y[4], 0.0f, c1, s.c_str());
@@ -117,7 +114,7 @@ void drawHUD()
 	CHANNEL_ID c11(RFEMUR_BONE_ID, CT_RY);
 	CHANNEL_ID c12(RFEMUR_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c10)); renderString(x[2], y[4], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c11)); renderString(x[4], y[4], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c11)); renderString(x[4], y[4], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c12)); renderString(x[6], y[4], 0.0f, c1, s.c_str());
 
 	s = "ltibia orientation: "; renderString(x[0], y[5], 0.0f, c1, s.c_str());
@@ -125,7 +122,7 @@ void drawHUD()
 	CHANNEL_ID c14(LTIBIA_BONE_ID, CT_RY);
 	CHANNEL_ID c15(LTIBIA_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c13)); renderString(x[2], y[5], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c14)); renderString(x[4], y[5], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c14)); renderString(x[4], y[5], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c15)); renderString(x[6], y[5], 0.0f, c1, s.c_str());
 
 	s = "rtibia orientation: "; renderString(x[0], y[6], 0.0f, c1, s.c_str());
@@ -133,7 +130,7 @@ void drawHUD()
 	CHANNEL_ID c17(RTIBIA_BONE_ID, CT_RY);
 	CHANNEL_ID c18(RTIBIA_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c16)); renderString(x[2], y[6], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c17)); renderString(x[4], y[6], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c17)); renderString(x[4], y[6], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c18)); renderString(x[6], y[6], 0.0f, c1, s.c_str());
 
 	s = "lfoot orientation: "; renderString(x[0], y[7], 0.0f, c1, s.c_str());
@@ -141,7 +138,7 @@ void drawHUD()
 	CHANNEL_ID c20(LFOOT_BONE_ID, CT_RY);
 	CHANNEL_ID c21(LFOOT_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c19)); renderString(x[2], y[7], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c20)); renderString(x[4], y[7], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c20)); renderString(x[4], y[7], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c21)); renderString(x[6], y[7], 0.0f, c1, s.c_str());
 
 	s = "rfoot orientation: "; renderString(x[0], y[8], 0.0f, c1, s.c_str());
@@ -149,7 +146,7 @@ void drawHUD()
 	CHANNEL_ID c23(RFOOT_BONE_ID, CT_RY);
 	CHANNEL_ID c24(RFOOT_BONE_ID, CT_RZ);
 	s = toString(skel->getChannelValue(c22)); renderString(x[2], y[8], 0.0f, c1, s.c_str());
-	s = toString(skel->getChannelValue(c23)); renderString(x[4], y[8], 0.0f, c1, s.c_str()); 
+	s = toString(skel->getChannelValue(c23)); renderString(x[4], y[8], 0.0f, c1, s.c_str());
 	s = toString(skel->getChannelValue(c24)); renderString(x[6], y[8], 0.0f, c1, s.c_str());
 }
 
@@ -206,7 +203,7 @@ void display(void)
 static void Reshape(int w, int h)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	window_width = w; window_height = h; 
+	window_width = w; window_height = h;
 	glViewport(0, 0, window_width, window_height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -226,9 +223,9 @@ void buildObjects()
 	{
 		// create a sky model directly by creating an instance of InvertedSphereModel
 		// which is a textured model
-		SphereModel* skymod = new InvertedSphereModel(800, 3, 
+		SphereModel* skymod = new InvertedSphereModel(800, 3,
 			Color(1.0f,1.0f,0.5f),(char*)"skymap1.bmp");
-		// build a sky object associated with the sky model 
+		// build a sky object associated with the sky model
 		Object* sky = new Object(skymod, Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
 		// store sky object for rendering
 		bg_render_list.push_back(sky);
@@ -238,8 +235,8 @@ void buildObjects()
 	{
 		// create a ground model indirectly by defining a ModelSpecification
 		ModelSpecification groundspec("Ground");
-		// build a ground object associated with the ground model 
-		Object* ground = new Object(groundspec, 
+		// build a ground object associated with the ground model
+		Object* ground = new Object(groundspec,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f), Vector3D(1.0f,1.0f,1.0f));
 		// store ground object for rendering
 		bg_render_list.push_back(ground);
@@ -250,8 +247,8 @@ void buildObjects()
 		// create a coordinate axes model indirectly by defining a ModelSpecification
 		ModelSpecification caxisspec("CoordinateAxis");
 		caxisspec.addSpec("length", "100");
-		// build a coordinate axes object associated with the coordinate axes model 
-		Object* caxis = new Object(caxisspec, 
+		// build a coordinate axes object associated with the coordinate axes model
+		Object* caxis = new Object(caxisspec,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
 		// store coordinate axes object for rendering
 		bg_render_list.push_back(caxis);
@@ -279,7 +276,7 @@ void initializeGLUT(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	anim_ctrl.loadCharacters(anim_render_list);
-	if (!anim_ctrl.isReady()) 
+	if (!anim_ctrl.isReady())
 		logout << "main(): Unable to load characters. Proceeding with no animation." << endl;
 
 	try
@@ -288,7 +285,7 @@ int main(int argc, char **argv)
 		initializeRenderer();
 		input_manager.registerGlutHandlers();
 
-		glutReshapeFunc(Reshape); 
+		glutReshapeFunc(Reshape);
 		glutDisplayFunc(display);
 		glutIdleFunc(display);
 

@@ -1,8 +1,9 @@
 //-----------------------------------------------------------------------------
-// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // MotionGraphController.cpp
 // Based on MotionGraphController class developed by COMP 259 students, fall 2014.
+//-----------------------------------------------------------------------------
 
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
@@ -17,10 +18,10 @@ MotionGraphController::MotionGraphController(MotionGraph* _motion_graph,
 	motion_graph = _motion_graph;
 
 	// force a transition to start of first sequence
-	string initial_seqID = _motion_data_specs.getSeqID(0); 
+	string initial_seqID = _motion_data_specs.getSeqID(0);
 	status.active_seqID = initial_seqID;
 	status.active_frame = 0;
-	status.active_frame = LONG_MAX; 
+	status.active_frame = LONG_MAX;
 	status.transition_trigger_frame = 0;
 	status.transition_frame = 0;
 	status.transition_seqID = initial_seqID;
@@ -32,7 +33,7 @@ MotionGraphController::~MotionGraphController()
 {
 	map<string, MotionSequence*>::iterator it;
 	for (it = motion_sequence_map.begin(); it != motion_sequence_map.end(); it++)
-		delete it->second; 
+		delete it->second;
 }
 
 //---------- Runtime Access Methods ---------------
@@ -69,7 +70,7 @@ float MotionGraphController::getValue(CHANNEL_ID _channel, float _time)
 	if (!isValidChannel(_channel, _time))
 	{
 		stringstream ss;
-		ss << "MotionSequenceController received request for invalid channel bone: " 
+		ss << "MotionSequenceController received request for invalid channel bone: "
 			<< _channel.bone_id << " dof: " << _channel.channel_type;
 		throw AppException(ss.str().c_str());
 	}
@@ -90,7 +91,7 @@ void MotionGraphController::update(float _time)
 	computeCurrentFrame();
 
 	// check for transitions to a new motion sequence
-	
+
 	if (status.active_frame >= status.transition_trigger_frame)
 	{
 		// make the transition
@@ -98,7 +99,7 @@ void MotionGraphController::update(float _time)
 		status.active_frame = status.transition_frame;
 		status.frame_zero_time = status.current_time - status.active_frame/frame_rate;
 		computeCurrentFrame();
-		
+
 		// set up next transition
 		setupNextTransition();
 	}
@@ -107,11 +108,11 @@ void MotionGraphController::update(float _time)
 void MotionGraphController::setupNextTransition()
 {
 	// traverse the motion graph and find all transitions from remaining part of current sequence
-	vector<MotionGraph::Transition> candidate_transitions;	
+	vector<MotionGraph::Transition> candidate_transitions;
 	motion_graph->findTransitions(status.active_seqID, status.active_frame, candidate_transitions);
 
 	// if nothing else is available, next transition is loop back from end of sequence
-	if (candidate_transitions.size() < 1) 
+	if (candidate_transitions.size() < 1)
 	{
 		status.transition_seqID = status.active_seqID;
 		status.transition_frame = 0;
@@ -151,7 +152,7 @@ void MotionGraphController::readInMotionSequences(MotionDataSpecification& motio
 		string current_file = motion_data_specs.getBvhFilename(i);
 		cout << "MotionGraphController reading " << current_file << endl;
 		logout << "MotionGraphController reading "  << current_file << endl;
-		
+
 		char* BVH_filename = NULL;
 		string character_BVH2(current_file);
 		try
@@ -176,11 +177,11 @@ void MotionGraphController::readInMotionSequences(MotionDataSpecification& motio
 				logout << ss.str();
 				throw AppException(ss.str().c_str());
 			}
-			
+
 			// throw away the skeleton
 			delete read_result.first;
 			MotionSequence * ms = read_result.second;
-			
+
 			string seqID = motion_data_specs.getSeqID(i);
 			char* tmp = new char[strlen(seqID.c_str())+1];
 			strcpy(tmp, seqID.c_str());
@@ -191,8 +192,8 @@ void MotionGraphController::readInMotionSequences(MotionDataSpecification& motio
 			ms->scaleChannel(CHANNEL_ID(0, CT_TX), character_size_scale);
 			ms->scaleChannel(CHANNEL_ID(0, CT_TY), character_size_scale);
 			ms->scaleChannel(CHANNEL_ID(0, CT_TZ), character_size_scale);
-			
-			motion_sequence_map.insert(pair<string, MotionSequence*>(seqID, ms)); 
+
+			motion_sequence_map.insert(pair<string, MotionSequence*>(seqID, ms));
 		}
 		catch (BasicException& e)
 		{

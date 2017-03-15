@@ -1,0 +1,11 @@
+app0002: 
+  Demo program demonstrates how to animate a character based on
+  a BVH file.
+  It also illustrated various useful things that aren't
+  directly related to the character animation.
+  (1) additional objects, such as ground, sky and coordinate axes
+  (2) moveable camera, controlled by the camera and mouse.
+  (3) keyboard filtering, to avoid multiple responses when
+      a single keystroke is expected.
+  (4) animation speed control (freeze, single step, time warp)
+  (5) heads-up display (2D text on screen)

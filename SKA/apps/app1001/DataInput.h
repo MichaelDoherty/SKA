@@ -1,12 +1,11 @@
-/*
-	This class is used to convert all Euler angles from the original .bvh files to quaternions and store them into another file which will be read in by our motion graph class.
-	
-	Quaternion conversion is done by calling functions from the Quaternion class in SKA
-	
-	To those using this motion graph implementation I wish you the best of luck
-
-*/
-
+//-----------------------------------------------------------------------------
+// app1001 - Builds with SKA Version 4.0
+//-----------------------------------------------------------------------------
+// DataOnput.h
+//  This class is used to convert all Euler angles from the original .bvh files to quaternions and store them into another file which will be read in by our motion graph class.
+//  Quaternion conversion is done by calling functions from the Quaternion class in SKA
+//  To those using this motion graph implementation I wish you the best of luck
+//-----------------------------------------------------------------------------
 #ifndef DATAINPUT_H
 #define DATAINPUT_H
 #include <iostream>
@@ -14,8 +13,8 @@
 #include <algorithm>
 #include <vector>
 #include <string>
-#include <fstream> 
-#include <iomanip> 
+#include <fstream>
+#include <iomanip>
 #include <Math/Vector3D.h>
 #include <Math/Quaternion.h>
 #include "AppConfig.h"
@@ -31,7 +30,7 @@ struct RootNode
 
 struct Node
 {
-	Quaternion quaternion;	
+	Quaternion quaternion;
 	Vector3D eulerAngle;
 	// node number in the vector of nodes starts at 1
 	int nodeCount;
@@ -47,7 +46,7 @@ struct Frame
 };
 
 class DataInput
-{	
+{
 	private:
 		std::vector<Frame> motion;
 		vector<string> baseballFiles;

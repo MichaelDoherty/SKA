@@ -1,0 +1,5 @@
+app0004: 
+  Demo program that implements programmed motion of legs, 
+  rather than data-driven motion.
+  This also demonstrates the use if an application specific
+  MotionController subclass.

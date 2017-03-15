@@ -1,3 +1,11 @@
+//-----------------------------------------------------------------------------
+// app1001 - Builds with SKA Version 4.0
+//-----------------------------------------------------------------------------
+// DataOnput.cpp
+//  This class is used to convert all Euler angles from the original .bvh files to quaternions and store them into another file which will be read in by our motion graph class.
+//  Quaternion conversion is done by calling functions from the Quaternion class in SKA
+//  To those using this motion graph implementation I wish you the best of luck
+//-----------------------------------------------------------------------------
 #include "DataInput.h"
 
 DataInput::DataInput(string fileName)
@@ -43,7 +51,7 @@ void DataInput::readFile(string FileName, string outputName)
 	cout << FileName << endl;
 	lineNumber = 0;
 	Frame temp;
-	
+
 	// get us to the euler angles, skip rest of file
 	while (!data.eof())
 	{
@@ -61,7 +69,7 @@ void DataInput::readFile(string FileName, string outputName)
 			cout << endl << line << endl;
 			break;
 		}
-	} 
+	}
 	while (!data.eof())
 	{
 		cout << endl << " Frame: " << FrameCount << " created" << endl;
@@ -96,18 +104,18 @@ void DataInput::readFile(string FileName, string outputName)
 
 				}
 				output2<<endl;
-				
+
 				lineNumber++;
 				motion.push_back(temp);
 
-				
+
 				FrameCount++;
 				if(lineNumber>2000)
 				{
 					data.eof();
 					output2.eof();
 					break;
-						
+
 				}
 			}
 
@@ -124,7 +132,7 @@ void DataInput::printFrames()
 		cout <<" root node "<< endl << " xposition: " << motion.at(i).root.PosX << " yposition: " << motion.at(i).root.PosY << " zposition: " << motion.at(i).root.PosZ << endl;
 		cout << " quaternion w value: " << motion.at(i).root.quaternion.w <<endl << " quaternion x value: " << motion.at(i).root.quaternion.x  << endl<< " quaternion y value: " << motion.at(i).root.quaternion.y<< endl<< " quaternion z value: " << motion.at(i).root.quaternion.z <<endl;
 		cout<<"****************************************************";
-		
+
 		int nodeCount = motion.at(i).nodes.size();
 		for(int j=0;j<nodeCount;j++)
 		{
@@ -151,9 +159,9 @@ void DataInput::WriteFrames()
 		int nodeCount = motion.at(i).nodes.size();
 		for(int j=0;j<nodeCount;j++)
 		{
-			
+
 			output2 << " "<< motion.at(i).nodes.at(j).quaternion.w  << " "<< motion.at(i).nodes.at(j).quaternion.z << " "<< motion.at(i).nodes.at(j).quaternion.x << " " << motion.at(i).nodes.at(j).quaternion.y;
-			
+
 		}
 		output2<<endl;
 		cout<< endl<<" Wrote Frame " << i<< " to a file "<<endl;

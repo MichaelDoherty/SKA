@@ -11,10 +11,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-// Version 3.2 - December 23, 2016 - Michael Doherty  
-//               Fixed alpha in ModelFace to be part of Color attribute.
-//-----------------------------------------------------------------------------
+
 #ifndef MODELS_DOT_H
 #define MODELS_DOT_H
 

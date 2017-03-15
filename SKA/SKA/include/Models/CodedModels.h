@@ -12,10 +12,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-// Version 3.2 - December 23, 2016 - Michael Doherty
-//               Added XYPlaneModel, YZPlaneModel and ZXPlaneModel
-//-----------------------------------------------------------------------------
+
 #ifndef CODED_MODELS_DOT_H
 #define CODED_MODELS_DOT_H
 #include <Core/SystemConfiguration.h>

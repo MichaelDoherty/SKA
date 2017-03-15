@@ -1,3 +1,9 @@
+//-----------------------------------------------------------------------------
+// app1001 - Builds with SKA Version 4.0
+//-----------------------------------------------------------------------------
+// Connector.h
+//    node class and Connector function
+//-----------------------------------------------------------------------------
 #include <Core/SystemConfiguration.h>
 #include <vector>
 #include <Math/Vector3D.h>

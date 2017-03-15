@@ -11,10 +11,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-// Version 3.2 - December 7, 2016 - Michael Doherty
-//               Added Vector into the model builder cases
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <cstdlib>
 using namespace std;

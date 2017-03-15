@@ -1,8 +1,9 @@
 //-----------------------------------------------------------------------------
-// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // MotionGraphController.h
 // Based on MotionGraphController class developed by COMP 259 students, fall 2014.
+//-----------------------------------------------------------------------------
 
 #ifndef MOTIONGRAPHCONTROLLER_DOT_H
 #define MOTIONGRAPHCONTROLLER_DOT_H
@@ -60,7 +61,7 @@ private:
 	map<string, MotionSequence*> motion_sequence_map;
 
 	// status of the transition controller
-	State status;	
+	State status;
 
 	float frame_rate;				// frames per second of the source motion sequences
 	float character_size_scale;		// the amount we need to scale the bones of the character
@@ -72,11 +73,11 @@ private:
 
 	// update current position in current motion sequence
 	void computeCurrentFrame();
-	
+
 	void setupNextTransition();
 
 	MotionSequence* lookupMotionSequenceByID(string ID);
-	
+
 //---------- Setup Methods ---------------
 
 	// reads all the motion sequences, stores in motion_sequence_map

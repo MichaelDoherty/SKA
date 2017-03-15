@@ -1,11 +1,9 @@
 //-----------------------------------------------------------------------------
-// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
-// app0003 animates multiple characters.
+// app0003 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // AppMain.cpp
-//    The main program is mostly the connection between openGL, 
-//    SKA and application specific code. It also controls the order of 
+//    The main program is mostly the connection between openGL,
+//    SKA and application specific code. It also controls the order of
 //    initialization, before control is turned over to openGL.
 //-----------------------------------------------------------------------------
 // SKA configuration.
@@ -94,7 +92,7 @@ void display(void)
 	while (biter != bg_render_list.end())
 	{
 		Object* go = (Object*)(*biter);
-		if (go->isVisible()) 
+		if (go->isVisible())
 		{
 			Matrix4x4 world_xform;
 			(*biter)->render(world_xform);
@@ -140,9 +138,9 @@ void buildObjects()
 	{
 		// create a sky model directly by creating an instance of InvertedSphereModel
 		// which is a textured model
-		SphereModel* skymod = new InvertedSphereModel(800, 3, 
+		SphereModel* skymod = new InvertedSphereModel(800, 3,
 			Color(1.0f,1.0f,0.5f),(char*)"skymap1.bmp");
-		// build a sky object associated with the sky model 
+		// build a sky object associated with the sky model
 		Object* sky = new Object(skymod, Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
 		// store sky object for rendering
 		bg_render_list.push_back(sky);
@@ -152,8 +150,8 @@ void buildObjects()
 	{
 		// create a ground model indirectly by defining a ModelSpecification
 		ModelSpecification groundspec("Ground");
-		// build a ground object associated with the ground model 
-		Object* ground = new Object(groundspec, 
+		// build a ground object associated with the ground model
+		Object* ground = new Object(groundspec,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f), Vector3D(1.0f,1.0f,1.0f));
 		// store ground object for rendering
 		bg_render_list.push_back(ground);
@@ -164,20 +162,20 @@ void buildObjects()
 		// create a coordinate axes model indirectly by defining a ModelSpecification
 		ModelSpecification caxisspec("CoordinateAxis");
 		caxisspec.addSpec("length", "100");
-		// build a coordinate axes object associated with the coordinate axes model 
-		Object* caxis = new Object(caxisspec, 
+		// build a coordinate axes object associated with the coordinate axes model
+		Object* caxis = new Object(caxisspec,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
 		// store coordinate axes object for rendering
 		bg_render_list.push_back(caxis);
 	}
 }
 
-// reshape() is a call back from openGL to indicate that the window has 
+// reshape() is a call back from openGL to indicate that the window has
 // changed size. Adjust the camera and view parameters accordingly.
 static void reshape(int w, int h)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	window_width = w; window_height = h; 
+	window_width = w; window_height = h;
 	glViewport(0, 0, window_width, window_height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -215,7 +213,7 @@ int main(int argc, char **argv)
 	// initialize the animation subsystem, which reads the
 	// mocap data files and sets up the character(s)
 	anim_ctrl.loadCharacters(anim_render_list);
-	if (!anim_ctrl.isReady()) 
+	if (!anim_ctrl.isReady())
 	{
 		logout << "main(): Unable to load characters. Aborting program." << endl;
 		return 1;
@@ -232,7 +230,7 @@ int main(int argc, char **argv)
 		// the InputManager constructor.
 		input_manager.registerGlutHandlers();
 
-		glutReshapeFunc(reshape); 
+		glutReshapeFunc(reshape);
 		glutDisplayFunc(display);
 		glutIdleFunc(display);
 
@@ -241,7 +239,7 @@ int main(int argc, char **argv)
 
 		// Application specific initialization of the camera/viewpoint.
 		camera.initializeCamera(window_width, window_height);
-		
+
 		// construct background objects
 		buildObjects();
 

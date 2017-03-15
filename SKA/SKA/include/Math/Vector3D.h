@@ -14,8 +14,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #ifndef VECTOR3D_DOT_H
 #define VECTOR3D_DOT_H
 #include <Core/SystemConfiguration.h>
@@ -123,7 +122,15 @@ public:
 	}
 	float dot(const Vector3D& rhs) const
 	{
-		return x*rhs.x+y*rhs.y+z*rhs.z;
+		return x*rhs.x + y*rhs.y + z*rhs.z; 
+	}
+	// ndot = normalized dot product
+	float ndot(const Vector3D& rhs) const
+	{
+		float a = (x*rhs.x + y*rhs.y + z*rhs.z) / (magnitude()*rhs.magnitude());
+		if (a > 1.0f) a = 1.0f;
+		if (a < -1.0f) a = -1.0f;
+		return a;
 	}
 	Vector3D cross(const Vector3D& rhs) const
 	{

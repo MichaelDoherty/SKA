@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// app0003 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app0003 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // CameraControl.cpp
 //    Object to control the camera/viewpoint.

@@ -1,7 +1,0 @@
-INPUT_FOLDER="..\..\..\SKA\data\motion\BVH\Baseball_Swings"
-OUTPUT_FOLDER="C:\Users\mdoherty\Desktop\PTDataResults"
-ANIMATION=Y
-PROCESS "swing1" MODE=F LOOP=N SKIP=3
-PROCESS "swing2" MODE=F LOOP=N SKIP=3
-INPUT_FOLDER="..\..\..\SKA\data\motion\BVH"
-PROCESS "UOP_lab_01" MODE=F LOOP=Y SKIP=3

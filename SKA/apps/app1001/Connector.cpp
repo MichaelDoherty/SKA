@@ -1,3 +1,9 @@
+//-----------------------------------------------------------------------------
+// app1001 - Builds with SKA Version 4.0
+//-----------------------------------------------------------------------------
+// Connector.cpp
+//    node class and Connector function
+//-----------------------------------------------------------------------------
 // SKA configuration
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
@@ -22,9 +28,9 @@ std::vector<vector<int> > Connector(std::vector<MotionGraph::Frame> motion1, std
 			node inputNode;
 			//Loop through each quaternion in frame 'i' of first passed motion
 			//hard coded 20 into the loop because there should only be 20 joints but our code finds more than 20
-			// joints past 20 are all empty and through of the program, when all is fixed we should be using the 
-			//motion[i].joints.size() to find the number of joints 
-			for (int k = 0; k < 20/*motion1[i].joints.size()*/; k++) 
+			// joints past 20 are all empty and through of the program, when all is fixed we should be using the
+			//motion[i].joints.size() to find the number of joints
+			for (int k = 0; k < 20/*motion1[i].joints.size()*/; k++)
 			{
 				// calculate the distance between joints by finding the difference in location
 				Quaternion diffq = motion1[i].joints[k] - motion2[j].joints[k];
@@ -94,7 +100,7 @@ std::vector<vector<int> > Connector(std::vector<MotionGraph::Frame> motion1, std
 	{
 		logout << endl << "(" << returnList.at(i).at(0) << "," << returnList.at(i).at(1) << ")" << endl;
 	}
-	
+
 	logout << "Connector finished" << endl;
 	return returnList;
 }

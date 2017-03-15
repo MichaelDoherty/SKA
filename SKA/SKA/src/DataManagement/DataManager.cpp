@@ -12,10 +12,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-// Version 3.2 - January 25, 2017 - Michael Doherty
-//               Modify DataManager::findFile to first check for the filename with no attached path.
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <cstdlib>
 #include <vector>

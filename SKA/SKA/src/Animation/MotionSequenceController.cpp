@@ -14,8 +14,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <Core/Utilities.h>
 #include <Animation/MotionSequenceController.h>

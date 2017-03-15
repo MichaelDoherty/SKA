@@ -11,10 +11,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-// Version 3.2 - January 4, 2017 - Michael Doherty
-//               Modified limits on roll in move() method.
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <Camera/Camera.h>
 

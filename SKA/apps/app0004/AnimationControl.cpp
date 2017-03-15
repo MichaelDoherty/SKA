@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// app0004 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app0004 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // AnimationControl.cpp
 //    animation controller using a program controlled motion controller

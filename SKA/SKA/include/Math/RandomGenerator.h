@@ -15,8 +15,7 @@
 // Some code in this file is derived from the works attributed below.
 // Use of this code may be restricted by their ownership.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #ifndef RANDOMGENERATOR_DOT_H
 #define RANDOMGENERATOR_DOT_H
 #include <Core/SystemConfiguration.h>

@@ -13,10 +13,14 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #ifndef SYSTEMCONFIGURATION_DOT_H
 #define SYSTEMCONFIGURATION_DOT_H
+
+// Version identification for this SKA library
+#define SKA_VERSION "4.0"
+#define SKA_MAJOR_VERSION_NUMBER 4
+#define SKA_MINOR_VERSION_NUMBER 0
 
 // Operating system and compiler checks
 // _WIN32 - Windows 32 bit or 64 bit

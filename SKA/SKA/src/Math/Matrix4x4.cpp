@@ -14,8 +14,7 @@
 // Some code in this file is derived from the works attributed below.
 // Use of this code may be restricted by their ownership.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <Math/Matrix4x4.h>
 #include <Math/Quaternion.h>

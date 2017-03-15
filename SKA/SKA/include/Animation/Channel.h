@@ -16,8 +16,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #ifndef CHANNEL_DOT_H
 #define CHANNEL_DOT_H
 #include <Core/SystemConfiguration.h>

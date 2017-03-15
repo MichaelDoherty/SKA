@@ -1,8 +1,9 @@
 //-----------------------------------------------------------------------------
-// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // MotionGraph.cpp
 // Based on MotionGraph and Connector classes developed by COMP 259 students, fall 2014
+//-----------------------------------------------------------------------------
 
 // SKA configuration
 #include <Core/SystemConfiguration.h>
@@ -20,7 +21,7 @@ using namespace std;
 #include "BVH2Quaternion.h"
 
 MotionGraph::MotionGraph(MotionDataSpecification& motion_data_specs)
-{	
+{
 	buildMotionGraph(motion_data_specs);
 }
 
@@ -30,14 +31,14 @@ void MotionGraph::findTransitions(string& from_seqID, int from_frame, vector<Tra
 	{
 		for (unsigned long i = 0; i < graph[g].transitions.size(); i++)
 		{
-			// FUTUREWORK (150626) - The +10 is to avoid jumping too soon. 
+			// FUTUREWORK (150626) - The +10 is to avoid jumping too soon.
 			//                       It should be parameterized.
-			if ((graph[g].from_seq_ID == from_seqID) && 
+			if ((graph[g].from_seq_ID == from_seqID) &&
 				(graph[g].transitions[i].from_frame > from_frame+10))
 			{
 				Transition t;
-				t.from_seqID = graph[g].transitions[i].from_seqID;	
-				t.to_seqID = graph[g].transitions[i].to_seqID;	
+				t.from_seqID = graph[g].transitions[i].from_seqID;
+				t.to_seqID = graph[g].transitions[i].to_seqID;
 				t.from_frame = graph[g].transitions[i].from_frame;
 				t.to_frame = graph[g].transitions[i].to_frame;
 				transitions.push_back(t);
@@ -58,7 +59,7 @@ void MotionGraph::buildMotionGraph(MotionDataSpecification& motion_data_specs)
 
 	// find transitions between each pair of sequences
 	// FUTUREWORK (150618) - does not currently allow for any transitions to self
-	for (unsigned short i=0; i<motion_data_specs.size(); i++) 
+	for (unsigned short i=0; i<motion_data_specs.size(); i++)
 	{
 		TransitionSet ts;
 		for (unsigned short j=0; j<motion_data_specs.size(); j++)
@@ -76,7 +77,7 @@ static string verifyQuaternionFile(string& bvh_filename, string& quat_filename)
 	if (bvh_filename == quat_filename)
 	{
 		stringstream ss;
-		ss << "MotionGraph::fileReader bvh file and quat file have the same name " 
+		ss << "MotionGraph::fileReader bvh file and quat file have the same name "
 			<< quat_filename << " == " << bvh_filename;
 		throw AppException(ss.str().c_str());
 	}
@@ -90,18 +91,18 @@ static string verifyQuaternionFile(string& bvh_filename, string& quat_filename)
 		if (bvh_filepath == NULL)
 		{
 			stringstream ss;
-			ss << "MotionGraph::fileReader cannot find file " 
+			ss << "MotionGraph::fileReader cannot find file "
 				<< quat_filename << " or " << bvh_filename;
 			throw AppException(ss.str().c_str());
 		}
 		string bvh_fullfilepath = bvh_filepath;
-		
+
 		// extract the directory of the located bvh file
 		char* bvh_dir = strClone(bvh_filepath);
 		char* name_starts = strrchr(bvh_dir, '/');
 		if (name_starts == NULL) bvh_dir[0] = '\n';
 		else *(name_starts+1) = '\0';
-		
+
 		// attempt to create a new file in the same directory as the source BVH file.
 		quat_filepath = new char[strlen(bvh_dir)+quat_filename.length()+20];
 		sprintf(quat_filepath, "%s%s", bvh_dir, quat_filename.c_str());
@@ -137,8 +138,8 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 	string quat_filename = motion_data_specs.getQuatFilename(index);
 
 	string quat_filepath = verifyQuaternionFile(bvh_filename, quat_filename);
-	
-	vector<Frame> single_sequence; 
+
+	vector<Frame> single_sequence;
 	Sequence sequence;
 	sequence.seq_ID = seq_ID;
 	sequence.source_filename = quat_filename;
@@ -147,7 +148,7 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 	cout << "MotionGraph::fileReader is opening: " << quat_filepath << endl;
 
 	ifstream data(quat_filepath.c_str());
-	if (!data) 
+	if (!data)
 	{
 		stringstream ss;
 		ss << "MotionGraph::fileReader cannot open file " << quat_filepath;
@@ -179,7 +180,7 @@ MotionGraph::Sequence MotionGraph::fileReader(MotionDataSpecification& motion_da
 		tmp_frame.joints.clear();
 	}
 
-	sequence.frames = single_sequence; 
+	sequence.frames = single_sequence;
 	return sequence;
 }
 
@@ -189,38 +190,38 @@ struct CandidateTransition {
 	float distance;
 };
 
-// FUTUREWORK (150618) 
+// FUTUREWORK (150618)
 // This function would probably be more efficient if we used lists instead of vectors,
 // since it is often erasing the first element in the vector/list.
 void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vector<Transition>& result)
 {
 	logout << "MotionGraph::findTransitions starting" << endl;
-	
+
 	vector<CandidateTransition> candidate_transitions;
 
 	// Calculate distances between each pair of frames from the two motions
 
 	// Upper theshold for initial threshold culling
 	// FUTUREWORK (150618) - max_distance should be a parameter
-	float max_distance = 12.0; 
+	float max_distance = 12.0;
 
 	// loop through all frame pairs <i,j>, where i is from motion 1 and j is from motion 2
-	for (unsigned int i = 0; i < motion1.frames.size(); i += 1) 
+	for (unsigned int i = 0; i < motion1.frames.size(); i += 1)
 	{
-		for (unsigned int j = 0; j < motion2.frames.size(); j += 1) 
+		for (unsigned int j = 0; j < motion2.frames.size(); j += 1)
 		{
 			float distance = 0;
-			
+
 			if (motion1.frames[i].joints.size() != motion2.frames[j].joints.size())
 			{
 				stringstream ss;
-				ss << "Error in MotionGraph::findTransitions. Different number of joints. " 
+				ss << "Error in MotionGraph::findTransitions. Different number of joints. "
 					<< motion1.seq_ID << " frame " << i << " to " << motion2.seq_ID << " frame " << j;
 				throw AppException(ss.str().c_str());
 			}
 
 			// distance is the sum of the quaterian differences of each joint
-			for (unsigned short k = 0; k < motion1.frames[i].joints.size(); k++) 
+			for (unsigned short k = 0; k < motion1.frames[i].joints.size(); k++)
 			{
 				Quaternion diffq = motion1.frames[i].joints[k] - motion2.frames[j].joints[k];
 				distance += diffq.magnitude();
@@ -228,11 +229,11 @@ void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vecto
 
 			// store this pair as a candidate transition if it meets the criteria
 			// FUTUREWORK (150618) - 30 should be a parameter
-			if (abs(distance) < max_distance && 
-				distance != 0 && 
-				j < motion2.frames.size() - 30 && 
-				i < motion1.frames.size() - 30 && 
-				i > 30 && 
+			if (abs(distance) < max_distance &&
+				distance != 0 &&
+				j < motion2.frames.size() - 30 &&
+				i < motion1.frames.size() - 30 &&
+				i > 30 &&
 				j > 30)
 			{
 				CandidateTransition transition;
@@ -269,7 +270,7 @@ void MotionGraph::computeTransitions(Sequence& motion1, Sequence& motion2, vecto
 		bool addToList = true;
 		for (unsigned int i = 0; i < selected_transitions.size(); i++)
 		{
-			// If the lowest comparison value in sortedComparisons frame 1 and 2 are within 10 frames 
+			// If the lowest comparison value in sortedComparisons frame 1 and 2 are within 10 frames
 			// of any motion already stored then don't add to final list
 			// FUTUREWORK (150618) - 5 should be a parameter
 			if (ordered_transitions[0].motion1_frame < selected_transitions[i].motion1_frame + 5 &&

@@ -1,0 +1,3 @@
+app0003:
+  Demonstrates how to animate multiple characters.
+  This demo basically combines code from app0001 and app0002.

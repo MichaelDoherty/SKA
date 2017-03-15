@@ -1,8 +1,5 @@
 //-----------------------------------------------------------------------------
-// app0005 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
-//-----------------------------------------------------------------------------
-// app0005 - demonstrates control of a three bone arm 
-//     with inverse kinematics tracking a moving target.
+// app0005 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // AppMain.cpp
 //-----------------------------------------------------------------------------
@@ -58,7 +55,7 @@ Object* createMarkerBox(Vector3D position, Color c)
 	markerspec.addSpec("length", "0.5");
 	markerspec.addSpec("width", "0.5");
 	markerspec.addSpec("height", "0.5");
-	Object* marker = new Object(markerspec, 
+	Object* marker = new Object(markerspec,
 		position, Vector3D(0.0f,0.0f,0.0f));
 	bg_render_list.push_back(marker);
 	return marker;
@@ -138,7 +135,7 @@ void display(void)
 static void Reshape(int w, int h)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	window_width = w; window_height = h; 
+	window_width = w; window_height = h;
 	glViewport(0, 0, window_width, window_height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -156,7 +153,7 @@ void buildObjects()
 	{
 		char* skymapfile = (char*)"skymap1.bmp";
 		SphereModel* skymod = new InvertedSphereModel(800, 3, Color(1.0f,1.0f,0.5f), skymapfile);
-		Object* sky = new Object(skymod, 
+		Object* sky = new Object(skymod,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
 		bg_render_list.push_back(sky);
 	}
@@ -165,7 +162,7 @@ void buildObjects()
 	{
 		ModelSpecification caxisspec("CoordinateAxis");
 		caxisspec.addSpec("length", "100");
-		Object* caxis = new Object(caxisspec, 
+		Object* caxis = new Object(caxisspec,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f));
 		bg_render_list.push_back(caxis);
 	}
@@ -173,7 +170,7 @@ void buildObjects()
 	if (draw_ground)
 	{
 		ModelSpecification groundspec("Ground");
-		Object* ground = new Object(groundspec, 
+		Object* ground = new Object(groundspec,
 			Vector3D(0.0f,0.0f,0.0f), Vector3D(0.0f,0.0f,0.0f), Vector3D(1.0f,1.0f,1.0f));
 		bg_render_list.push_back(ground);
 	}
@@ -208,7 +205,7 @@ int main(int argc, char **argv)
 	{
 
 		anim_ctrl.loadCharacters(anim_render_list);
-		if (!anim_ctrl.isReady()) 
+		if (!anim_ctrl.isReady())
 			logout << "main(): Unable to load characters. Proceeding with no animation." << endl;
 	}
 
@@ -218,7 +215,7 @@ int main(int argc, char **argv)
 		initializeRenderer();
 		input_manager.registerGlutHandlers();
 
-		glutReshapeFunc(Reshape); 
+		glutReshapeFunc(Reshape);
 		glutDisplayFunc(display);
 		glutIdleFunc(display);
 

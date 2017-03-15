@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// app0001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app0001 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // AnimationControl.h
 //    Animation controller for a single character

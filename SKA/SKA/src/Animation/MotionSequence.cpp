@@ -12,8 +12,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <complex>
 #include <Core/SystemLog.h>
@@ -35,13 +34,13 @@ public:
 		short i = getChannelIndexFromID(c);
 		if (i>=0) return i;
 		// add new channel, with a new index
-		short new_index = channels.size();
+		short new_index = short(channels.size());
 		channels.insert(pair<CHANNEL_ID,short>(c,new_index)); 
 		return new_index;
 	}
 	short numChannels() 
 	{ 
-		return channels.size(); 
+		return short(channels.size()); 
 	}
 	void clear()
 	{
@@ -75,7 +74,7 @@ public:
 		}
 		return i;
 	}
-	short size() { return channels.size(); }
+	short size() { return short(channels.size()); }
 };
 
 ostream& operator<<(ostream& out, ChannelMap& cm)

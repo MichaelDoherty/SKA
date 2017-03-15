@@ -11,8 +11,7 @@
 // being credited for any significant use, particularly if used for
 // commercial projects or academic research publications.
 //-----------------------------------------------------------------------------
-// Version 3.1 - September 1, 2014 - Michael Doherty
-//-----------------------------------------------------------------------------
+
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
 #include <Core/Utilities.h>
@@ -303,7 +302,7 @@ pair<Skeleton*, MotionSequence*> BVH_Reader_Local::readBVH(const char* inputFile
 			bulk_data.set(f, SKA_channel, v);
 		}
 	}
-	ms->bulkBuild(cid, channel_ids.size(), bulk_data);
+	ms->bulkBuild(cid, short(channel_ids.size()), bulk_data);
 	delete [] cid;
 
 	delete bvh_parse_tree;
@@ -429,7 +428,7 @@ void BVH_Reader_Local::configureChannels(short bone_id, BVH_DECL* decl, Skeleton
 
 	// DOF application order comes from the "CHANNELS" line
 	CHANNEL_TYPE dof_order[6];
-	short num_dof = decl->channels->channel_labels.size();
+	short num_dof = short(decl->channels->channel_labels.size());
 	for (unsigned short i=0; i<num_dof; i++)
 	{
 		string label = decl->channels->channel_labels[i];
@@ -619,7 +618,7 @@ short countChannelsRecursive(BVH_DECL* decl)
 	short c=0;
 	if ((decl->decl_type == BVH_ROOT)  || (decl->decl_type == BVH_JOINT))
 	{
-		c += decl->channels->channel_labels.size();
+		c += short(decl->channels->channel_labels.size());
 		for (unsigned short i=0; i<decl->children.size(); i++)
 			c += countChannelsRecursive(decl->children[i]);
 	}

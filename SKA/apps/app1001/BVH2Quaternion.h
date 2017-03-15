@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// app1001 - Builds with SKA Version 3.1 - Sept 01, 2012 - Michael Doherty
+// app1001 - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // BVH2Quaternion.h
 // Based on the DataInput code produced by COMP 259 students, fall 2014.
