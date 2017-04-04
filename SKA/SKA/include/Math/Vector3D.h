@@ -67,6 +67,10 @@ public:
 	// destructor - nothing to do
 	virtual ~Vector3D() { }
 
+	float getX() { return x; }
+	float getY() { return y; }
+	float getZ() { return z; }
+
 	bool operator==(const Vector3D &rhs) 
 	{
 		return (x==rhs.x) && (y==rhs.y) && (z==rhs.z);

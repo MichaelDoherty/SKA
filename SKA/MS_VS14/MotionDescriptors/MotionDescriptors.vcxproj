@@ -18,6 +18,24 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\apps\MotionDescriptors\AnimationControl.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\AppConfig.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\AppGraphics.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\BoneData.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\CameraControl.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\DataRecorder.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\FullBodyData.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\InputProcessing.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\Plane.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\apps\MotionDescriptors\AnimationControl.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\AppGraphics.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\AppMain.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\CameraControl.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\InputProcessing.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EB86C8AF-B08A-4A7B-AD40-79EBED86BB41}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -151,22 +169,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\apps\MotionDescriptors\AnimationControl.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\AppConfig.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\AppGraphics.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\CameraControl.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\DataRecorder.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\InputProcessing.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\Plane.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\apps\MotionDescriptors\AnimationControl.cpp" />
-    <ClCompile Include="..\..\apps\MotionDescriptors\AppGraphics.cpp" />
-    <ClCompile Include="..\..\apps\MotionDescriptors\AppMain.cpp" />
-    <ClCompile Include="..\..\apps\MotionDescriptors\CameraControl.cpp" />
-    <ClCompile Include="..\..\apps\MotionDescriptors\InputProcessing.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

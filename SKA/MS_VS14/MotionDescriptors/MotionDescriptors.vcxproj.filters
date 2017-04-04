@@ -24,10 +24,16 @@
     <ClInclude Include="..\..\apps\MotionDescriptors\AppGraphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\apps\MotionDescriptors\BoneData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\apps\MotionDescriptors\CameraControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\apps\MotionDescriptors\DataRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\apps\MotionDescriptors\FullBodyData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\apps\MotionDescriptors\InputProcessing.h">

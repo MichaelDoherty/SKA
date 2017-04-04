@@ -48,6 +48,12 @@ del /q PTAnalysis\*.user
 del /q PTAnalysis\system_log.txt
 del /q PTAnalysis\results_*.txt
 
+rmdir /s/q NetworkProcessing\Debug
+rmdir /s/q NetworkProcessing\Release
+del /q NetworkProcessing\*.user
+del /q NetworkProcessing\system_log.txt
+del /q NetworkProcessing\results_*.txt
+
 rmdir /s/q ska\Debug
 rmdir /s/q ska\Release
 del /q ska\*.user

@@ -1,12 +1,7 @@
 //-----------------------------------------------------------------------------
 // MotionDescriptors project - Builds with SKA Version 4.0
-// THIS FILES IN THIS PROJECT ARE CURRENTLY JUST PLACE HOLDERS FOR 
-// THE REAL CODE WHICH IS IN DEVELOPMENT (March 14 2017)
 //-----------------------------------------------------------------------------
 // AnimationControl.h
-//    Animation controller for a Physical Therapy data analysis.
-//    This controller is limited to playback of one motion file (one character)
-//    at a time.
 //-----------------------------------------------------------------------------
 #ifndef ANIMATIONCONTROL_DOT_H
 #define ANIMATIONCONTROL_DOT_H
@@ -14,6 +9,7 @@
 #include <Core/SystemConfiguration.h>
 // C/C++ libraries
 #include <list>
+#include "Animation/Skeleton.h"
 using namespace std;
 // SKA modules
 #include <Objects/Object.h>
@@ -30,8 +26,7 @@ private:
 	bool single_step;
 	bool freeze;
 	float time_warp;
-	bool stop_at_last_frame;
-	
+
 	// time control for frame step mode
 	float frame_duration; // milliseconds
 	long num_frames;
@@ -49,11 +44,11 @@ public:
 	//   when needed by loadCharacter() and ~AnimationControl().
 	void reset();
 
-	// loadCharacter() creates a skeleton, attaches the motion in the BVH file and 
+	// loadCharacter() creates a skeleton, attaches the motion in the BVH file and
 	//   sets up the animation control.
 	//   Returns false if character creation fails.
 	bool loadCharacter(string& BVH_filename);
-	// getRenderList() places all the bone objects for the character's skeleton into 
+	// getRenderList() places all the bone objects for the character's skeleton into
 	//   the render list, so that they can be drawn by the graphics subsystem.
 	//   Returns false if no character is loaded.
 	bool getRenderList(list<Object*>& render_list);
@@ -68,8 +63,6 @@ public:
 
 	bool isReady()      { return ready; }
 	void togglePause()  { freeze = !freeze; }
-	void setStopAtLastFrame() { stop_at_last_frame = true;  }
-	void clearStopAtLastFrame() { stop_at_last_frame = false; }
 	void singleStep()   { single_step = true; }
 	void slowDown()     { time_warp /= 2.0f; }
 	void speedUp()      { time_warp *= 2.0f; }
@@ -77,14 +70,15 @@ public:
 	bool isFrozen()     { return freeze; }
 	float getTimeWarp() { return time_warp; }
 	float getAnimationTime() { return run_time; }
+	float getFrameDuration() { return frame_duration; }
 	long getAnimationFrame() { return current_frame; }
 
 	bool looped() { return loop_count > 0; }
-	bool stoppedAtLastFrame() { return stop_at_last_frame && (current_frame >= num_frames-1);  }
 	long numFrames() { return num_frames;  }
 
 	bool getBonePosition(const char* bonename, Vector3D& start, Vector3D& end);
 	bool getBoneOrientation(const char* bonename, Vector3D& orientation);
+	Skeleton* getSkeleton() { return character; }
 };
 
 // global single instance of the animation controller

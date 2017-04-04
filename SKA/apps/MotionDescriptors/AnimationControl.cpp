@@ -1,10 +1,7 @@
 //-----------------------------------------------------------------------------
 // MotionDescriptors project - Builds with SKA Version 4.0
-// THIS FILES IN THIS PROJECT ARE CURRENTLY JUST PLACE HOLDERS FOR 
-// THE REAL CODE WHICH IS IN DEVELOPMENT (March 14 2017)
 //-----------------------------------------------------------------------------
 // AnimationControl.cpp
-//    Animation controller for a single character defined by a BVH file.
 //-----------------------------------------------------------------------------
 // SKA configuration
 #include <Core/SystemConfiguration.h>
@@ -27,18 +24,18 @@ AnimationControl anim_ctrl;
 
 // scale the character to about 20%
 // Most things in SKA were developed to fit the CMU ASF skeletons.
-// The BVH files from Pacific's mocap lab are about 5 times to large 
+// The BVH files from Pacific's mocap lab are about 5 times to large
 // for this world. In particular, bones will be too thin if stretched
 // to 500% of expected size, since the bone width does not currently scale.
 float character_size_scale = 0.2f;
 
 AnimationControl::AnimationControl() : character(NULL), file_path_defined(false)
 {
-	reset(); 
+	reset();
 }
 
-AnimationControl::~AnimationControl()	
-{ 
+AnimationControl::~AnimationControl()
+{
 	reset();
 }
 
@@ -49,7 +46,6 @@ void AnimationControl::reset()
 	single_step = false;
 	freeze = false;
 	time_warp = 1.0f;
-	stop_at_last_frame = false;
 
 	if (character != NULL) delete character;
 	character = NULL;
@@ -79,7 +75,7 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	// time warp simply scales the elapsed time
 	_elapsed_time *= time_warp;
 
-	if (!freeze || single_step) // 
+	if (!freeze || single_step) //
 	{
 		run_time += _elapsed_time;
 		character->update(run_time);
@@ -95,16 +91,9 @@ bool AnimationControl::updateAnimation(float _elapsed_time)
 	current_frame = long(run_time / frame_duration);
 	if (current_frame > num_frames)
 	{
-		if (stop_at_last_frame)
-		{
-			run_time = num_frames*frame_duration;
-		}
-		else
-		{
-			loop_count++;
-		}
+		loop_count++;
 	}
-	
+
 	return true;
 }
 
@@ -112,21 +101,14 @@ bool AnimationControl::framestepAnimation()
 {
 	if (!ready || (character == NULL)) return false;
 
-	if (!freeze || single_step) 
+	if (!freeze || single_step)
 	{
 		// compute time based on the recorded frame rate
 		current_frame++;
-		if (current_frame > num_frames-1) 
-		{ 
-			if (stop_at_last_frame)
-			{
-				current_frame = num_frames-1;
-			}
-			else
-			{
-				current_frame = 0;
-				loop_count++;
-			}
+		if (current_frame > num_frames)
+		{
+			current_frame = 0;
+			loop_count++;
 		}
 		run_time = current_frame*frame_duration;
 		character->update(run_time);
@@ -187,14 +169,14 @@ bool AnimationControl::loadCharacter(string& BVH_filename)
 
 		// attach motion controller to animated skeleton
 		skel->attachMotionController(controller);
-		
+
 		// create a character to link all the pieces together.
 		string d1 = string("skeleton: ") + BVH_filename;
 		string d2 = string("motion: ") + BVH_filename;
 		skel->setDescription1(d1.c_str());
 		skel->setDescription2(d2.c_str());
 		character = skel;
-	} 
+	}
 	catch (BasicException&) { success = false; }
 
 	strDelete(BVH_fullfilename); BVH_fullfilename = NULL;
@@ -206,7 +188,7 @@ bool AnimationControl::loadCharacter(string& BVH_filename)
 bool AnimationControl::getRenderList(list<Object*>& render_list)
 {
 	if (!ready || (character == NULL)) return false;
-	
+
 	Color color(0.0f, 0.4f, 1.0f);
 	character->constructRenderObject(render_list, color);
 	return true;

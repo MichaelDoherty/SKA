@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------------
 // MotionDescriptors project - Builds with SKA Version 4.0
-// THIS FILES IN THIS PROJECT ARE CURRENTLY JUST PLACE HOLDERS FOR 
-// THE REAL CODE WHICH IS IN DEVELOPMENT (March 14 2017)
 //-----------------------------------------------------------------------------
 // DataRecorder.h
-//    DataRecorder class for storing application specific data and 
+//    DataRecorder class for storing application specific data and
 //    recording it in a CSV file.
 //-----------------------------------------------------------------------------
 #ifndef DATARECORDER_DOT_H
@@ -22,7 +20,7 @@ public:
 
 	virtual ~DataRecorder()
 	{ }
-	
+
 	void record(float _time, int _frame, float _abduction, float _flexion, float _extension)
 	{
 		DataFrame df;
@@ -80,7 +78,7 @@ public:
 				if (data[i].abduction > max) max = data[i].abduction;
 		return max;
 	}
-	
+
 	float maxFlexion()
 	{
 		float max = 0.0f;
@@ -88,8 +86,8 @@ public:
 			if (data[i].flexion_valid)
 				if (data[i].flexion > max) max = data[i].flexion;
 		return max;
-	}	
-	
+	}
+
 	float maxExtension()
 	{
 		float max = 0.0f;
@@ -128,15 +126,15 @@ public:
 	void erase() { data.clear();  }
 
 private:
-	struct DataFrame 
-	{ 
-		float time; 
+	struct DataFrame
+	{
+		float time;
 		int frame;
 		bool abduction_valid, flexion_valid, extension_valid;
 		float abduction, flexion, extension;
-		DataFrame() : time(0.0f), frame(0), 
+		DataFrame() : time(0.0f), frame(0),
 			abduction_valid(false), flexion_valid(false), extension_valid(false),
-			abduction(0.0f), flexion(0.0f), extension(0.0f) 
+			abduction(0.0f), flexion(0.0f), extension(0.0f)
 		{ }
 	};
 	vector<DataFrame> data;

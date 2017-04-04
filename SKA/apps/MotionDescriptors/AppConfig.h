@@ -1,7 +1,5 @@
 //-----------------------------------------------------------------------------
 // MotionDescriptors project - Builds with SKA Version 4.0
-// THIS FILES IN THIS PROJECT ARE CURRENTLY JUST PLACE HOLDERS FOR 
-// THE REAL CODE WHICH IS IN DEVELOPMENT (March 14 2017)
 //-----------------------------------------------------------------------------
 // AppConfig.h
 //    Define application specific things, such as file locations.

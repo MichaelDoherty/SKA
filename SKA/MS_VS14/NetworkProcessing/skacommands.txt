@@ -1,0 +1,5 @@
+OUTPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\PTResults"
+ANIMATION=Y
+INPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\SKA-master\SKA\data\motion\BVH"
+PROCESS "UOP_lab_01" MODE=F ARM=R LOOP=Y SKIP=5
+
