@@ -42,6 +42,8 @@ string GLOBAL_MOVE;
 //Parallel arrays per frame(both indexed by frame)
 vector<vector<BoneData>> BoneVector;
 vector<FullBodyData> FullBodyVector;
+std::map<std::string, float> weightMap;//used for CoM
+std::map<std::string, float> QoMWeightMap; //used for QoM
 Skeleton* ourSkel;
 float frame_duration;
 // flexion sample:   PTsubjects/40414/A/Take 2016-11-08 05.41.17 PM.bvh
@@ -291,7 +293,10 @@ void shutDown(int _exit_code)
 	exit(_exit_code);
 }
 
-/*Function for tracking bone position*/
+/*
+Function for tracking bone position.
+Part of GUI code.
+*/
 string trackDirection(Vector3D bone_pos, Plane _plane, string side, int frame, Vector3D & last_location) {
 	Vector3D movement;
 	string move_dir;
@@ -325,6 +330,118 @@ string trackDirection(Vector3D bone_pos, Plane _plane, string side, int frame, V
 	return move_dir;
 }
 
+
+
+pair <Vector3D, float> calcBoundingSphere(vector <Vector3D> points) {
+	//P1, Py, Pz
+	//random, futhest from 1, furthest from y
+	std::vector<Vector3D>::iterator it = points.begin();
+	Vector3D P1 = points[0];//random point
+	Vector3D Py, Pz;
+	int i;
+	float max_distance = 0.0f;
+	float dist;
+	//get max distance from P1
+	for (it = points.begin(); it!= points.end(); it++) {
+		dist = P1.distance(*it);
+		if (dist > max_distance) {
+			max_distance = dist;
+			Py = *it;
+		}
+	}
+	//get max distance from Py
+	for (it = points.begin(); it != points.end(); it++) {
+		dist = Py.distance(*it);
+		if (dist > max_distance) {
+			max_distance = dist;
+			Pz = *it;
+		}
+	}
+	//initial center and radius
+	Vector3D Q = (Py + Pz) / 2;
+	float radius = (Py - Pz).magnitude();
+	Vector3D G;
+	for (i = 1; i < sizeof points / sizeof Vector3D; i++) {
+		if (pow((points[i] - Q).magnitude(), 2) > pow(radius, 2)) {
+			G = Q - ((points[i] - Q) / (points[i] - Q).magnitude())*radius;
+			Q = (G + points[i]) / 2;
+			radius = (points[i] - Q).magnitude();
+		}
+	}
+	return make_pair(Q, radius);
+}
+
+/*
+Velocity, Accleration and Jerk Functions
+k = joint k
+x = position
+ti = time interval(i.e. frame)
+deltaT = frame duration (GLOBAL)
+V = velocity
+a = Accel
+j = jerk
+
+V_k(ti) = (x_k(ti)-x_k(ti-1))/deltaT
+
+a_k(ti) = (x_k(ti)-2x_k(ti-1)+x_k(ti-2))/deltaT^2)
+
+j_k(ti) = (x_k(ti)-3x_k(ti-1)+3x_k(ti-2)-x_k(ti-3))/deltaT^3
+*/
+
+pair <Vector3D, float> calcVel(Vector3D p0, Vector3D p1) {
+	Vector3D velocity;
+	float v_mag;
+	velocity = (p0-p1) / frame_duration;
+	v_mag = velocity.magnitude();
+
+	pair <Vector3D, float> vel;
+	vel = make_pair(velocity, v_mag);
+	return vel;
+	
+}
+
+pair <Vector3D, float> calcAccel(Vector3D p0, Vector3D p1, Vector3D p2) {
+	Vector3D accel;
+	float a_mag;
+	accel = (p0 - p1 * 2 + p2) / (frame_duration * frame_duration);
+	a_mag = accel.magnitude();
+
+	pair <Vector3D, float> acc;
+	acc = make_pair(accel, a_mag);
+	return acc;
+
+}
+
+pair <Vector3D, float> calcJerk(Vector3D p0, Vector3D p1, Vector3D p2, Vector3D p3) {
+	Vector3D jerk;
+	float j_mag;
+	jerk = (p0 - (p1)*3 + (p2)*3-p3) /(frame_duration * frame_duration * frame_duration);
+	j_mag = jerk.magnitude();
+
+	pair <Vector3D, float> jerk_pair;
+	jerk_pair = make_pair(jerk, j_mag);
+	return jerk_pair;
+
+}
+//Curvature
+//Mag(a_k(ti) X v_k(ti))/mag(v_k (ti))^3
+//PER BONE
+float calcCurvature(Vector3D accel, Vector3D velVector, float velMag) {
+
+	Vector3D top = accel.cross(velVector);
+	float top_mag = top.magnitude();
+	return top_mag / pow(velMag, 3);
+
+}
+
+float calcRadiusOfCurvature(float curve) {
+	return 1 / curve;
+}
+
+/*
+DEPRICATED - use calcVel().
+Part of GUI code.
+*/
 float calculateVelocity(Vector3D bone_pos, Plane _plane, int frames, Vector3D last_location) {
 	Vector3D movement;
 	float vel = 0.0;
@@ -341,6 +458,77 @@ float calculateVelocity(Vector3D bone_pos, Plane _plane, int frames, Vector3D la
 		vel = movement.dot(norm)/frame_duration;
 	}
 	return vel;
+}
+
+float calculateQoM(int frame) {
+	std::map<std::string, float>::iterator it = QoMWeightMap.begin();
+	float weight;//weight is represented as a percentage
+	int avg_counter = 0;
+	int i = 0;
+	float runningSum =0.0;
+	for (i = 0; i < (int)BoneVector[frame].size(); i++) {
+		//avg_counter = 0;
+		it = weightMap.begin();
+		float tmp_vel = BoneVector[frame][i].getVelocity_mag();
+		std::string tmp_bone_name = BoneVector[frame][i].getBone()->getName();
+
+		// strip off "Left" or "Right" prefix
+		if (tmp_bone_name.find("Right") == 0) tmp_bone_name = tmp_bone_name.substr(5);
+		if (tmp_bone_name.find("Left") == 0) tmp_bone_name = tmp_bone_name.substr(4);
+
+		while (it != weightMap.end()) {
+			if (tmp_bone_name.compare(it->first) == 0) {//if wefind the bone name in our weightMap
+				avg_counter += 1;
+				weight = it->second;
+				float tmpVal = weight*tmp_vel;
+				runningSum += tmpVal;
+				//runningAvg /= (float)avg_counter;
+				break;
+			}
+			else {
+				it++;
+			}
+		}
+	}
+	return runningSum / (float)avg_counter;
+}
+
+
+Vector3D calculateCoM(int frame) {
+	std::map<std::string, float>::iterator it = weightMap.begin();
+	float weight;//weight is represented as a percentage
+	int avg_counter = 0;
+	int i = 0;
+	Vector3D runningSum;
+	for (i = 0; i < (int)BoneVector[frame].size(); i++) {
+		//avg_counter = 0;
+		it = weightMap.begin();
+		Vector3D tmp_pos = BoneVector[frame][i].getBone()->getPosition();
+		std::string tmp_bone_name = BoneVector[frame][i].getBone()->getName();
+
+		// strip off "Left" or "Right" prefix
+		if (tmp_bone_name.find("Right") == 0) tmp_bone_name = tmp_bone_name.substr(5);
+		if (tmp_bone_name.find("Left") == 0) tmp_bone_name = tmp_bone_name.substr(4);
+
+		while (it != weightMap.end()) {
+			if (tmp_bone_name.compare(it->first) == 0) {//if wefind the bone name in our weightMap
+				//std::cout << "name match: " << BoneVector[frame][i].getBone()->getName() << " matches " << it->first << std::endl;
+				avg_counter += 1;
+				weight = it->second;
+				float tmpValx = weight*tmp_pos.getX(); //no * overload? Just manually multiply x y z
+				float tmpValy = weight*tmp_pos.getY();
+				float tmpValz = weight*tmp_pos.getZ();
+				Vector3D tmpVal(tmpValx, tmpValy, tmpValz);
+				runningSum += tmpVal;
+				//runningAvg /= (float)avg_counter;
+				break;
+			}
+			else {
+				it++;
+			}
+		}
+	}
+	return runningSum/(float)avg_counter;
 }
 
 void processPTData()
@@ -422,24 +610,19 @@ void processPTData()
 	Vector3D arm_dir = rightelbow_pos - rightupperarm_pos;
 	arm_dir = arm_dir.normalize();
 
-	/*Trevor's code for determining right hand -> Sag plane relation*/
 
-	/*Determine right hand position on sag. plane*/
-	//Vector3D rightHand_sp = sagittal_plane.projectPointOntoPlane(rightHand_pos);
-	/*Determine relation to plane*/
-	//Vector3D relation = rightHand_pos - rightHand_sp;
-	//relation = relation.normalize();
-	/*Now we determine if the relation vector is on the right or left side of the plane*/
-	//float relationval = relation.dot(left_dir);
-	//bool crossed = relation.dot(left_dir) > 0.0f;
-	//bool crossed = true;
+	/*GUI Motion tracking
+
+	***
+	This section of the code was originally written to test functions and display results in GUI.
+	Depricated, but kept for reference purposes.
+	~Trevor
+	***
+
 	float relationval = 0.0f;
 	string side = "Positive";
 	float velocity = 0.0;
 
-	/*Abrstraction of above code*/
-	/*The following is kept here as opposed to making a new function to grab side of plane due
-	to too many input parameters*/
 	//if input file specifies tracking
 	if (process_control.trackingIsEnabled()) {
 		//default to sagittal plane tracking
@@ -470,34 +653,33 @@ void processPTData()
 			side = "Negative";
 		}
 
-		/*Determine velocity and directional movement using side which was calculated above*/
+		/*Determine velocity and directional movement using side which was calculated above
 		if (plane_name == "sagittal") {
-			velocity = calculateVelocity(trackBone_pos, sagittal_plane, 1, LAST_LOC);
+			//velocity = calculateVelocity(trackBone_pos, sagittal_plane, 1, LAST_LOC);
 			if (animation_frame % process_control.getFrameStep() == 0) {
-				//should happen every frame, but user input can specify otherwise
 				GLOBAL_MOVE = trackDirection(trackBone_pos, sagittal_plane, side, animation_frame, LAST_LOC);
 			}
 		}
 		else if (plane_name == "transverse") {
-			velocity = calculateVelocity(trackBone_pos, transverse_plane, 1, LAST_LOC);
+			//velocity = calculateVelocity(trackBone_pos, transverse_plane, 1, LAST_LOC);
 			if (animation_frame % process_control.getFrameStep() == 0) {
 				GLOBAL_MOVE = trackDirection(trackBone_pos, transverse_plane, side, animation_frame, LAST_LOC);
 			}
 		}
 		else if (plane_name == "coronal") {
-			velocity = calculateVelocity(trackBone_pos, coronal_plane, 1, LAST_LOC);
+			//velocity = calculateVelocity(trackBone_pos, coronal_plane, 1, LAST_LOC);
 			if (animation_frame % process_control.getFrameStep() == 0) {
 				GLOBAL_MOVE = trackDirection(trackBone_pos, coronal_plane, side, animation_frame, LAST_LOC);
 			}
 		}
 	}
+	End GUI Motion Tracking*/
 
 
-	//update each bones information
+	/*Accumulate Motion Data*/
 	int i;
-
+	//PER BONE DATA
 	for (i = 0; i < (int)BoneVector[animation_frame].size(); i++) {
-
 		//first set basic info for bone @ frame
 		Vector3D bone_pos = BoneVector[animation_frame][i].getBone()->getPosition();
 		BoneVector[animation_frame][i].setX(bone_pos.getX());
@@ -506,35 +688,37 @@ void processPTData()
 		BoneVector[animation_frame][i].setStartPos(bone_pos);
 		BoneVector[animation_frame][i].setEndPos(BoneVector[animation_frame][i].getBone()->getEndPosition());
 
-		//calculate velocity for each bone based off of its position
-		float bone_vel = 0.0;
-		float acceleration = 0.0;
-		float jerk = 0.0;
+		//Calculate and assign Velocity, Frame and Jerk
+		//Both Magnitude and Vector
+		Vector3D p0 = bone_pos;
+		Vector3D p1, p2, p3;
+		if (animation_frame > 3) {
+			p1 = BoneVector[animation_frame - 1][i].getStartPos();
+			p2 = BoneVector[animation_frame - 2][i].getStartPos();
+			p3 = BoneVector[animation_frame - 3][i].getStartPos();
 
-		if (animation_frame > 0) {
-			Vector3D prev_pos = BoneVector[animation_frame - 1][i].getBone()->getPosition();
+			pair<Vector3D, float> vel = calcVel(p0, p1);
+			BoneVector[animation_frame][i].setVelocity_vec(vel.first);
+			BoneVector[animation_frame][i].setVelocity_mag(vel.second);
 
-			if (plane_name == "sagittal") {
-				bone_vel = calculateVelocity(bone_pos, sagittal_plane, 1, prev_pos);
-			}
-			else if (plane_name == "transverse") {
-				bone_vel = calculateVelocity(bone_pos, transverse_plane, 1, prev_pos);
-			}
-			else if (plane_name == "coronal") {
-				bone_vel = calculateVelocity(bone_pos, coronal_plane, 1, prev_pos);
-			}
+			pair<Vector3D, float> acc = calcAccel(p0, p1, p2);
+			BoneVector[animation_frame][i].setAcceleration_vec(acc.first);
+			BoneVector[animation_frame][i].setAcceleration_mag(acc.second);
+
+			pair<Vector3D, float> jerk = calcJerk(p0, p1, p2, p3);
+			BoneVector[animation_frame][i].setJerk_vec(jerk.first);
+			BoneVector[animation_frame][i].setJerk_mag(jerk.second);
+
+			float bone_curve = calcCurvature(acc.first, vel.first, vel.second);
+			float bone_rad = calcRadiusOfCurvature(bone_curve);
+
+			BoneVector[animation_frame][i].setCurvature(bone_curve);
+			BoneVector[animation_frame][i].setCurvatureRadius(bone_rad);
+
 		}
-		//Now set vel and accel
-		BoneVector[animation_frame][i].setVelocity(bone_vel);
-		if (animation_frame > 0) {
-			acceleration = (bone_vel - BoneVector[animation_frame - 1][i].getVelocity()) / (frame_duration);
-			BoneVector[animation_frame][i].setAcceleraction(acceleration);
-			jerk = (acceleration - BoneVector[animation_frame - 1][i].getAcceleration()) / (frame_duration);
-			BoneVector[animation_frame][i].setJerk(jerk);
-		}
-
-	}
-	//Now calculate Bounding box and sphere
+	}	
+	//FULL BODY DATA
+	//Calculate Bounding box and sphere
 	/*indexed as [MAX[x y z] MIN [x y z]]*/
 	float max_min[6] = { 0.0,0.0,0.0,0.0,0.0,0.0 };
 	float tmp_x, tmp_y, tmp_z = 0.0;
@@ -568,8 +752,28 @@ void processPTData()
 	}
 	FullBodyVector[animation_frame].setFrame(animation_frame);
 	FullBodyVector[animation_frame].setBoxParam(max_min);
-	//printf("FRAME %d\nMAX x: %f | y: %f | z: %f \nMIN x: %f | y: %f | z: %f \n", animation_frame, max_min[0], max_min[1], max_min[2], max_min[3], max_min[4], max_min[5]);
-	/*End Trevor's code*/
+
+	//Sphere
+	//Make and initialize a Vector to pass to function
+	vector <Vector3D> pointVector;
+	i = 0;
+	//pointVector has 'bone' items (BoneVector[animation_frame] has 'bone' elements)
+	pointVector.resize(BoneVector[animation_frame].size());
+	std::vector<BoneData>::iterator it = BoneVector[animation_frame].begin();
+	for (it = BoneVector[animation_frame].begin(); it != BoneVector[animation_frame].end(); it++) {
+		pointVector[i] = it->getStartPos();
+		i++;
+	}
+	pair <Vector3D, float> sphere = calcBoundingSphere(pointVector);
+	FullBodyVector[animation_frame].setBoundingSphere(sphere);
+
+	//Center of Mass & Quantity of Motion Calculation
+	Vector3D frame_CoM = calculateCoM(animation_frame);
+	float QoM = calculateQoM(animation_frame);
+	FullBodyVector[animation_frame].setCoM(frame_CoM);
+	FullBodyVector[animation_frame].setQoM(QoM);
+	
+	
 
 
 	/*
@@ -722,7 +926,7 @@ void processPTData()
 		hud_data.flexion = flexion;
 		hud_data.extension = extension;
 		hud_data.abduction = abduction;
-		/*Trevor's code: send true/false of bone crossing plane*/
+		/* Uncomment this section if using GUI tracking
 		if (process_control.trackingIsEnabled()) {
 			hud_data.bone_cross_plane = side;
 			hud_data.relationVal = relationval;
@@ -731,6 +935,7 @@ void processPTData()
 		hud_data.plane_tracking_name = plane_name;
 		hud_data.move_direction = GLOBAL_MOVE;
 		hud_data.velocity = velocity;
+		*/
 		/*End Trevor's code*/
 		hud_data.dir_test = dir_test;
 		hud_data.max_flexion = max_flexion;
@@ -828,7 +1033,20 @@ void loadNextMotion() {
 
 	}
 	frame_duration = anim_ctrl.getFrameDuration();
-
+	//Init QoMWeightMap (all 1's for now)
+	for (i = 0; i < bone_count; i++) {
+		std::string boneName = BoneVector[0][i].getBone()->getName();
+		QoMWeightMap[boneName] = 1.0;
+	}
+	//Initializaing WeightMap for each animation
+	weightMap["root"] = .497f;
+	weightMap["Shoulder"] = .028f;
+	weightMap["ForeArm"] = .016f; //elbow (beginning of ForeArm)
+	weightMap["Hand"] = .006f;	
+	weightMap["UpLeg"] = .1f; //thigh (beginning of UpLeg)
+	weightMap["Leg"] = .0465f; //knees (beginning of leg)
+	weightMap["Foot"] = .0145f;
+	weightMap["Head"] = .081f;
 	// reset clock so that the time spent loading is not included in animation time
 	system_timer.reset();
 }

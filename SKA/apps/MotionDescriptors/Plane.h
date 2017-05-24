@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// PTAnalysis project - Builds with SKA Version 4.0
+// MotionDescriptors project - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // Plane.h
 //    Plane class for modeling geometrical planes in 3D space.

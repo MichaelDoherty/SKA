@@ -67,25 +67,21 @@ void drawHUD()
 	s = "Frame:     " + toString(hud_data.animation_frame);
 	renderString(0.5f, y, 0.0f, color, s.c_str());
 	y -= 0.05f;
+	/*
 	if (hud_data.relationVal != NULL) {
 		y = -.60f;
-		/*Display velocity*/
+	
 		s = "Velocity: " + toString(hud_data.velocity);
 		renderString(0.35f, y, 0.0f, color, s.c_str());
 		y -= 0.05f;
-		/*Display direction of velocity*/
+
 		s = "Moving " + hud_data.move_direction + " " + hud_data.plane_tracking_name;
 		renderString(0.35f, y, 0.0f, color, s.c_str());
 		y -= 0.05f;
-		/*Trevor's code to determine bone position across planes*/
 		s = "On " + hud_data.bone_cross_plane + " side of " + hud_data.plane_tracking_name;
 		renderString(0.35f, y, 0.0f, color, s.c_str());
 		y -= 0.05f;
 
-		/*s = "val:" + toString(hud_data.relationVal);
-		renderString(0.5f, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		*/
 		s = "Tracking Bone: " + hud_data.bone_tracking_name;
 		renderString(0.35f, y, 0.0f, color, s.c_str());
 		y -= 0.05f;
@@ -94,9 +90,7 @@ void drawHUD()
 		renderString(0.35f, y, 0.0f, color, s.c_str());
 		y -= 0.05f;
 
-
-		/*End Trevor's code*/
-		}
+		}*/
 	//s = "Time Warp: " + toString(hud_data.animation_time_warp);
 	//renderString(0.5f, y, 0.0f, color, s.c_str());
 	//y -= 0.05f;

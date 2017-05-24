@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 // FullBodyData.h
 //			A class that holds low-level motion descriptors
-//          that apply to the full body, rather than individual bones.
+//          that apply to the full body on frame by frame basis, rather than individual bones.
 // Author: Trevor Martin
 //
 //
@@ -23,19 +23,39 @@ struct boundingBox {
 };
 
 class FullBodyData {
+
 private:
+	std::pair <Vector3D, float> BoundingSphere;
 	int frame = 0;
 	boundingBox BoundingBox;
+	Vector3D CoM; //center of mass (default const is all 0s)
+	float QoM = 0.0; //Quantity of Motion
 
 public:
 	//default constructor
 	FullBodyData() {};
 
-	//basic set and get funcs
+	//basic set functions
 	void setFrame(int frm) { frame = frm; }
+	void setCoM(Vector3D centerOfMass) { CoM = centerOfMass; }
+	void setQoM(float quantity) { QoM = quantity; }
+
+	//Set boundingSphere with center point and radiur
+	void setBoundingSphere(Vector3D center, float radius){
+		BoundingSphere = make_pair(center, radius);
+	}
+
+	//Set boundingSphere with  pre-existing pair
+	void setBoundingSphere(pair <Vector3D, float> sphere) { BoundingSphere = sphere; }
+
+	//basic get functions
+	std::pair <Vector3D, float> getBoundingSphere() { return BoundingSphere; }
+	float getQoM() { return QoM; }
 	int getFrame() { return frame; }
+	Vector3D getCoM() { return CoM; }
 
 	//get bounding box params
+	//(max value or min value in selected direction)
 	float getBoxParam(bool max, char plane) {
 		float val = 0.0;
 		if (plane == 'x') {
@@ -49,6 +69,10 @@ public:
 		}
 		return val;
 	}
+
+	//Returns a boundingBox struct object (defined in FullBodyData.h)
+	//In most cases, getBoxParam will suffice for individual values
+	boundingBox getBox() { return BoundingBox; }
 
 	//Set function for bounding box with individual values
 	void setBoxParam(char plane, bool max, float val) {
