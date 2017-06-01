@@ -19,11 +19,9 @@ public:
 	// setup function, which should be called once before entering openGL loop.
 	void initializeCamera(int window_width, int window_height);
 	// move camera to predefine locations
-	void setCameraLeft();
-	void setCameraFront();
-	void setCameraFrontLeft();
+	void setCameraPreset(short preset);
 	// move camera slightly to force it to update position
-	void bumpCamera();
+	void bumpCamera(); 
 };
 
 // global single instance of the camera

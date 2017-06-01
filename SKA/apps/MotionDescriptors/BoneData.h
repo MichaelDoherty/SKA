@@ -6,16 +6,14 @@
 //			BoneStruct -> holds Bone frame
 //			Vars -> vel, accel, more to be added
 // Author: Trevor Martin
-//
-//
 //-----------------------------------------------------------------------------
 
-#ifndef BONEDATA_H
-#define BONEDATA_H
+#ifndef BONEDATA_DOT_H
+#define BONEDATA_DOT_H
 //Includes for vars
 #include <Core/SystemConfiguration.h>
-#include "Plane.h"
-#include "Animation/Skeleton.h"
+#include <Math/Plane.h>
+#include <Animation/Skeleton.h>
 // SKA modules
 
 #include <Objects/Object.h>
@@ -51,8 +49,15 @@ private:
 
 public:
 	//Constructor takes in info
-	BoneData();
-	BoneData(Bone *bone, int frame);
+	BoneData::BoneData(Bone *bone, int frame) {
+		_BoneStruct._bone = bone;
+		_BoneStruct._frame = frame;
+	}
+
+	BoneData::BoneData() {
+		//_BoneStruct._bone = new Bone(0, NULL);
+		_BoneStruct._frame = 0;
+	}
 
 	//set and get functions
 	void setVelocity_mag(float vel) { velocity_mag = vel; }
@@ -102,15 +107,5 @@ public:
 	}
 
 };
-
-BoneData::BoneData(Bone *bone, int frame) {
-	_BoneStruct._bone = bone;
-	_BoneStruct._frame = frame;
-}
-
-BoneData::BoneData() {
-	//_BoneStruct._bone = new Bone(0, NULL);
-	_BoneStruct._frame = 0;
-}
 
 #endif //BONEDATA_H

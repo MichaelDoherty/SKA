@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// PTAnalysis project - Builds with SKA Version 4.0
+// NetworkProcessing project - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // NetServer.h
 //    Network server for exporting data.

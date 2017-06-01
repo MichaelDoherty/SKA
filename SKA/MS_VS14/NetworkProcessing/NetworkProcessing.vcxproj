@@ -159,7 +159,6 @@
     <ClInclude Include="..\..\apps\NetworkProcessing\DataRecorder.h" />
     <ClInclude Include="..\..\apps\NetworkProcessing\InputProcessing.h" />
     <ClInclude Include="..\..\apps\NetworkProcessing\NetServer.h" />
-    <ClInclude Include="..\..\apps\NetworkProcessing\Plane.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\apps\NetworkProcessing\AnimationControl.cpp" />

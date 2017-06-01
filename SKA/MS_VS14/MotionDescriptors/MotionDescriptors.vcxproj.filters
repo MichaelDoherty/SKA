@@ -39,7 +39,13 @@
     <ClInclude Include="..\..\apps\MotionDescriptors\InputProcessing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\apps\MotionDescriptors\Plane.h">
+    <ClInclude Include="..\..\apps\MotionDescriptors\MotionAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\apps\MotionDescriptors\ProcessControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\apps\MotionDescriptors\ShoulderAnalyzer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -57,6 +63,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\apps\MotionDescriptors\InputProcessing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\apps\MotionDescriptors\MotionAnalyzer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\apps\MotionDescriptors\ProcessControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\apps\MotionDescriptors\ShoulderAnalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

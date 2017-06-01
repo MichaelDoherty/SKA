@@ -11,7 +11,7 @@
 #include <Input/InputFilter.h>
 // local application
 #include "InputProcessing.h"
-#include "CameraControl.h"
+#include "CameraControl.h" 
 #include "AnimationControl.h"
 #include "AppGraphics.h"
 
@@ -26,15 +26,17 @@ extern void shutDown(int _exit_code);
 // left mouse button: move camera forward
 // right mouse button: move camera backward
 
-// This could be an attribute of class InputProcessor, but putting
+// This could be an attribute of class InputProcessor, but putting 
 // it hear hides it from the outside this code. Since there should
 // only be one InputProcessor, this works fine.
 static InputFilter* filter = NULL;
 
+static short camera_preset = 0;
+
 InputProcessor::InputProcessor()
 {
-	// Setup to filter keys that shouldn't get multiple responses
-	// if they are held down too long. Ignore repeated key
+	// Setup to filter keys that shouldn't get multiple responses 
+	// if they are held down too long. Ignore repeated key 
 	// responses within 0.2 seconds after another response.
 	if (filter == NULL) filter = new InputFilter;
 	filter->addFilter('1', 0.2f, KEYBOARD);
@@ -46,13 +48,15 @@ InputProcessor::InputProcessor()
 	filter->addFilter('g', 0.2f, KEYBOARD);
 	filter->addFilter('b', 0.2f, KEYBOARD);
 	filter->addFilter('y', 0.2f, KEYBOARD);
+	filter->addFilter('8', 0.2f, KEYBOARD);
+	filter->addFilter('9', 0.2f, KEYBOARD);
 }
 
 InputProcessor::~InputProcessor()
 { if (filter == NULL) delete filter; }
 
 void InputProcessor::processInputs(float elapsed_time)
-{
+{ 
 	// tell input filter how much time has passed
 	if (filter != NULL) filter->advanceTime(elapsed_time);
 
@@ -96,10 +100,15 @@ void InputProcessor::processInputs(float elapsed_time)
 		case 'l': yaw_thrust -= 0.05f;   move_camera= true; break;
 		case 'u': roll_thrust += 0.05f;  move_camera= true; break;
 		case 'o': roll_thrust -= 0.05f;  move_camera= true; break;
-		case '9': camera.setCameraLeft(); break;
-		case '8': camera.setCameraFrontLeft(); break;
-		case '7': camera.setCameraFront(); break;
-		// animation controls
+		case '8': 
+			if (camera_preset == 0) camera_preset = 7;
+			else camera_preset -= 1;  
+			camera.setCameraPreset(camera_preset); 
+			break;
+		case '9': 
+			camera_preset = (camera_preset + 1) % 8;
+			camera.setCameraPreset(camera_preset);
+			break;
 		case '1': anim_ctrl.togglePause(); break;
 		case '2': anim_ctrl.singleStep(); break;
 		case '3': anim_ctrl.normalSpeed(); break;

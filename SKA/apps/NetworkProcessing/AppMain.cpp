@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// PTAnalysis project - Builds with SKA Version 4.0
+// NetworkProcessing project - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // PTAnalysis: This app includes data extraction to identify angular 
 //           relationships between torso and upper arm
@@ -26,6 +26,7 @@ using namespace std;
 #include <Core/BasicException.h>
 #include <Core/SystemTimer.h>
 #include <Animation/Skeleton.h>
+#include <Math/Plane.h>
 
 // local application
 #include "AppConfig.h"
@@ -33,7 +34,6 @@ using namespace std;
 #include "AnimationControl.h"
 #include "CameraControl.h"
 #include "InputProcessing.h"
-#include "Plane.h"
 #include "DataRecorder.h"
 
 #include "NetServer.h"
@@ -490,11 +490,11 @@ void processPTData()
 		analysis_objects.up_dir_marker->setEndpoints(p, p + (up_dir*20.0f));
 
 		// (these should be aligned with the three Plane objects)
-		analysis_objects.coronal_plane_image->moveTo(coronal_plane.getOrigin());
+		analysis_objects.coronal_plane_image->moveTo(coronal_plane.getPointInPlane());
 		analysis_objects.coronal_plane_image->rotateTo(root_orientation);
-		analysis_objects.sagittal_plane_image->moveTo(sagittal_plane.getOrigin());
+		analysis_objects.sagittal_plane_image->moveTo(sagittal_plane.getPointInPlane());
 		analysis_objects.sagittal_plane_image->rotateTo(root_orientation);
-		analysis_objects.transverse_plane_image->moveTo(transverse_plane.getOrigin());
+		analysis_objects.transverse_plane_image->moveTo(transverse_plane.getPointInPlane());
 		analysis_objects.transverse_plane_image->rotateTo(root_orientation);
 
 		// FIXIT:170119 visibility adjustment should be done in AppGraphics

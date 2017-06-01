@@ -1,5 +1,5 @@
 INPUT_FOLDER="..\..\..\SKA\data\motion\BVH\Baseball_Swings"
-OUTPUT_FOLDER="C:\Users\Trevor\Documents\_Spr17\SKA-master\Output_results"
+OUTPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\MDResults"
 ANIMATION=Y
 PROCESS "swing1" MODE=F LOOP=N SKIP=3
 PROCESS "swing2" MODE=F LOOP=N SKIP=3

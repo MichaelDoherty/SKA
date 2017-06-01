@@ -33,9 +33,6 @@
     <ClInclude Include="..\..\apps\NetworkProcessing\InputProcessing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\apps\NetworkProcessing\Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\apps\NetworkProcessing\NetServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

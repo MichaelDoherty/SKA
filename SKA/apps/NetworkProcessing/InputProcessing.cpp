@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// PTAnalysis project - Builds with SKA Version 4.0
+// NetworkProcessing project - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // InputProcessing.cpp
 //    Object to monitor user input from mouse and keyboard.

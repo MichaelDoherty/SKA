@@ -5,16 +5,14 @@
 //			A class that holds low-level motion descriptors
 //          that apply to the full body on frame by frame basis, rather than individual bones.
 // Author: Trevor Martin
-//
-//
 //-----------------------------------------------------------------------------
 
-#ifndef FULLBODYDATA_H
-#define FULLBODYDATA_H
+#ifndef FULLBODYDATA_DOT_H
+#define FULLBODYDATA_DOT_H
 //Includes for vars
 #include <Core/SystemConfiguration.h>
-#include "Plane.h"
-#include "Animation/Skeleton.h"
+#include <Math/Plane.h>
+#include <Animation/Skeleton.h>
 #include "BoneData.h"
 // SKA modules
 struct boundingBox {

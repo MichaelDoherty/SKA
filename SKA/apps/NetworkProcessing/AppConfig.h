@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// PTAnalysis project - Builds with SKA Version 4.0
+// NetworkProcessing project - Builds with SKA Version 4.0
 //-----------------------------------------------------------------------------
 // AppConfig.h
 //    Define application specific things, such as file locations.

@@ -27,7 +27,9 @@
     <ClInclude Include="..\..\apps\MotionDescriptors\DataRecorder.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\FullBodyData.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\InputProcessing.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\Plane.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\MotionAnalyzer.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\ProcessControl.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\ShoulderAnalyzer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\apps\MotionDescriptors\AnimationControl.cpp" />
@@ -35,6 +37,9 @@
     <ClCompile Include="..\..\apps\MotionDescriptors\AppMain.cpp" />
     <ClCompile Include="..\..\apps\MotionDescriptors\CameraControl.cpp" />
     <ClCompile Include="..\..\apps\MotionDescriptors\InputProcessing.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\MotionAnalyzer.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\ProcessControl.cpp" />
+    <ClCompile Include="..\..\apps\MotionDescriptors\ShoulderAnalyzer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EB86C8AF-B08A-4A7B-AD40-79EBED86BB41}</ProjectGuid>

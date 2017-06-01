@@ -59,6 +59,7 @@
     <ClInclude Include="..\..\SKA\include\Input\InputManager.h" />
     <ClInclude Include="..\..\SKA\include\Math\Math.h" />
     <ClInclude Include="..\..\SKA\include\Math\Matrix4x4.h" />
+    <ClInclude Include="..\..\SKA\include\Math\Plane.h" />
     <ClInclude Include="..\..\SKA\include\Math\Point2D.h" />
     <ClInclude Include="..\..\SKA\include\Math\Quaternion.h" />
     <ClInclude Include="..\..\SKA\include\Math\RandomGenerator.h" />

@@ -273,6 +273,9 @@
     <ClInclude Include="..\..\SKA\include\Signals\SignalSpec.h">
       <Filter>Signals\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\SKA\include\Math\Plane.h">
+      <Filter>Math\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\SKA\src\Animation\Blender.cpp">
