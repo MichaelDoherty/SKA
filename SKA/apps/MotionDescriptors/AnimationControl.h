@@ -44,10 +44,14 @@ public:
 	//   when needed by loadCharacter() and ~AnimationControl().
 	void reset();
 
-	// loadCharacter() creates a skeleton, attaches the motion in the BVH file and
-	//   sets up the animation control.
+	// loadBVHCharacter() reads a BVH file, 
+	//   creates a skeleton, attaches a motion and sets up the animation control.
 	//   Returns false if character creation fails.
-	bool loadCharacter(string& BVH_filename);
+	bool loadBVHCharacter(string& BVH_filename);
+	// loadAMCCharacter() reads an ASF file and an AMC file, 
+	//   creates a skeleton, attaches a motion and sets up the animation control.
+	//   Returns false if character creation fails.
+	bool loadAMCCharacter(string& ASF_filename, string& AMC_filename);
 	// getRenderList() places all the bone objects for the character's skeleton into
 	//   the render list, so that they can be drawn by the graphics subsystem.
 	//   Returns false if no character is loaded.

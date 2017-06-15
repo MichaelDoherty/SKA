@@ -29,18 +29,20 @@ void ShoulderAnalyzer::resetMaxValues() {
 }
 
 void ShoulderAnalyzer::storeResults() {
-	switch (process_control.dataMode()) {
-	case ABDUCTION:
+	switch (process_control.currentRequest().shoulder_mode) {
+	case ProcessControl::ABDUCTION:
 		cout << "max abduction: " << data_recorder.maxAbduction() << endl;
 		break;
-	case FLEXION:
+	case ProcessControl::FLEXION:
 		cout << "max flexion: " << data_recorder.maxFlexion() << endl;
 		break;
-	case EXTENSION:
+	case ProcessControl::EXTENSION:
 		cout << "max extension: " << data_recorder.maxExtension() << endl;
 		break;
+	case ProcessControl::NONE:
+		break;
 	}
-	data_recorder.writeToFile(process_control.resultFile());
+	data_recorder.writeToFile(process_control.currentRequest().result_file);
 	data_recorder.erase();
 }
 
@@ -51,14 +53,6 @@ void ShoulderAnalyzer::processPTData() {
 	Vector3D rightupperarm_pos, rightelbow_pos;
 	Vector3D tailbone_pos, neck_pos;
 	Vector3D rightshoulder_pos, leftshoulder_pos;
-	/*Trevor's Vec3D for right hand*/
-	Vector3D rightHand_pos;
-	/*Trevor's Vec3D for bone to be tracked*/
-	Vector3D trackBone_pos;
-	//Hacking this to convert string to const char * for getBonePosition()
-	string trackBone_name = process_control.getBoneName();
-	const char * trackBone_name_char = trackBone_name.c_str();
-	string plane_name = process_control.getPlaneName();
 
 	if (!anim_ctrl.getBonePosition("root", junk, root_position))
 		cerr << "Failed to find bone \"root\"" << endl;
@@ -76,13 +70,6 @@ void ShoulderAnalyzer::processPTData() {
 		cerr << "Failed to find bone \"LeftShoulder\"" << endl;
 	if (!anim_ctrl.getBonePosition("RightShoulder", rightshoulder_pos, junk))
 		cerr << "Failed to find bone \"RightShoulder\"" << endl;
-	/*Trevor's var*/
-	if (!anim_ctrl.getBonePosition("RightHand", rightHand_pos, junk))
-		cerr << "Failed to find bone \"RightHand\"" << endl;
-	if (process_control.trackingIsEnabled()) {
-		if (!anim_ctrl.getBonePosition(trackBone_name_char, trackBone_pos, junk))
-			cerr << "Failed to find bone \"" << trackBone_name_char << "\"" << endl;
-	}
 
 	//---- analytical computations
 
@@ -156,12 +143,12 @@ void ShoulderAnalyzer::processPTData() {
 	Vector3D ss = neck_pos_sp - rightupperarm_pos_sp;
 	as = as.normalize();
 	ss = ss.normalize();
-	if (process_control.dataMode() == FLEXION)
+	if (process_control.currentRequest().shoulder_mode == ProcessControl::FLEXION)
 	{
 		flexion = rad2deg(acos(as.dot(ss)));
 		extension = 0.0f;
 	}
-	else if (process_control.dataMode() == EXTENSION)
+	else if (process_control.currentRequest().shoulder_mode == ProcessControl::EXTENSION)
 	{
 		flexion = 0.0f;
 		extension = rad2deg(acos(as.dot(ss)));
@@ -173,17 +160,19 @@ void ShoulderAnalyzer::processPTData() {
 	//if (ftest && (flexion > max_flexion)) max_flexion = flexion;
 	//if (etest && (extension > max_extension)) max_extension = extension;
 
-	if (animation_time >= process_control.skip())
+	if (animation_time >= process_control.currentRequest().init_skip_time)
 	{
-		switch (process_control.dataMode()) {
-		case ABDUCTION:
+		switch (process_control.currentRequest().shoulder_mode) {
+		case ProcessControl::ABDUCTION:
 			if (abduction > max_abduction) max_abduction = abduction;
 			break;
-		case EXTENSION:
+		case ProcessControl::EXTENSION:
 			if (extension > max_extension) max_extension = extension;
 			break;
-		case FLEXION:
+		case ProcessControl::FLEXION:
 			if (flexion > max_flexion) max_flexion = flexion;
+			break;
+		case ProcessControl::NONE:
 			break;
 		}
 	}
@@ -192,18 +181,20 @@ void ShoulderAnalyzer::processPTData() {
 
 	if (!process_control.animationHasLooped())
 	{
-		if (animation_time < process_control.skip())
+		if (animation_time < process_control.currentRequest().init_skip_time)
 			data_recorder.recordNoData(animation_time, animation_frame);
 		else
-			switch (process_control.dataMode()) {
-			case ABDUCTION:
+			switch (process_control.currentRequest().shoulder_mode) {
+			case ProcessControl::ABDUCTION:
 				data_recorder.recordAbduction(animation_time, animation_frame, abduction);
 				break;
-			case EXTENSION:
+			case ProcessControl::EXTENSION:
 				data_recorder.recordExtension(animation_time, animation_frame, extension);
 				break;
-			case FLEXION:
+			case ProcessControl::FLEXION:
 				data_recorder.recordFlexion(animation_time, animation_frame, flexion);
+				break;
+			case ProcessControl::NONE:
 				break;
 			}
 	}
@@ -291,17 +282,8 @@ void ShoulderAnalyzer::processPTData() {
 		hud_data.animation_time = animation_time;
 		hud_data.animation_paused = anim_ctrl.isFrozen();
 		hud_data.animation_time_warp = anim_ctrl.getTimeWarp();
-		if (DISPLAY_ALL_RESULTS)
-		{
-			hud_data.focus_abduction = true;
-			hud_data.focus_extension = true;
-			hud_data.focus_flexion = true;
-		}
-		else
-		{
-			hud_data.focus_abduction = process_control.dataMode() == ABDUCTION;
-			hud_data.focus_extension = process_control.dataMode() == EXTENSION;
-			hud_data.focus_flexion = process_control.dataMode() == FLEXION;
-		}
+		hud_data.focus_abduction = process_control.currentRequest().shoulder_mode == ProcessControl::ABDUCTION;
+		hud_data.focus_extension = process_control.currentRequest().shoulder_mode == ProcessControl::EXTENSION;
+		hud_data.focus_flexion = process_control.currentRequest().shoulder_mode == ProcessControl::FLEXION;
 	}
 }

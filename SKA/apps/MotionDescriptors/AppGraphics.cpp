@@ -183,6 +183,25 @@ void_callback anim_callback;
 // All recurring processing is initiated from this function.
 void display(void)
 {
+	// START FORCED OBJECT HIDING
+	/*
+	analysis_objects.coronal_plane_image->setVisibility(false);
+	analysis_objects.ruacp_start_marker->setVisibility(false);
+	analysis_objects.ruacp_end_marker->setVisibility(false);
+	analysis_objects.spinecp_end_marker->setVisibility(false);
+	analysis_objects.ruacp_bone->setVisibility(false);
+	analysis_objects.spinecp_bone->setVisibility(false);
+
+	analysis_objects.sagittal_plane_image->setVisibility(false);
+	analysis_objects.ruasp_start_marker->setVisibility(false);
+	analysis_objects.ruasp_end_marker->setVisibility(false);
+	analysis_objects.spinesp_end_marker->setVisibility(false);
+	analysis_objects.ruasp_bone->setVisibility(false);
+	analysis_objects.spinesp_bone->setVisibility(false);
+	analysis_objects.transverse_plane_image->setVisibility(false);
+	*/
+	// END FORCED OBJECT HIDING
+
 	// call back to the animation module
 	anim_callback();
 

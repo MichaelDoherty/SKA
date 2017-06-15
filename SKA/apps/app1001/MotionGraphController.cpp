@@ -4,7 +4,7 @@
 // MotionGraphController.cpp
 // Based on MotionGraphController class developed by COMP 259 students, fall 2014.
 //-----------------------------------------------------------------------------
-
+#include <climits>
 #include <Core/SystemConfiguration.h>
 #include <Core/SystemLog.h>
 #include "MotionGraphController.h"

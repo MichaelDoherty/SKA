@@ -23,16 +23,44 @@ using namespace std;
 
 #ifdef _WIN32
 
-// Convert Unix style paths to Windows style paths
-// Converts path parameter in place and returns pointer to same.
-static char* backslashFilepath(char* path)
+char* FileSystem::backslashFilepath(char* path)
 {
 	unsigned int i;
-	for (i=0; i<strlen(path); i++)
+	for (i = 0; i<strlen(path); i++)
 	{
-		if (path[i] == '/') path[i]='\\';
+		if (path[i] == '/') path[i] = '\\';
 	}
 	return path;
+}
+
+const char* FileSystem::backslashFilepath(string& path)
+{
+	unsigned int i;
+	for (i = 0; i<path.length(); i++)
+	{
+		if (path[i] == '/') path[i] = '\\';
+	}
+	return path.c_str();
+}
+
+char* FileSystem::forwardslashFilepath(char* path)
+{
+	unsigned int i;
+	for (i = 0; i<strlen(path); i++)
+	{
+		if (path[i] == '\\') path[i] = '/';
+	}
+	return path;
+}
+
+const char* FileSystem::forwardslashFilepath(string& path)
+{
+	unsigned int i;
+	for (i = 0; i<path.length(); i++)
+	{
+		if (path[i] == '\\') path[i] = '/';
+	}
+	return path.c_str();
 }
 
 bool FileSystem::makeDir(const char* path)

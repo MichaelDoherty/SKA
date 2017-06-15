@@ -1,4 +1,4 @@
-TARGET = app0002
+TARGET = MotionDescriptors
 CC = g++
 CFLAGS = -c -Wall
 SKAROOT = ../../SKA
@@ -7,8 +7,7 @@ SKALIBDIR = -L$(SKAROOT)/lib
 SKALIB = -lska
 GLLIBS = -lglut -lGLU -lGL
 
-SOURCES = AppMain.cpp AnimationControl.cpp CameraControl.cpp InputProcessing.cpp
-  
+SOURCES = AppMain.cpp AnimationControl.cpp AppGraphics.cpp CameraControl.cpp InputProcessing.cpp MotionAnalyzer.cpp ProcessControl.cpp ShoulderAnalyzer.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 

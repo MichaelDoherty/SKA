@@ -79,11 +79,6 @@ void drawHUD()
 	if (hud_data.focus_extension) extension_color = white;
 	if (hud_data.focus_flexion)   flexion_color   = white;
 
-#ifdef LARGER_SCREEN
-	float ydiff = -0.05f;
-#else
-	float ydiff = -0.07f;
-#endif
 	float y = 0.9f;
 
 	float x = 0.4f;

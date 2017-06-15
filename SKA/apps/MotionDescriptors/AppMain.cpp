@@ -30,7 +30,6 @@ using namespace std;
 #include "ProcessControl.h"
 #include "MotionAnalyzer.h"
 #include "ShoulderAnalyzer.h"
-#include "DataRecorder.h"
 
 static MotionAnalyzer* motion_analyzer = NULL;
 static ShoulderAnalyzer* shoulder_analyzer = NULL;
@@ -47,39 +46,45 @@ void loadNextMotion() {
 
 	if (!process_control.active()) shutDown(0);
 
-	cout << "Processing " << process_control.takeLabel() << endl;
-	cout << "  mode = " << toString(process_control.dataMode()) << endl;
-	cout << "  loop = " << toString(process_control.loop()) << endl;
-	cout << "  skip time = " << process_control.skip() << " seconds" << endl;
-	anim_ctrl.loadCharacter(process_control.motionFile());
+
+	ProcessControl::ProcessingRequest prequest = process_control.currentRequest();
+	cout << "Active Processing Request:" << endl;
+	cout << prequest;
+
+	if (prequest.mocap_file_type == ProcessControl::BVH)
+		anim_ctrl.loadBVHCharacter(prequest.motion_file);
+	else
+		anim_ctrl.loadAMCCharacter(prequest.skeleton_file, prequest.motion_file);
+
 	cout << "  frames = " << anim_ctrl.numFrames() << endl;
-	/*Trevor's Code: Show if tracking is enabled*/
-	if (process_control.trackingIsEnabled()) {
-		cout << "  Tracking is enabled\n  Tracking " << process_control.getBoneName() << " bone" << endl;
-		cout << "  Across " << process_control.getPlaneName() << " plane" << endl;
-		cout << "  Tracking Skip: " << process_control.getFrameStep() << endl;
+	
+	if (prequest.shoulder_mode == ProcessControl::NONE)
+	{
+		analysis_objects.show_coronal_plane = false;
+		analysis_objects.show_sagittal_plane = false;
+		analysis_objects.show_transverse_plane = false;
 	}
-	else {
-		cout << "  Tracking is disabled\n";
+	else
+	{
+		analysis_objects.show_coronal_plane = true;
+		analysis_objects.show_sagittal_plane = true;
+		analysis_objects.show_transverse_plane = true;
+		switch (prequest.shoulder_mode) {
+		case ProcessControl::NONE:
+			break;
+		case ProcessControl::ABDUCTION:
+			analysis_objects.show_coronal_plane = true; break;
+		case ProcessControl::EXTENSION:
+		case ProcessControl::FLEXION:
+			analysis_objects.show_sagittal_plane = true; break;
+		}
 	}
-
-	analysis_objects.show_coronal_plane = true;
-	analysis_objects.show_sagittal_plane = true;
-	analysis_objects.show_transverse_plane = true;
-	switch (process_control.dataMode()) {
-	case ABDUCTION:
-		analysis_objects.show_coronal_plane = true; break;
-	case EXTENSION:
-	case FLEXION:
-		analysis_objects.show_sagittal_plane = true; break;
-	}
-
 	if (!anim_ctrl.isReady())
 	{
 		logout << "main(): Unable to load character. Aborting program." << endl;
 		shutDown(1);
 	}
-	hud_data.take_label = process_control.takeLabel();
+	hud_data.take_label = process_control.currentRequest().take_label;
 
 	// Need to create the bones, even if we're not using graphics.
 	// The skeleton uses the bone objects to store bone endpoints.
@@ -88,9 +93,14 @@ void loadNextMotion() {
 	character_render_list.clear();
 	anim_ctrl.getRenderList(character_render_list);
 
-	motion_analyzer = new MotionAnalyzer(anim_ctrl.numFrames(), anim_ctrl.getFrameDuration(),
-		anim_ctrl.getSkeleton());
-	shoulder_analyzer = new ShoulderAnalyzer();
+	if (motion_analyzer != NULL) { delete motion_analyzer; motion_analyzer = NULL; }
+	if (process_control.currentRequest().run_motion_analysis)
+		motion_analyzer = new MotionAnalyzer(anim_ctrl.numFrames(), anim_ctrl.getFrameDuration(),
+			anim_ctrl.getSkeleton());
+
+	if (shoulder_analyzer != NULL) { delete shoulder_analyzer; shoulder_analyzer = NULL; }
+	if (process_control.currentRequest().shoulder_mode != ProcessControl::NONE)
+		shoulder_analyzer = new ShoulderAnalyzer();
 
 	// reset clock so that the time spent loading is not included in animation time
 	system_timer.reset();
@@ -122,13 +132,15 @@ void updateAnimation()
 		status = anim_ctrl.updateAnimation((float)elapsed_time);
 	else
 		status = anim_ctrl.framestepAnimation();
+	if (status == false) cout << "Error in AnimationController frame update." << endl;
 
 	if (anim_ctrl.looped())
 	{
-		if (!process_control.loop())
+		if (!process_control.currentRequest().loop)
 			process_control.setGotoNextProcess();
 		if (!process_control.animationHasLooped()) {
 			process_control.setAnimationHasLooped();
+			if (motion_analyzer != NULL) motion_analyzer->storeResults(process_control.currentRequest().output_folder, process_control.currentRequest().take_label);
 			if (shoulder_analyzer != NULL) shoulder_analyzer->storeResults();
 		}
 	}

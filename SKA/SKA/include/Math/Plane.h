@@ -58,6 +58,7 @@ public:
 	Plane& operator=(const Plane& _p)
 	{
 		defineFromDirectionVectors(_p.d1, _p.d2, _p.p);
+		return *this;
 	}
 
 	void defineFromDirectionVectors(Vector3D _d1, Vector3D _d2, Vector3D _point_in_plane)

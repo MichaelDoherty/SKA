@@ -92,7 +92,7 @@ struct BVH_FILE {
 	unsigned short num_channels;
 	BVH_MOTION* motion;
 
-	BVH_FILE() : hierarchy(NULL), motion(NULL), num_channels(0) { }
+	BVH_FILE() : hierarchy(NULL), num_channels(0), motion(NULL) { }
 	~BVH_FILE() 
 	{ if (hierarchy!=NULL) delete hierarchy; if (motion!= NULL) delete motion; }
 };

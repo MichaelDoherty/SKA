@@ -57,7 +57,7 @@ public:
 	virtual float currLength() { return length; }
 	virtual void setLength(float len) { length = len; }
 
-	virtual void setEndpoints(Vector3D& start, Vector3D& end)
+	virtual void setEndpoints(const Vector3D& start, const Vector3D& end)
 	{
 		start_pos = start; end_pos = end;
 	}

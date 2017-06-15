@@ -103,8 +103,10 @@ struct HudData
 		flexion(0.0f), extension(0.0f), abduction(0.0f), dir_test(0.0f),
 		max_flexion(0.0f), max_extension(0.0f), max_abduction(0.0f),
 		focus_flexion(true), focus_extension(true), focus_abduction(true),
-		bone_cross_plane("NULL"), relationVal(0.0f), velocity(0.0f), bone_tracking_name("NULL"), plane_tracking_name("NULL"),
-		animation_paused(false), animation_time_warp(1.0f), take_label("NO FILE LOADED"), move_direction("NULL")
+		bone_cross_plane("NULL"), bone_tracking_name("NULL"), plane_tracking_name("NULL"),
+		relationVal(0.0f), velocity(0.0f),  
+		animation_paused(false), animation_time_warp(1.0f), 
+		take_label("NO FILE LOADED"), move_direction("NULL")
 	{}
 };
 extern HudData hud_data;

@@ -9,11 +9,146 @@
 #include <Core/SystemConfiguration.h>
 // local application
 #include "MotionAnalyzer.h"
+#include "ProcessControl.h"
+
+void MotionAnalyzer::extractJointPositions() {
+
+	ProcessControl::MOCAPTYPE skeleton_type = process_control.currentRequest().mocap_file_type;
+	/*
+	 "root" length=1.00000000 
+	 "lhipjoint" length=2.40478992 
+	 "lfemur" length=7.15780020 
+	 "ltibia" length=7.49137020 
+	 "lfoot" length=2.36784005 
+	 "ltoes" length=1.18965995 
+	 "rhipjoint" length=2.37264991 
+	 "rfemur" length=7.43385983 
+	 "rtibia" length=7.50907993 
+	 "rfoot" length=2.41173005 
+	 "rtoes" length=1.21081996 
+	 "lowerback" length=2.04495001 
+	 "upperback" length=2.05008006 
+	 "thorax" length=2.06487989 
+	 "lowerneck" length=1.75553000 
+	 "upperneck" length=1.76877999 
+	 "head" length=1.77192998 
+	 "lclavicle" length=3.58396006 
+     "lhumerus" length=4.98299980 
+	 "lradius" length=3.48356009 
+	 "lwrist" length=1.74178004 
+	 "lhand" length=0.715259016 
+	 "lfingers" length=0.576660991 
+	 "lthumb" length=0.827973008 
+	 "rclavicle" length=3.44818997 
+     "rhumerus" length=5.24189997 
+	 "rradius" length=3.44417000 
+ 	 "rwrist" length=1.72209001 
+	 "rhand" length=0.622528970 
+	 "rfingers" length=0.501899004 
+	 "rthumb" length=0.720628977 
+	*/
+	if (skeleton_type == ProcessControl::AMC) {
+		// CMU ASF
+		joint_positions[sacrum] = ourSkel->getBone("root")->getEndPosition();
+		joint_positions[mid_spine] = ourSkel->getBone("upperback")->getEndPosition();
+		joint_positions[upper_spine] = ourSkel->getBone("lowerneck")->getEndPosition();
+		joint_positions[atlas] = ourSkel->getBone("upperneck")->getEndPosition();
+		joint_positions[skull_top] = ourSkel->getBone("head")->getEndPosition();
+
+		joint_positions[left_hip] = ourSkel->getBone("lhipjoint")->getEndPosition();
+		joint_positions[left_knee] = ourSkel->getBone("lfemur")->getEndPosition();
+		joint_positions[left_ankle] = ourSkel->getBone("ltibia")->getEndPosition();
+		joint_positions[right_hip] = ourSkel->getBone("rhipjoint")->getEndPosition();
+		joint_positions[right_knee] = ourSkel->getBone("rfemur")->getEndPosition();
+		joint_positions[right_ankle] = ourSkel->getBone("rtibia")->getEndPosition();
+
+		joint_positions[left_shoulder] = ourSkel->getBone("lclavicle")->getEndPosition();
+		joint_positions[left_elbow] = ourSkel->getBone("lhumerus")->getEndPosition();
+		joint_positions[left_wrist] = ourSkel->getBone("lradius")->getEndPosition();
+		joint_positions[right_shoulder] = ourSkel->getBone("rclavicle")->getEndPosition();
+		joint_positions[right_elbow] = ourSkel->getBone("rhumerus")->getEndPosition();
+		joint_positions[right_wrist] = ourSkel->getBone("rradius")->getEndPosition();
+		/*
+		joint_positions[sacrum] = ourSkel->getBone("root")->getPosition();
+		joint_positions[mid_spine] = ourSkel->getBone("upperback")->getPosition();
+		joint_positions[upper_spine] = ourSkel->getBone("lowerneck")->getPosition();
+		joint_positions[atlas] = ourSkel->getBone("upperneck")->getPosition();
+		joint_positions[skull_top] = ourSkel->getBone("head")->getPosition();
+
+		joint_positions[left_hip] = ourSkel->getBone("lhipjoint")->getPosition();
+		joint_positions[left_knee] = ourSkel->getBone("lfemur")->getPosition();
+		joint_positions[left_ankle] = ourSkel->getBone("ltibia")->getPosition();
+		joint_positions[right_hip] = ourSkel->getBone("rhipjoint")->getPosition();
+		joint_positions[right_knee] = ourSkel->getBone("rfemur")->getPosition();
+		joint_positions[right_ankle] = ourSkel->getBone("rtibia")->getPosition();
+
+		joint_positions[left_shoulder] = ourSkel->getBone("lclavicle")->getPosition();
+		joint_positions[left_elbow] = ourSkel->getBone("lhumerus")->getPosition();
+		joint_positions[left_wrist] = ourSkel->getBone("lradius")->getPosition();
+		joint_positions[right_shoulder] = ourSkel->getBone("rclavicle")->getPosition();
+		joint_positions[right_elbow] = ourSkel->getBone("rhumerus")->getPosition();
+		joint_positions[right_wrist] = ourSkel->getBone("rradius")->getPosition();
+		*/
+	}
+	/*
+	"root" 
+	"Hips__0""Spine"
+	  "c""Neck""Head"
+	  "Spine1__1""LeftShoulder""LeftArm" "LeftForeArm" "LeftHand" 
+	  "Spine1__2""RightShoulder""RightArm""RightForeArm""RightHand" 
+	"Hips__1""LeftUpLeg""LeftLeg""LeftFoot""LeftToeBase" 
+	"Hips__2""RightUpLeg""RightLeg""RightFoot""RightToeBase"
+	*/
+	if (skeleton_type == ProcessControl::BVH) {
+		// OptiTrack BVH
+		joint_positions[sacrum] = ourSkel->getBone("Spine")->getPosition();
+		joint_positions[mid_spine] = ourSkel->getBone("Spine1__0")->getPosition();
+		joint_positions[upper_spine] = ourSkel->getBone("Neck")->getPosition();
+		joint_positions[atlas] = ourSkel->getBone("Head")->getPosition();
+		joint_positions[skull_top] = ourSkel->getBone("Head")->getEndPosition();
+
+		joint_positions[left_hip] = ourSkel->getBone("LeftUpLeg")->getPosition();
+		joint_positions[left_knee] = ourSkel->getBone("LeftLeg")->getPosition();
+		joint_positions[left_ankle] = ourSkel->getBone("LeftFoot")->getPosition();
+		joint_positions[right_hip] = ourSkel->getBone("RightUpLeg")->getPosition();
+		joint_positions[right_knee] = ourSkel->getBone("RightLeg")->getPosition();
+		joint_positions[right_ankle] = ourSkel->getBone("RightFoot")->getPosition();
+
+		joint_positions[left_shoulder] = ourSkel->getBone("LeftArm")->getPosition();
+		joint_positions[left_elbow] = ourSkel->getBone("LeftForeArm")->getPosition();
+		joint_positions[left_wrist] = ourSkel->getBone("LeftHand")->getPosition();
+		joint_positions[right_shoulder] = ourSkel->getBone("RightArm")->getPosition();
+		joint_positions[right_elbow] = ourSkel->getBone("RightForeArm")->getPosition();
+		joint_positions[right_wrist] = ourSkel->getBone("RightHand")->getPosition();
+	}
+}
+
+void MotionAnalyzer::storeResults(const string& directory, const string& tag)
+{
+	string fname = directory + tag + string("pos") + string(".csv");
+	ofstream ofs(fname);
+	if (!ofs) return;
+
+	for (int joint = 0; joint < num_joints; joint++) {
+		if (joint > 0) ofs << ", ";
+		string joint_name = toString(JointID(joint));
+		ofs << joint_name << "_x, " << joint_name << "_y, " << joint_name << "_z";
+	}
+	ofs << endl;
+	for (unsigned int frame = 0; frame < joint_data.size(); frame++) {
+		for (int joint = 0; joint < num_joints; joint++) {
+			if (joint > 0) ofs << ", ";
+			Vector3D p = joint_data[frame][joint].getPosition();
+			ofs << p.x << ", " << p.y << ", " << p.z;
+		}
+		ofs << endl;
+	}
+}
 
 void MotionAnalyzer::initialize(long _num_frames, float _frame_duration, Skeleton* _skel) {
 	
 	// Reset storage structures
-	bone_data.clear();
+	joint_data.clear();
 	body_data.clear();
 	frame_data_valid.clear();
 
@@ -33,32 +168,30 @@ void MotionAnalyzer::initialize(long _num_frames, float _frame_duration, Skeleto
 
 		// resize the storage structure to fit the new animation
 		int i, j;
-		int bone_count = ourSkel->numBones();
 		//resize outer vector...
-		bone_data.resize(num_frames + 1);
+		joint_data.resize(num_frames + 1);
 		body_data.resize(num_frames + 1);
 		frame_data_valid.resize(num_frames + 1);
 		for (i = 0; i < (int)frame_data_valid.size(); i++) {
 			frame_data_valid[i] = false;
 		}
-		for (i = 0; i < (int)bone_data.size(); i++) {
+		for (i = 0; i < (int)joint_data.size(); i++) {
 			//...and each inner vector
-			bone_data[i].resize(bone_count);
+			joint_data[i].resize(num_joints);
 		}
-		//empty bone to initialize vector
+
 		for (i = 0; i < num_frames + 1; i++) {
-			for (j = 0; j < bone_count; j++) {
-				Bone *tmpBone = ourSkel->getBone(j);
-				BoneData this_bone(tmpBone, i);
-				bone_data[i][j] = this_bone;
+			for (j = 0; j < num_joints; j++) {
+				joint_data[i][j].setJointName(toString(JointID(i)));
+				joint_data[i][j].setFrame(i);
 			}
 		}
 
 		// reinitialize bone parameters (weight maps)
 		//Init QoMWeightMap (all 1's for now)
 		QoMWeightMap.clear();
-		for (i = 0; i < bone_count; i++) {
-			std::string boneName = bone_data[0][i].getBone()->getName();
+		for (i = 0; i < num_joints; i++) {
+			string boneName = joint_data[0][i].getJointName();
 			QoMWeightMap[boneName] = 1.0;
 		}
 		//Initializaing WeightMap for each animation
@@ -132,7 +265,7 @@ pair <Vector3D, float> MotionAnalyzer::calcBoundingSphere(vector <Vector3D> poin
 	std::vector<Vector3D>::iterator it = points.begin();
 	Vector3D P1 = points[0];//random point
 	Vector3D Py, Pz;
-	int i;
+	unsigned int i;
 	float max_distance = 0.0f;
 	float dist;
 	//get max distance from P1
@@ -155,7 +288,7 @@ pair <Vector3D, float> MotionAnalyzer::calcBoundingSphere(vector <Vector3D> poin
 	Vector3D Q = (Py + Pz) / 2;
 	float radius = (Py - Pz).magnitude();
 	Vector3D G;
-	for (i = 1; i < sizeof points / sizeof Vector3D; i++) {
+	for (i = 1; i < sizeof(points) / sizeof(Vector3D); i++) {
 		if (pow((points[i] - Q).magnitude(), 2) > pow(radius, 2)) {
 			G = Q - ((points[i] - Q) / (points[i] - Q).magnitude())*radius;
 			Q = (G + points[i]) / 2;
@@ -233,16 +366,16 @@ float MotionAnalyzer::calcRadiusOfCurvature(float curve) {
 }
 
 float MotionAnalyzer::calculateQoM(int frame) {
-	std::map<std::string, float>::iterator it = QoMWeightMap.begin();
+	std::map<string, float>::iterator it = QoMWeightMap.begin();
 	float weight;//weight is represented as a percentage
 	int avg_counter = 0;
 	int i = 0;
 	float runningSum = 0.0;
-	for (i = 0; i < (int)bone_data[frame].size(); i++) {
+	for (i = 0; i < (int)joint_data[frame].size(); i++) {
 		//avg_counter = 0;
 		it = weightMap.begin();
-		float tmp_vel = bone_data[frame][i].getVelocity_mag();
-		std::string tmp_bone_name = bone_data[frame][i].getBone()->getName();
+		float tmp_vel = joint_data[frame][i].getVelocity_mag();
+		string tmp_bone_name = joint_data[frame][i].getJointName();
 
 		// strip off "Left" or "Right" prefix
 		if (tmp_bone_name.find("Right") == 0) tmp_bone_name = tmp_bone_name.substr(5);
@@ -271,11 +404,11 @@ Vector3D MotionAnalyzer::calculateCoM(int frame) {
 	int avg_counter = 0;
 	int i = 0;
 	Vector3D runningSum;
-	for (i = 0; i < (int)bone_data[frame].size(); i++) {
+	for (i = 0; i < (int)joint_data[frame].size(); i++) {
 		//avg_counter = 0;
 		it = weightMap.begin();
-		Vector3D tmp_pos = bone_data[frame][i].getBone()->getPosition();
-		std::string tmp_bone_name = bone_data[frame][i].getBone()->getName();
+		Vector3D tmp_pos = joint_data[frame][i].getPosition();
+		string tmp_bone_name = joint_data[frame][i].getJointName();
 
 		// strip off "Left" or "Right" prefix
 		if (tmp_bone_name.find("Right") == 0) tmp_bone_name = tmp_bone_name.substr(5);
@@ -312,101 +445,85 @@ void MotionAnalyzer::analyzeCurrentFrame(long frame_id, float _frame_duration)
 	// FIXIT!! possibly allow for recalculation?
 	if (frame_data_valid[animation_frame]) return;
 
-	/*Accumulate Motion Data*/
-	int i;
-	//PER BONE DATA
-	for (i = 0; i < (int)bone_data[animation_frame].size(); i++) {
-		//first set basic info for bone @ frame
-		Vector3D bone_pos = bone_data[animation_frame][i].getBone()->getPosition();
-		bone_data[animation_frame][i].setX(bone_pos.getX());
-		bone_data[animation_frame][i].setY(bone_pos.getY());
-		bone_data[animation_frame][i].setZ(bone_pos.getZ());
-		bone_data[animation_frame][i].setStartPos(bone_pos);
-		bone_data[animation_frame][i].setEndPos(bone_data[animation_frame][i].getBone()->getEndPosition());
+	// A bit unnecessary to extract and store positions, and then copy them,
+	// but that makes the abstraction to different skeleton types a bit cleaner.
+	extractJointPositions();
+	for (int i = 0; i < num_joints; i++) {
+		joint_data[animation_frame][i].setPosition(joint_positions[i]);
+	}
 
-		//Calculate and assign Velocity, Frame and Jerk
-		//Both Magnitude and Vector
-		Vector3D p0 = bone_pos;
-		Vector3D p1, p2, p3;
+	// data for individual joints
+
+	for (int i = 0; i < num_joints; i++) {
 		if (animation_frame > 3) {
-			p1 = bone_data[animation_frame - 1][i].getStartPos();
-			p2 = bone_data[animation_frame - 2][i].getStartPos();
-			p3 = bone_data[animation_frame - 3][i].getStartPos();
+			
+			// get positions for last four frames
+			Vector3D p0 = joint_data[animation_frame][i].getPosition();
+			Vector3D p1 = joint_data[animation_frame - 1][i].getPosition();
+			Vector3D p2 = joint_data[animation_frame - 2][i].getPosition();
+			Vector3D p3 = joint_data[animation_frame - 3][i].getPosition();
 
+			// compute derivatives of position: velocity, acceleration and jerk
 			pair<Vector3D, float> vel = calcVel(p0, p1);
-			bone_data[animation_frame][i].setVelocity_vec(vel.first);
-			bone_data[animation_frame][i].setVelocity_mag(vel.second);
+			joint_data[animation_frame][i].setVelocity_vec(vel.first);
+			joint_data[animation_frame][i].setVelocity_mag(vel.second);
 
 			pair<Vector3D, float> acc = calcAccel(p0, p1, p2);
-			bone_data[animation_frame][i].setAcceleration_vec(acc.first);
-			bone_data[animation_frame][i].setAcceleration_mag(acc.second);
+			joint_data[animation_frame][i].setAcceleration_vec(acc.first);
+			joint_data[animation_frame][i].setAcceleration_mag(acc.second);
 
 			pair<Vector3D, float> jerk = calcJerk(p0, p1, p2, p3);
-			bone_data[animation_frame][i].setJerk_vec(jerk.first);
-			bone_data[animation_frame][i].setJerk_mag(jerk.second);
+			joint_data[animation_frame][i].setJerk_vec(jerk.first);
+			joint_data[animation_frame][i].setJerk_mag(jerk.second);
 
-			float bone_curve = calcCurvature(acc.first, vel.first, vel.second);
+			// compute curvature
+			float bone_curve = calcCurvature(acc.first, vel.first, vel.second); 
 			float bone_rad = calcRadiusOfCurvature(bone_curve);
-
-			bone_data[animation_frame][i].setCurvature(bone_curve);
-			bone_data[animation_frame][i].setCurvatureRadius(bone_rad);
+			joint_data[animation_frame][i].setCurvature(bone_curve);
+			joint_data[animation_frame][i].setCurvatureRadius(bone_rad);
 
 		}
 	}
-	//FULL BODY DATA
-	//Calculate Bounding box and sphere
-	/*indexed as [MAX[x y z] MIN [x y z]]*/
-	float max_min[6] = { 0.0,0.0,0.0,0.0,0.0,0.0 };
-	float tmp_x, tmp_y, tmp_z = 0.0;
-	for (i = 0; i < (int)bone_data[animation_frame].size(); i++) {
-		Vector3D tmp = bone_data[animation_frame][i].getBone()->getPosition(); //makes all the calling easier to read/write
-		tmp_x = tmp.getX();
-		tmp_y = tmp.getY();
-		tmp_z = tmp.getZ();
-		//check x
-		if (tmp_x > max_min[0]) {
-			max_min[0] = tmp_x;
-		}
-		else if (tmp_x < max_min[3]) {
-			max_min[3] = tmp_x;
-		}
-		//check y
-		if (tmp_y > max_min[1]) {
-			max_min[1] = tmp_y;
-		}
-		else if (tmp_y < max_min[4]) {
-			max_min[4] = tmp_y;
-		}
-		//check z
-		if (tmp_z > max_min[2]) {
-			max_min[2] = tmp_z;
-		}
-		else if (tmp_z < max_min[5]) {
-			max_min[5] = tmp_z;
-		}
 
-	}
+	// data for full body
+
 	body_data[animation_frame].setFrame(animation_frame);
-	body_data[animation_frame].setBoxParam(max_min);
 
-	//Sphere
-	//Make and initialize a Vector to pass to function
+	// compute bounding box
+	float maxf = std::numeric_limits<float>::max();
+	float minf = -maxf;
+	Vector3D bbmin(maxf,maxf,maxf), bbmax(minf,minf,minf);
+	for (unsigned int i = 0; i < joint_data[animation_frame].size(); i++) {
+		Vector3D tmp = joint_data[animation_frame][i].getPosition();
+		float x = tmp.getX();
+		float y = tmp.getY();
+		float z = tmp.getZ();
+		if (x > bbmax.x) bbmax.x = x;
+		if (x < bbmin.x) bbmin.x = x;
+		if (y > bbmax.y) bbmax.y = y;
+		if (y < bbmin.y) bbmin.y = y;
+		if (z > bbmax.z) bbmax.z = z;
+		if (z < bbmin.z) bbmin.z = z;
+	}
+	body_data[animation_frame].setBoundingBox(bbmin, bbmax);
+
+	// compute bounding sphere
 	vector <Vector3D> pointVector;
-	i = 0;
-	//pointVector has 'bone' items (BoneVector[animation_frame] has 'bone' elements)
-	pointVector.resize(bone_data[animation_frame].size());
-	std::vector<BoneData>::iterator it = bone_data[animation_frame].begin();
-	for (it = bone_data[animation_frame].begin(); it != bone_data[animation_frame].end(); it++) {
-		pointVector[i] = it->getStartPos();
+	int i = 0;
+	pointVector.resize(joint_data[animation_frame].size());
+	std::vector<JointData>::iterator it = joint_data[animation_frame].begin();
+	for (it = joint_data[animation_frame].begin(); it != joint_data[animation_frame].end(); it++) {
+		pointVector[i] = it->getPosition();
 		i++;
 	}
 	pair <Vector3D, float> sphere = calcBoundingSphere(pointVector);
 	body_data[animation_frame].setBoundingSphere(sphere);
 
-	//Center of Mass & Quantity of Motion Calculation
+	// compute center of mass
 	Vector3D frame_CoM = calculateCoM(animation_frame);
-	float QoM = calculateQoM(animation_frame);
 	body_data[animation_frame].setCoM(frame_CoM);
-	body_data[animation_frame].setQoM(QoM);
 
+	// compute quantity of motion
+	float QoM = calculateQoM(animation_frame);
+	body_data[animation_frame].setQoM(QoM);
 }

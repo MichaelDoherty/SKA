@@ -27,7 +27,8 @@ AnimationControl anim_ctrl;
 // The BVH files from Pacific's mocap lab are about 5 times to large
 // for this world. In particular, bones will be too thin if stretched
 // to 500% of expected size, since the bone width does not currently scale.
-float character_size_scale = 0.2f;
+float BVH_character_size_scale = 0.2f;
+float AMC_character_size_scale = 1.0f;
 
 AnimationControl::AnimationControl() : character(NULL), file_path_defined(false)
 {
@@ -122,16 +123,10 @@ bool AnimationControl::framestepAnimation()
 	return true;
 }
 
-bool AnimationControl::loadCharacter(string& BVH_filename)
+bool AnimationControl::loadBVHCharacter(string& BVH_filename)
 {
 	reset();
-	/* Search paths not used. Folders are defined in skacommands.txt.
-	if (!file_path_defined)
-	{
-		data_manager.addFileSearchPath(BVH_MOTION_FILE_PATH);
-		file_path_defined = true;
-	}
-	*/
+	// Search paths not used. Incoming filename must include a full path.
 	bool success = true;
 	char* BVH_fullfilename = NULL;
 	try
@@ -160,10 +155,10 @@ bool AnimationControl::loadCharacter(string& BVH_filename)
 		num_frames = ms->numFrames();
 
 		// scale the bones lengths and translation distances
-		skel->scaleBoneLengths(character_size_scale);
-		ms->scaleChannel(CHANNEL_ID(0,CT_TX), character_size_scale);
-		ms->scaleChannel(CHANNEL_ID(0,CT_TY), character_size_scale);
-		ms->scaleChannel(CHANNEL_ID(0,CT_TZ), character_size_scale);
+		skel->scaleBoneLengths(BVH_character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TX), BVH_character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TY), BVH_character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0,CT_TZ), BVH_character_size_scale);
 
 		MotionSequenceController* controller = new MotionSequenceController(ms);
 
@@ -184,6 +179,73 @@ bool AnimationControl::loadCharacter(string& BVH_filename)
 	ready = success;
 	return ready;
 }
+
+bool AnimationControl::loadAMCCharacter(string& ASF_filename, string& AMC_filename)
+{
+	reset();
+	// Search paths not used. Incoming filename must include a full path.
+	bool success = true;
+	char* ASF_fullfilename = NULL;
+	char* AMC_fullfilename = NULL;
+	try
+	{
+		ASF_fullfilename = data_manager.findFile(ASF_filename.c_str());
+		if (ASF_fullfilename == NULL)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to find character ASF file <" << ASF_filename << ">. Aborting load." << endl;
+			throw BasicException("ABORT");
+		}
+		AMC_fullfilename = data_manager.findFile(AMC_filename.c_str());
+		if (AMC_fullfilename == NULL)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to find character AMC file <" << AMC_filename << ">. Aborting load." << endl;
+			throw BasicException("ABORT");
+		}
+
+		pair<Skeleton*, MotionSequence*> read_result;
+		try
+		{
+			read_result = data_manager.readASFAMC(ASF_fullfilename, AMC_fullfilename);
+		}
+		catch (const DataManagementException& dme)
+		{
+			logout << "AnimationControl::loadCharacters: Unable to load character data files. Aborting load." << endl;
+			logout << "   Failure due to " << dme.msg << endl;
+			throw BasicException("ABORT");
+		}
+
+		Skeleton* skel = read_result.first;
+		MotionSequence* ms = read_result.second;
+		frame_duration = (1.0f / ms->getFrameRate());
+		num_frames = ms->numFrames();
+
+		// scale the bones lengths and translation distances
+		skel->scaleBoneLengths(AMC_character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0, CT_TX), AMC_character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0, CT_TY), AMC_character_size_scale);
+		ms->scaleChannel(CHANNEL_ID(0, CT_TZ), AMC_character_size_scale);
+
+		MotionSequenceController* controller = new MotionSequenceController(ms);
+
+		// attach motion controller to animated skeleton
+		skel->attachMotionController(controller);
+
+		// create a character to link all the pieces together.
+		string d1 = string("skeleton: ") + ASF_filename;
+		string d2 = string("motion: ") + AMC_filename;
+		skel->setDescription1(d1.c_str());
+		skel->setDescription2(d2.c_str());
+		character = skel;
+	}
+	catch (BasicException&) { success = false; }
+
+	strDelete(ASF_fullfilename); ASF_fullfilename = NULL;
+	strDelete(AMC_fullfilename); AMC_fullfilename = NULL;
+
+	ready = success;
+	return ready;
+}
+
 
 bool AnimationControl::getRenderList(list<Object*>& render_list)
 {

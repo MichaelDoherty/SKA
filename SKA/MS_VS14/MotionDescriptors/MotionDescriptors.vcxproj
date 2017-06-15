@@ -22,11 +22,11 @@
     <ClInclude Include="..\..\apps\MotionDescriptors\AnimationControl.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\AppConfig.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\AppGraphics.h" />
-    <ClInclude Include="..\..\apps\MotionDescriptors\BoneData.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\CameraControl.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\DataRecorder.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\FullBodyData.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\InputProcessing.h" />
+    <ClInclude Include="..\..\apps\MotionDescriptors\JointData.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\MotionAnalyzer.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\ProcessControl.h" />
     <ClInclude Include="..\..\apps\MotionDescriptors\ShoulderAnalyzer.h" />

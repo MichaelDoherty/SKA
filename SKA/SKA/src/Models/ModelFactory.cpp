@@ -52,15 +52,15 @@ Model* ModelFactory::buildModel(ModelSpecification& spec)
 	else if (strMatch(model_name, "Vector"))
 	{
 		float length = 1.0f;
-		float width = 1.0f;
-		float height = 1.0f;
+		//float width = 1.0f;
+		//float height = 1.0f;
 		char* s;
 		s = spec.getSpec("length");
 		if (s != NULL) length = (float)atof(s);
-		s = spec.getSpec("width");
-		if (s != NULL) width = (float)atof(s);
-		s = spec.getSpec("height");
-		if (s != NULL) height = (float)atof(s);
+		//s = spec.getSpec("width");
+		//if (s != NULL) width = (float)atof(s);
+		//s = spec.getSpec("height");
+		//if (s != NULL) height = (float)atof(s);
 		return new VectorModel(length, spec.getColor());
 	}
 	else if (strMatch(model_name,"CoordinateAxis"))

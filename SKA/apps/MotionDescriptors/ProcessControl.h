@@ -14,41 +14,78 @@
 #include <Objects/Object.h>
 #include <Objects/BoneObject.h>
 // local application
-#include "BoneData.h"
-#include "FullBodyData.h"
 #include "AnimationControl.h"
 
-static bool DISPLAY_ALL_RESULTS = false;
-
-enum DATAMODE { FLEXION, EXTENSION, ABDUCTION };
-inline string toString(DATAMODE dm) {
-	switch (dm) {
-	case FLEXION: return string("FLEXION");
-	case EXTENSION: return string("EXTENSION");
-	case ABDUCTION: return string("ABDUCTION");
-	default: return string("UNKNOWN");
-	}
-}
-
-inline string toString(bool x) {
-	if (x) return string("TRUE");
-	else return string("FALSE");
-}
-
-struct ProcessingRequest {
-	string take_label;
-	string motion_file;
-	string result_file;
-	DATAMODE data_mode;
-	bool loop;
-	float init_skip_time;
-	ProcessingRequest(string& _take_label, string& _motion_file, string& _result_file,
-		DATAMODE _data_mode = FLEXION, bool _loop = false, float _init_skip_time = 5.0f)
-		: take_label(_take_label), motion_file(_motion_file), result_file(_result_file), data_mode(_data_mode),
-		loop(_loop), init_skip_time(_init_skip_time) {}
-};
-
 class ProcessControl {
+public:
+	enum SHOULDERMODE { NONE, FLEXION, EXTENSION, ABDUCTION };
+
+	static string toString(SHOULDERMODE dm) {
+		switch (dm) {
+		case NONE: return string("NONE");
+		case FLEXION: return string("FLEXION");
+		case EXTENSION: return string("EXTENSION");
+		case ABDUCTION: return string("ABDUCTION");
+		default: return string("UNKNOWN");
+		}
+	}
+
+	enum MOCAPTYPE { UNK, BVH, AMC };
+	static string toString(MOCAPTYPE mct) {
+		switch (mct) {
+		case BVH: return string("BVH");
+		case AMC: return string("ASF/AMC");
+		default: return string("UNKNOWN");
+		}
+	}
+
+	static string toString(bool x) {
+		if (x) return string("TRUE");
+		else return string("FALSE");
+	}
+
+	struct ProcessingRequest {
+		string take_label;
+		MOCAPTYPE mocap_file_type;
+		string input_folder;
+		string output_folder;
+		string skeleton_file;	// ASF or unused for BVH
+		string motion_file; // AMC or BVH file
+		string result_file; // name based on motion_file
+		SHOULDERMODE shoulder_mode;
+		bool loop;
+		bool run_motion_analysis;
+		float init_skip_time;
+		ProcessingRequest(const string& _take_label, 
+			MOCAPTYPE _mctype, 
+			const string& _input_folder, const string& _output_folder,
+			const string& _motion_file, const string& _skel_file,
+			const string& _result_file,
+			bool _motion_analysis = false, SHOULDERMODE _data_mode = NONE,
+			bool _loop = false, float _init_skip_time = 5.0f)
+			: take_label(_take_label), 
+			  mocap_file_type(_mctype), 
+			  input_folder(_input_folder), output_folder(_output_folder),
+			  skeleton_file(_skel_file), motion_file(_motion_file), 
+			  result_file(_result_file), 
+			  shoulder_mode(_data_mode), loop(_loop), 
+			  run_motion_analysis(_motion_analysis), init_skip_time(_init_skip_time) {}
+
+		friend ostream& operator<<(ostream& os, const ProcessingRequest& p) {
+			os << "mocap type:      " << toString(p.mocap_file_type) << endl;
+			os << "input folder:    " << p.input_folder << endl;
+			os << "output folder:   " << p.output_folder << endl;
+			os << "motion file:     " << p.motion_file << endl;
+			os << "skeleton file:   " << p.skeleton_file << endl;
+			os << "result file:     " << p.result_file << endl;
+			os << "motion analysis: " << p.run_motion_analysis << endl;
+			os << "mode:            " << p.shoulder_mode << endl;
+			os << "loop:            " << p.loop << endl;
+			os << "skip time:       " << p.init_skip_time << " seconds" << endl;
+			return os;
+		}
+	};
+
 public:
 	ProcessControl() { reset(); }
 	void reset() {
@@ -62,6 +99,7 @@ public:
 	bool readCommandFile();
 	bool active() { return curr_request < (short)requests.size(); }
 	bool advance() { curr_request++; return active(); }
+
 	bool animationIsEnabled() { return animation_enabled; }
 	void enableAnimation() { animation_enabled = true; }
 	void disableAnimation() { animation_enabled = false; }
@@ -78,65 +116,33 @@ public:
 	void clearGotoNextProcess() { goto_next_process = false; }
 	void setGotoNextProcess() { goto_next_process = true; }
 
-	/*Trevor's code for input file enabling bone tracking*/
-	void enableBoneTracking() { bone_tracking = true; }
-	void disableBoneTracking() { bone_tracking = false; }
-	bool trackingIsEnabled() { return bone_tracking; }
-	/*End Trevor's code*/
-
 	void addRequest(ProcessingRequest& r) {
 		requests.push_back(r);
 		if (curr_request < 0) { curr_request = 0; }
 	}
 
-	DATAMODE dataMode() { return requests[curr_request].data_mode; }
-	bool loop() { return requests[curr_request].loop; }
-	float skip() { return requests[curr_request].init_skip_time; }
-	string takeLabel() { return requests[curr_request].take_label; }
-	string motionFile() { return requests[curr_request].motion_file; }
-	string resultFile() { return requests[curr_request].result_file; }
-	/*Set and Gets for bone tracking*/
-	void setBoneName(string name) { bone_tracking_name = name; }
-	string getBoneName() { return bone_tracking_name; }
-	void setPlaneName(string plane) { plane_name = plane; }
-	string getPlaneName() { return plane_name; }
-	void setFrameStep(int frames) { frame_step = frames; }
-	int getFrameStep() { return frame_step; }
+	ProcessingRequest& currentRequest() { return requests[curr_request]; }
 
 private:
-	int frame_step = 1;
 	bool animation_enabled;
-	bool bone_tracking;
-	string bone_tracking_name;
-	string plane_name;
 	vector<ProcessingRequest> requests;
-	short curr_request = -1;
+	short curr_request;
 
-	// FIXIT!! move these global flags into the class
 	bool real_time_mode;  //  true = step in clock time, false = step frame-by-frame
 	bool animation_has_looped;
 	bool goto_next_process;
 
 public:
-	void printProcessControl()
-	{
-		cout << "Process Control: " << endl;
-		if (animation_enabled) cout << "ANIMATION IS ENABLED" << endl;
-		else cout << "ANIMATION IS DISABLED" << endl;
-		if (bone_tracking) cout << "BONE TRACKING ENABLED\nTRACKING: " << bone_tracking_name << "AND" << plane_name << endl;
-		else cout << "BONE TRACKING DISABLED" << endl;
+	friend ostream& operator<<(ostream& os, const ProcessControl& pc) {
+		os << "Process Control: " << endl;
+		if (pc.animation_enabled) os << "ANIMATION IS ENABLED" << endl;
+		else os << "ANIMATION IS DISABLED" << endl;
 		unsigned short p;
-		for (p = 0; p < requests.size(); p++)
+		for (p = 0; p < pc.requests.size(); p++)
 		{
-			ProcessingRequest preq = requests[p];
-			cout << "Request " << p << " ... " << endl;
-			cout << "motion file: " << preq.motion_file << endl;
-			cout << "result file: " << preq.result_file << endl;
-			cout << "mode: " << preq.data_mode << endl;
-			if (preq.loop) cout << "loop: on" << endl;
-			else cout << "loop: off" << endl;
-			cout << "skip time: " << preq.init_skip_time << " seconds" << endl;
+			os << pc.requests[p];
 		}
+		return os;
 	}
 };
 

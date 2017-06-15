@@ -13,86 +13,44 @@
 #include <Core/SystemConfiguration.h>
 #include <Math/Plane.h>
 #include <Animation/Skeleton.h>
-#include "BoneData.h"
+
 // SKA modules
 struct boundingBox {
-	float max_x, max_y, max_z = 0.0;
-	float min_x, min_y, min_z = 0.0;
+	Vector3D min, max;
 };
 
 class FullBodyData {
 
 private:
-	std::pair <Vector3D, float> BoundingSphere;
-	int frame = 0;
-	boundingBox BoundingBox;
-	Vector3D CoM; //center of mass (default const is all 0s)
-	float QoM = 0.0; //Quantity of Motion
+	int frame;
+	boundingBox bounding_box;
+	pair<Vector3D, float> BoundingSphere; // center and radius
+	Vector3D CoM; //center of mass 
+	float QoM; //Quantity of Motion
 
 public:
 	//default constructor
-	FullBodyData() {};
+	FullBodyData() : frame(0) {};
 
-	//basic set functions
 	void setFrame(int frm) { frame = frm; }
-	void setCoM(Vector3D centerOfMass) { CoM = centerOfMass; }
-	void setQoM(float quantity) { QoM = quantity; }
+	int getFrame() { return frame; }
 
-	//Set boundingSphere with center point and radiur
-	void setBoundingSphere(Vector3D center, float radius){
+	void setBoundingBox(const Vector3D& _min, const Vector3D& _max) {
+		bounding_box.min = _min, bounding_box.max = _max;
+	}
+	boundingBox getBoundingBox() { return bounding_box; }
+
+	void setBoundingSphere(Vector3D center, float radius) {
 		BoundingSphere = make_pair(center, radius);
 	}
+	void setBoundingSphere(const pair<Vector3D, float>& sphere) { BoundingSphere = sphere; }
+	pair <Vector3D, float> getBoundingSphere() { return BoundingSphere; }
 
-	//Set boundingSphere with  pre-existing pair
-	void setBoundingSphere(pair <Vector3D, float> sphere) { BoundingSphere = sphere; }
-
-	//basic get functions
-	std::pair <Vector3D, float> getBoundingSphere() { return BoundingSphere; }
-	float getQoM() { return QoM; }
-	int getFrame() { return frame; }
+	void setCoM(const Vector3D& centerOfMass) { CoM = centerOfMass; }
 	Vector3D getCoM() { return CoM; }
-
-	//get bounding box params
-	//(max value or min value in selected direction)
-	float getBoxParam(bool max, char plane) {
-		float val = 0.0;
-		if (plane == 'x') {
-			max ? val=  BoundingBox.max_x : val = BoundingBox.min_x;
-		}
-		else if (plane == 'y') {
-			max ? val = BoundingBox.max_y : val = BoundingBox.min_y;
-		}
-		else if (plane == 'z') {
-			max ? val = BoundingBox.max_z : val = BoundingBox.min_z;
-		}
-		return val;
-	}
-
-	//Returns a boundingBox struct object (defined in FullBodyData.h)
-	//In most cases, getBoxParam will suffice for individual values
-	boundingBox getBox() { return BoundingBox; }
-
-	//Set function for bounding box with individual values
-	void setBoxParam(char plane, bool max, float val) {
-		if (plane == 'x') {
-			max ? BoundingBox.max_x = val : BoundingBox.min_x = val;
-		}
-		else if (plane == 'y') {
-			max ? BoundingBox.max_y = val : BoundingBox.min_y = val;
-		}
-		else if (plane == 'z') {
-			max ? BoundingBox.max_z = val : BoundingBox.min_z = val;
-		}
-	}
-	//Set function for bounding box with array
-	void setBoxParam(float arr[6]) {
-		BoundingBox.max_x = arr[0];
-		BoundingBox.max_y = arr[1];
-		BoundingBox.max_z = arr[2];
-		BoundingBox.min_x = arr[3];
-		BoundingBox.min_y = arr[4];
-		BoundingBox.min_z = arr[5];
-	}
+	
+	void setQoM(float quantity) { QoM = quantity; }
+	float getQoM() { return QoM; }
 };
 
 

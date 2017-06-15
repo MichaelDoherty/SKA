@@ -113,7 +113,8 @@ static string verifyQuaternionFile(string& bvh_filename, string& quat_filename)
 			sprintf(quat_filepath, "%sqq_%s", quat_filepath, quat_filename.c_str());
 		}
 
-		convertBVH2Quaternion(bvh_fullfilepath, string(quat_filepath));
+		string qfp(quat_filepath);
+		convertBVH2Quaternion(bvh_fullfilepath, qfp);
 
 		// verify that the new file exists
 		char* tmp = data_manager.findFile(quat_filepath);
