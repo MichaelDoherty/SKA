@@ -203,23 +203,23 @@ void ShoulderAnalyzer::processPTData() {
 
 	if (process_control.animationIsEnabled())
 	{
-		analysis_objects.rua_start_marker->moveTo(rightupperarm_pos);
-		analysis_objects.rua_end_marker->moveTo(rightelbow_pos);
+		analysis_objects.upperarm_marker->moveTo(rightupperarm_pos);
+		analysis_objects.elbow_marker->moveTo(rightelbow_pos);
 		analysis_objects.root_marker->moveTo(root_position);
 		analysis_objects.root_marker->rotateTo(root_orientation);
 
-		analysis_objects.ruacp_start_marker->moveTo(rightupperarm_pos_cp);
-		analysis_objects.ruacp_end_marker->moveTo(rightelbow_pos_cp);
-		analysis_objects.spinecp_end_marker->moveTo(neck_pos_cp);
+		analysis_objects.upperarm_cp_marker->moveTo(rightupperarm_pos_cp);
+		analysis_objects.elbow_cp_marker->moveTo(rightelbow_pos_cp);
+		analysis_objects.spine_cp_marker->moveTo(neck_pos_cp);
 
-		analysis_objects.ruasp_start_marker->moveTo(rightupperarm_pos_sp);
-		analysis_objects.ruasp_end_marker->moveTo(rightelbow_pos_sp);
-		analysis_objects.spinesp_end_marker->moveTo(neck_pos_sp);
+		analysis_objects.upperarm_sp_marker->moveTo(rightupperarm_pos_sp);
+		analysis_objects.elbow_sp_marker->moveTo(rightelbow_pos_sp);
+		analysis_objects.spine_sp_marker->moveTo(neck_pos_sp);
 
-		analysis_objects.ruacp_bone->setEndpoints(rightupperarm_pos_cp, rightelbow_pos_cp);
-		analysis_objects.ruasp_bone->setEndpoints(rightupperarm_pos_sp, rightelbow_pos_sp);
-		analysis_objects.spinecp_bone->setEndpoints(rightupperarm_pos_cp, neck_pos_cp);
-		analysis_objects.spinesp_bone->setEndpoints(rightupperarm_pos_sp, neck_pos_sp);
+		analysis_objects.arm_cp_bone->setEndpoints(rightupperarm_pos_cp, rightelbow_pos_cp);
+		analysis_objects.arm_sp_bone->setEndpoints(rightupperarm_pos_sp, rightelbow_pos_sp);
+		analysis_objects.spine_cp_bone->setEndpoints(rightupperarm_pos_cp, neck_pos_cp);
+		analysis_objects.spine_sp_bone->setEndpoints(rightupperarm_pos_sp, neck_pos_sp);
 
 		Vector3D p = root_position;
 		analysis_objects.right_dir_marker->setEndpoints(p, p + (right_dir*20.0f));
@@ -233,31 +233,6 @@ void ShoulderAnalyzer::processPTData() {
 		analysis_objects.sagittal_plane_image->rotateTo(root_orientation);
 		analysis_objects.transverse_plane_image->moveTo(transverse_plane.getPointInPlane());
 		analysis_objects.transverse_plane_image->rotateTo(root_orientation);
-
-		// FIXIT:170119 visibility adjustment should be done in AppGraphics
-		analysis_objects.coronal_plane_image->setVisibility(analysis_objects.show_coronal_plane);
-		analysis_objects.ruacp_start_marker->setVisibility(analysis_objects.show_coronal_plane);
-		analysis_objects.ruacp_end_marker->setVisibility(analysis_objects.show_coronal_plane);
-		analysis_objects.spinecp_end_marker->setVisibility(analysis_objects.show_coronal_plane);
-		analysis_objects.ruacp_bone->setVisibility(analysis_objects.show_coronal_plane);
-		analysis_objects.spinecp_bone->setVisibility(analysis_objects.show_coronal_plane);
-
-		analysis_objects.sagittal_plane_image->setVisibility(analysis_objects.show_sagittal_plane);
-		analysis_objects.ruasp_start_marker->setVisibility(analysis_objects.show_sagittal_plane);
-		analysis_objects.ruasp_end_marker->setVisibility(analysis_objects.show_sagittal_plane);
-		analysis_objects.spinesp_end_marker->setVisibility(analysis_objects.show_sagittal_plane);
-		analysis_objects.ruasp_bone->setVisibility(analysis_objects.show_sagittal_plane);
-		analysis_objects.spinesp_bone->setVisibility(analysis_objects.show_sagittal_plane);
-
-		analysis_objects.transverse_plane_image->setVisibility(analysis_objects.show_transverse_plane);
-
-		//analysis_objects.coronal_plane_image->setVisibility(true);
-		//analysis_objects.sagittal_plane_image->setVisibility(true);
-		//analysis_objects.transverse_plane_image->setVisibility(true);
-
-		analysis_objects.right_dir_marker->setVisibility(false);
-		analysis_objects.forward_dir_marker->setVisibility(false);
-		analysis_objects.up_dir_marker->setVisibility(false);
 
 		// copy data to HUD
 		hud_data.flexion = flexion;

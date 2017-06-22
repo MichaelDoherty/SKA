@@ -56,20 +56,22 @@ public:
 		bool loop;
 		bool run_motion_analysis;
 		float init_skip_time;
+		short fps; // frames per second
 		ProcessingRequest(const string& _take_label, 
 			MOCAPTYPE _mctype, 
 			const string& _input_folder, const string& _output_folder,
 			const string& _motion_file, const string& _skel_file,
 			const string& _result_file,
 			bool _motion_analysis = false, SHOULDERMODE _data_mode = NONE,
-			bool _loop = false, float _init_skip_time = 5.0f)
+			bool _loop = false, float _init_skip_time = 5.0f, short _fps = 120)
 			: take_label(_take_label), 
 			  mocap_file_type(_mctype), 
 			  input_folder(_input_folder), output_folder(_output_folder),
 			  skeleton_file(_skel_file), motion_file(_motion_file), 
 			  result_file(_result_file), 
 			  shoulder_mode(_data_mode), loop(_loop), 
-			  run_motion_analysis(_motion_analysis), init_skip_time(_init_skip_time) {}
+			  run_motion_analysis(_motion_analysis), init_skip_time(_init_skip_time),
+			  fps(_fps) {}
 
 		friend ostream& operator<<(ostream& os, const ProcessingRequest& p) {
 			os << "mocap type:      " << toString(p.mocap_file_type) << endl;
@@ -79,9 +81,10 @@ public:
 			os << "skeleton file:   " << p.skeleton_file << endl;
 			os << "result file:     " << p.result_file << endl;
 			os << "motion analysis: " << p.run_motion_analysis << endl;
-			os << "mode:            " << p.shoulder_mode << endl;
+			os << "shoulder mode:   " << p.shoulder_mode << endl;
 			os << "loop:            " << p.loop << endl;
 			os << "skip time:       " << p.init_skip_time << " seconds" << endl;
+			os << "frames per sec:  " << p.fps << endl;
 			return os;
 		}
 	};
@@ -135,6 +138,8 @@ private:
 public:
 	friend ostream& operator<<(ostream& os, const ProcessControl& pc) {
 		os << "Process Control: " << endl;
+		if (pc.real_time_mode) os << "REAL TIME MODE IS ENABLED" << endl;
+		else os << "REAL TIME MODE IS DISABLED" << endl;
 		if (pc.animation_enabled) os << "ANIMATION IS ENABLED" << endl;
 		else os << "ANIMATION IS DISABLED" << endl;
 		unsigned short p;

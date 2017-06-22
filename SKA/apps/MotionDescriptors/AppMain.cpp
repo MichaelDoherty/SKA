@@ -34,7 +34,6 @@ using namespace std;
 static MotionAnalyzer* motion_analyzer = NULL;
 static ShoulderAnalyzer* shoulder_analyzer = NULL;
 
-// probably unnecessary - used in case any cleanup is needed on exit.
 void shutDown(int _exit_code)
 {
 	if (motion_analyzer != NULL) delete motion_analyzer;
@@ -45,7 +44,6 @@ void shutDown(int _exit_code)
 void loadNextMotion() {
 
 	if (!process_control.active()) shutDown(0);
-
 
 	ProcessControl::ProcessingRequest prequest = process_control.currentRequest();
 	cout << "Active Processing Request:" << endl;
@@ -66,9 +64,6 @@ void loadNextMotion() {
 	}
 	else
 	{
-		analysis_objects.show_coronal_plane = true;
-		analysis_objects.show_sagittal_plane = true;
-		analysis_objects.show_transverse_plane = true;
 		switch (prequest.shoulder_mode) {
 		case ProcessControl::NONE:
 			break;
@@ -95,9 +90,15 @@ void loadNextMotion() {
 
 	if (motion_analyzer != NULL) { delete motion_analyzer; motion_analyzer = NULL; }
 	if (process_control.currentRequest().run_motion_analysis)
-		motion_analyzer = new MotionAnalyzer(anim_ctrl.numFrames(), anim_ctrl.getFrameDuration(),
+	{
+		float frame_duration;
+		if (process_control.realTimeMode())
+			frame_duration = anim_ctrl.getFrameDuration();
+		else
+			frame_duration = 1.0f/process_control.currentRequest().fps;
+		motion_analyzer = new MotionAnalyzer(anim_ctrl.numFrames(), frame_duration,
 			anim_ctrl.getSkeleton());
-
+	}
 	if (shoulder_analyzer != NULL) { delete shoulder_analyzer; shoulder_analyzer = NULL; }
 	if (process_control.currentRequest().shoulder_mode != ProcessControl::NONE)
 		shoulder_analyzer = new ShoulderAnalyzer();
@@ -119,6 +120,7 @@ void updateAnimation()
 	// Determine how much time has passed since the previous frame.
 	double elapsed_time = system_timer.elapsedTime();
 
+
 	// Check to see if any user inputs have been received since the last frame.
 	input_processor.processInputs((float)elapsed_time);
 
@@ -126,7 +128,7 @@ void updateAnimation()
 	{
 		return;
 	}
-
+	
 	bool status = false;
 	if (process_control.realTimeMode())
 		status = anim_ctrl.updateAnimation((float)elapsed_time);
@@ -137,7 +139,9 @@ void updateAnimation()
 	if (anim_ctrl.looped())
 	{
 		if (!process_control.currentRequest().loop)
+		{
 			process_control.setGotoNextProcess();
+		}
 		if (!process_control.animationHasLooped()) {
 			process_control.setAnimationHasLooped();
 			if (motion_analyzer != NULL) motion_analyzer->storeResults(process_control.currentRequest().output_folder, process_control.currentRequest().take_label);
@@ -145,10 +149,20 @@ void updateAnimation()
 		}
 	}
 
-	// FIXIT!! If in real-time animation mode, we also need to pass the actual frame duration 
-	//         to the motion analyzer.
-	if (motion_analyzer != NULL) motion_analyzer->analyzeCurrentFrame(anim_ctrl.getAnimationFrame());
-	if (shoulder_analyzer != NULL) shoulder_analyzer->processPTData();
+	long current_frame = anim_ctrl.getAnimationFrame();
+	hud_data.animation_frame = current_frame;
+
+	if (motion_analyzer != NULL)
+	{
+		float frame_duration;
+		if (process_control.realTimeMode())
+			frame_duration = anim_ctrl.getFrameDuration();
+		else
+			frame_duration = 1.0f/ process_control.currentRequest().fps;
+		motion_analyzer->analyzeCurrentFrame(current_frame, frame_duration);
+	}
+	if (shoulder_analyzer != NULL) 
+		shoulder_analyzer->processPTData();
 }
 
 int main(int argc, char **argv)

@@ -68,27 +68,6 @@ void MotionAnalyzer::extractJointPositions() {
 		joint_positions[right_shoulder] = ourSkel->getBone("rclavicle")->getEndPosition();
 		joint_positions[right_elbow] = ourSkel->getBone("rhumerus")->getEndPosition();
 		joint_positions[right_wrist] = ourSkel->getBone("rradius")->getEndPosition();
-		/*
-		joint_positions[sacrum] = ourSkel->getBone("root")->getPosition();
-		joint_positions[mid_spine] = ourSkel->getBone("upperback")->getPosition();
-		joint_positions[upper_spine] = ourSkel->getBone("lowerneck")->getPosition();
-		joint_positions[atlas] = ourSkel->getBone("upperneck")->getPosition();
-		joint_positions[skull_top] = ourSkel->getBone("head")->getPosition();
-
-		joint_positions[left_hip] = ourSkel->getBone("lhipjoint")->getPosition();
-		joint_positions[left_knee] = ourSkel->getBone("lfemur")->getPosition();
-		joint_positions[left_ankle] = ourSkel->getBone("ltibia")->getPosition();
-		joint_positions[right_hip] = ourSkel->getBone("rhipjoint")->getPosition();
-		joint_positions[right_knee] = ourSkel->getBone("rfemur")->getPosition();
-		joint_positions[right_ankle] = ourSkel->getBone("rtibia")->getPosition();
-
-		joint_positions[left_shoulder] = ourSkel->getBone("lclavicle")->getPosition();
-		joint_positions[left_elbow] = ourSkel->getBone("lhumerus")->getPosition();
-		joint_positions[left_wrist] = ourSkel->getBone("lradius")->getPosition();
-		joint_positions[right_shoulder] = ourSkel->getBone("rclavicle")->getPosition();
-		joint_positions[right_elbow] = ourSkel->getBone("rhumerus")->getPosition();
-		joint_positions[right_wrist] = ourSkel->getBone("rradius")->getPosition();
-		*/
 	}
 	/*
 	"root" 
@@ -129,13 +108,18 @@ void MotionAnalyzer::storeResults(const string& directory, const string& tag)
 	ofstream ofs(fname);
 	if (!ofs) return;
 
+	// first line has column labels
+	ofs << "frame, ";
 	for (int joint = 0; joint < num_joints; joint++) {
 		if (joint > 0) ofs << ", ";
 		string joint_name = toString(JointID(joint));
 		ofs << joint_name << "_x, " << joint_name << "_y, " << joint_name << "_z";
 	}
 	ofs << endl;
+
+	// one line of data for each frame
 	for (unsigned int frame = 0; frame < joint_data.size(); frame++) {
+		ofs << frame << ", ";
 		for (int joint = 0; joint < num_joints; joint++) {
 			if (joint > 0) ofs << ", ";
 			Vector3D p = joint_data[frame][joint].getPosition();
@@ -150,7 +134,7 @@ void MotionAnalyzer::initialize(long _num_frames, float _frame_duration, Skeleto
 	// Reset storage structures
 	joint_data.clear();
 	body_data.clear();
-	frame_data_valid.clear();
+	frame_data_calculated.clear();
 
 	if (_skel == NULL)
 	{
@@ -169,18 +153,18 @@ void MotionAnalyzer::initialize(long _num_frames, float _frame_duration, Skeleto
 		// resize the storage structure to fit the new animation
 		int i, j;
 		//resize outer vector...
-		joint_data.resize(num_frames + 1);
-		body_data.resize(num_frames + 1);
-		frame_data_valid.resize(num_frames + 1);
-		for (i = 0; i < (int)frame_data_valid.size(); i++) {
-			frame_data_valid[i] = false;
+		joint_data.resize(num_frames);
+		body_data.resize(num_frames);
+		frame_data_calculated.resize(num_frames);
+		for (i = 0; i < (int)frame_data_calculated.size(); i++) {
+			frame_data_calculated[i] = false;
 		}
 		for (i = 0; i < (int)joint_data.size(); i++) {
 			//...and each inner vector
 			joint_data[i].resize(num_joints);
 		}
 
-		for (i = 0; i < num_frames + 1; i++) {
+		for (i = 0; i < num_frames; i++) {
 			for (j = 0; j < num_joints; j++) {
 				joint_data[i][j].setJointName(toString(JointID(i)));
 				joint_data[i][j].setFrame(i);
@@ -324,7 +308,6 @@ pair <Vector3D, float> MotionAnalyzer::calcVel(Vector3D p0, Vector3D p1) {
 	pair <Vector3D, float> vel;
 	vel = make_pair(velocity, v_mag);
 	return vel;
-
 }
 
 pair <Vector3D, float> MotionAnalyzer::calcAccel(Vector3D p0, Vector3D p1, Vector3D p2) {
@@ -442,8 +425,10 @@ void MotionAnalyzer::analyzeCurrentFrame(long frame_id, float _frame_duration)
 	animation_frame = frame_id;
 	if (_frame_duration > 0.0f) frame_duration = _frame_duration;
 
-	// FIXIT!! possibly allow for recalculation?
-	if (frame_data_valid[animation_frame]) return;
+	// protect against out of range frame numbers (generally due to looping)
+	if ((animation_frame < 0) || (animation_frame >= (int)frame_data_calculated.size())) return;
+	// check if the data for this frame has already been processed
+	if (frame_data_calculated[animation_frame]) return;
 
 	// A bit unnecessary to extract and store positions, and then copy them,
 	// but that makes the abstraction to different skeleton types a bit cleaner.

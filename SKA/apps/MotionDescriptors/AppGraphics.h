@@ -32,20 +32,21 @@ struct AnalysisObjects
 	Object* sagittal_plane_image;
 	Object* transverse_plane_image;
 
-	Object* rua_start_marker; // rua = right upper arm
-	Object* rua_end_marker;
+	Object* upperarm_marker;
+	Object* elbow_marker;
 	Object* root_marker;
-	Object* ruacp_start_marker; // ruacp = right upper arm projected on coronal plane
-	Object* ruacp_end_marker;
-	Object* ruasp_start_marker; // ruacp = right upper arm projected on sagittal plane
-	Object* ruasp_end_marker;
-	Object* spinecp_end_marker;
-	Object* spinesp_end_marker;
+	Object* upperarm_cp_marker; // cp = projected on coronal plane
+	Object* elbow_cp_marker;
+	Object* upperarm_sp_marker; // sp = projected on sagittal plane
+	Object* elbow_sp_marker;
 
-	BoneObject* ruacp_bone;
-	BoneObject* ruasp_bone;
-	BoneObject* spinecp_bone;
-	BoneObject* spinesp_bone;
+	Object* spine_cp_marker;	// These mark the end of the spine vectors when aligned with upper arm markers
+	Object* spine_sp_marker;
+
+	BoneObject* arm_cp_bone;	// artificial bone from upperarm to elbow
+	BoneObject* arm_sp_bone;
+	BoneObject* spine_cp_bone;	// artificial bone from upperarm in direction of spine
+	BoneObject* spine_sp_bone;
 
 	BoneObject* right_dir_marker;
 	BoneObject* forward_dir_marker;
@@ -62,21 +63,26 @@ struct AnalysisObjects
 		coronal_plane_image = NULL;
 		sagittal_plane_image = NULL;
 		transverse_plane_image = NULL;
-		rua_start_marker = NULL;
-		rua_end_marker = NULL;
+		upperarm_marker = NULL;
+		elbow_marker = NULL;
 		root_marker = NULL;
-		ruacp_start_marker = NULL;
-		ruacp_end_marker = NULL;
-		ruasp_start_marker = NULL;
-		ruasp_end_marker = NULL;
-		spinecp_end_marker = NULL;
-		spinesp_end_marker = NULL;
-		ruacp_bone = NULL;
-		ruasp_bone = NULL;
-		spinecp_bone = NULL;
-		spinesp_bone = NULL;
+		upperarm_cp_marker = NULL;
+		elbow_cp_marker = NULL;
+		upperarm_sp_marker = NULL;
+		elbow_sp_marker = NULL;
+		spine_cp_marker = NULL;
+		spine_sp_marker = NULL;
+		arm_cp_bone = NULL;
+		arm_sp_bone = NULL;
+		spine_cp_bone = NULL;
+		spine_sp_bone = NULL;
+		right_dir_marker = NULL;
+		forward_dir_marker = NULL;
+		up_dir_marker = NULL;
 	}
 };
+extern AnalysisObjects analysis_objects;
+
 extern AnalysisObjects analysis_objects;
 
 struct HudData

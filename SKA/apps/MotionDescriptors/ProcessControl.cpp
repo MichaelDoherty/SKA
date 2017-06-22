@@ -88,15 +88,21 @@ bool ProcessControl::readCommandFile()
 			if (line[10] == 'Y') process_control.enableAnimation();
 			else if (line[10] == 'N') process_control.disableAnimation();
 		}
+		else if (isPrefix(line, string("REALTIME=")))
+		{
+			if (line[9] == 'Y') process_control.setRealTimeMode();
+			else if (line[9] == 'N') process_control.clearRealTimeMode();
+		}
 		else if (isPrefix(line, string("PROCESS")))
 		{
 			string skel_name;
 			string motion_name;
 			MOCAPTYPE mctype = UNK;
-			char mode = 'E';
+			char mode = 'N';
 			char loop = 'N';
 			char analysis = 'N';
 			float skip = 5.0f;
+			short fps = 120;
 			unsigned int i;
 
 			i = line.find("BVH=");
@@ -123,7 +129,7 @@ bool ProcessControl::readCommandFile()
 			}
 
 			i = line.find("SM=");
-			if (i != string::npos) mode = line[i + 5];
+			if (i != string::npos) mode = line[i + 3];
 			i = line.find("LOOP=");
 			if (i != string::npos) loop = line[i + 5];
 			i = line.find("MA=");
@@ -132,6 +138,11 @@ bool ProcessControl::readCommandFile()
 			if (i != string::npos) {
 				string stmp = line.substr(i + 5);
 				skip = float(atof(stmp.c_str()));
+			}
+			i = line.find("FPS=");
+			if (i != string::npos) {
+				string stmp = line.substr(i + 4);
+				fps = atoi(stmp.c_str());
 			}
 
 			SHOULDERMODE dm = NONE;
@@ -151,7 +162,7 @@ bool ProcessControl::readCommandFile()
 					BVH, input_folder, output_folder, 
 					input_folder + motion_name + ".bvh", string(""),
 					output_folder + motion_name + ".csv",
-					analysis_on, dm, loop_on, skip);
+					analysis_on, dm, loop_on, skip, fps);
 				addRequest(preq);
 			}
 			else if (mctype == AMC) {
@@ -159,7 +170,7 @@ bool ProcessControl::readCommandFile()
 					AMC, input_folder, output_folder, 
 					input_folder + motion_name + ".amc", input_folder + skel_name + ".asf",
 					output_folder + motion_name + ".csv",
-					analysis_on, dm, loop_on, skip);
+					analysis_on, dm, loop_on, skip, fps);
 				addRequest(preq);
 			}
 		}

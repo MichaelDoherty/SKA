@@ -82,7 +82,7 @@ private:
 	vector<Vector3D> joint_positions; // FIXIT!! incorporate back into joint_data
 	vector<vector<JointData> > joint_data;
 	vector<FullBodyData> body_data;
-	vector<bool> frame_data_valid;
+	vector<bool> frame_data_calculated;
 	std::map<std::string, float> weightMap;//used for CoM
 	std::map<std::string, float> QoMWeightMap; //used for QoM
 

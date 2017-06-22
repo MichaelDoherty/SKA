@@ -51,7 +51,10 @@ void AnimationControl::reset()
 	if (character != NULL) delete character;
 	character = NULL;
 
-	current_frame = 0;
+	// Initialize current_frame to -1. It will be incremented before use if we
+	// are in non-realtime mode. It will be computed from elapsed time if 
+	// we are in realtime mode.
+	current_frame = -1; 
 	loop_count = 0;
 }
 

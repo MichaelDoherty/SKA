@@ -23,6 +23,7 @@
 #include "AppGraphics.h"
 #include "InputProcessing.h"
 #include "CameraControl.h"
+#include "ProcessControl.h"
 
 HudData hud_data;
 AnalysisObjects analysis_objects;
@@ -43,7 +44,7 @@ static int window_height = 800;
 static int window_width = 800;
 
 // which objects background objects do we want to see?
-static bool SHOW_GROUND = false;
+static bool SHOW_GROUND = true;
 static bool SHOW_COORD_AXIS = true;
 
 //  background color (black)
@@ -61,9 +62,12 @@ void drawHUD()
 	float x;
 	string s, bool_str;
 
-	s = "Time:      " + toString(hud_data.animation_time);
-	renderString(0.5f, y, 0.0f, color, s.c_str());
-	y -= 0.05f;
+	if (process_control.realTimeMode())
+	{
+		s = "Time:      " + toString(hud_data.animation_time);
+		renderString(0.5f, y, 0.0f, color, s.c_str());
+		y -= 0.05f;
+	}
 	s = "Frame:     " + toString(hud_data.animation_frame);
 	renderString(0.5f, y, 0.0f, color, s.c_str());
 	y -= 0.05f;
@@ -95,8 +99,6 @@ void drawHUD()
 	//renderString(0.5f, y, 0.0f, color, s.c_str());
 	//y -= 0.05f;
 
-
-
 	if (hud_data.animation_paused)
 	{
 		s = "Animation Frozen";
@@ -105,69 +107,72 @@ void drawHUD()
 	y -= 0.05f;
 
 
-	x = -0.9f;
-	y = 0.9f;
-	if (hud_data.focus_abduction) {
-		s = "abduction: ";
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		s = "max abduction: ";
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-	}
-	if (hud_data.focus_extension) {
-		s = "extension: ";
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		s = "max extension: ";
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-	}
-	if (hud_data.focus_flexion) {
-		s = "flexion: ";
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		s = "max flexion: ";
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-	}
-	//if (hud_data.focus_flexion || hud_data.focus_extension) {
-	//	s = "direction test: ";
-	//	renderString(x, y, 0.0f, color, s.c_str());
-	//	y -= 0.05f;
-	//}
+	if (process_control.currentRequest().shoulder_mode != ProcessControl::NONE)
+	{
+		x = -0.9f;
+		y = 0.9f;
+		if (hud_data.focus_abduction) {
+			s = "abduction: ";
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+			s = "max abduction: ";
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+		}
+		if (hud_data.focus_extension) {
+			s = "extension: ";
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+			s = "max extension: ";
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+		}
+		if (hud_data.focus_flexion) {
+			s = "flexion: ";
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+			s = "max flexion: ";
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+		}
+		//if (hud_data.focus_flexion || hud_data.focus_extension) {
+		//	s = "direction test: ";
+		//	renderString(x, y, 0.0f, color, s.c_str());
+		//	y -= 0.05f;
+		//}
 
-	x = -0.5f;
-	y = 0.9f;
-	if (hud_data.focus_abduction) {
-		s = toString(hud_data.abduction);
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		s = toString(hud_data.max_abduction);
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
+		x = -0.5f;
+		y = 0.9f;
+		if (hud_data.focus_abduction) {
+			s = toString(hud_data.abduction);
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+			s = toString(hud_data.max_abduction);
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+		}
+		if (hud_data.focus_extension) {
+			s = toString(hud_data.extension);
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+			s = toString(hud_data.max_extension);
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+		}
+		if (hud_data.focus_flexion) {
+			s = toString(hud_data.flexion);
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+			s = toString(hud_data.max_flexion);
+			renderString(x, y, 0.0f, color, s.c_str());
+			y -= 0.05f;
+		}
+		//if (hud_data.focus_flexion || hud_data.focus_extension) {
+		//	s = toString(hud_data.dir_test);
+		//	renderString(x, y, 0.0f, color, s.c_str());
+		//	y -= 0.05f;
+		//}
 	}
-	if (hud_data.focus_extension) {
-		s = toString(hud_data.extension);
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		s = toString(hud_data.max_extension);
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-	}
-	if (hud_data.focus_flexion) {
-		s = toString(hud_data.flexion);
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-		s = toString(hud_data.max_flexion);
-		renderString(x, y, 0.0f, color, s.c_str());
-		y -= 0.05f;
-	}
-	//if (hud_data.focus_flexion || hud_data.focus_extension) {
-	//	s = toString(hud_data.dir_test);
-	//	renderString(x, y, 0.0f, color, s.c_str());
-	//	y -= 0.05f;
-	//}
 
 	x = -0.9f;
 	y = -0.9f;
@@ -183,24 +188,26 @@ void_callback anim_callback;
 // All recurring processing is initiated from this function.
 void display(void)
 {
-	// START FORCED OBJECT HIDING
-	/*
-	analysis_objects.coronal_plane_image->setVisibility(false);
-	analysis_objects.ruacp_start_marker->setVisibility(false);
-	analysis_objects.ruacp_end_marker->setVisibility(false);
-	analysis_objects.spinecp_end_marker->setVisibility(false);
-	analysis_objects.ruacp_bone->setVisibility(false);
-	analysis_objects.spinecp_bone->setVisibility(false);
+	analysis_objects.coronal_plane_image->setVisibility(analysis_objects.show_coronal_plane);
+	analysis_objects.upperarm_cp_marker->setVisibility(analysis_objects.show_coronal_plane);
+	analysis_objects.elbow_cp_marker->setVisibility(analysis_objects.show_coronal_plane);
+	analysis_objects.spine_cp_marker->setVisibility(analysis_objects.show_coronal_plane);
+	analysis_objects.arm_cp_bone->setVisibility(analysis_objects.show_coronal_plane);
+	analysis_objects.spine_cp_bone->setVisibility(analysis_objects.show_coronal_plane);
 
-	analysis_objects.sagittal_plane_image->setVisibility(false);
-	analysis_objects.ruasp_start_marker->setVisibility(false);
-	analysis_objects.ruasp_end_marker->setVisibility(false);
-	analysis_objects.spinesp_end_marker->setVisibility(false);
-	analysis_objects.ruasp_bone->setVisibility(false);
-	analysis_objects.spinesp_bone->setVisibility(false);
-	analysis_objects.transverse_plane_image->setVisibility(false);
-	*/
-	// END FORCED OBJECT HIDING
+	analysis_objects.sagittal_plane_image->setVisibility(analysis_objects.show_sagittal_plane);
+	analysis_objects.upperarm_sp_marker->setVisibility(analysis_objects.show_sagittal_plane);
+	analysis_objects.elbow_sp_marker->setVisibility(analysis_objects.show_sagittal_plane);
+	analysis_objects.spine_sp_marker->setVisibility(analysis_objects.show_sagittal_plane);
+	analysis_objects.arm_sp_bone->setVisibility(analysis_objects.show_sagittal_plane);
+	analysis_objects.spine_sp_bone->setVisibility(analysis_objects.show_sagittal_plane);
+
+	analysis_objects.transverse_plane_image->setVisibility(analysis_objects.show_transverse_plane);
+
+	analysis_objects.right_dir_marker->setVisibility(false);
+	analysis_objects.forward_dir_marker->setVisibility(false);
+	analysis_objects.up_dir_marker->setVisibility(false);
+
 
 	// call back to the animation module
 	anim_callback();
@@ -294,14 +301,15 @@ void buildAnalysisObjects()
 	green_box.addSpec("length", "1"); green_box.addSpec("width", "1"); green_box.addSpec("height", "1");
 
 	analysis_render_list.push_back(analysis_objects.root_marker = new Object(aqua_box));
-	analysis_render_list.push_back(analysis_objects.rua_start_marker = new Object(yellow_box));
-	analysis_render_list.push_back(analysis_objects.rua_end_marker = new Object(yellow_box));
-	analysis_render_list.push_back(analysis_objects.ruacp_start_marker = new Object(red_box));
-	analysis_render_list.push_back(analysis_objects.ruacp_end_marker = new Object(red_box));
-	analysis_render_list.push_back(analysis_objects.ruasp_start_marker = new Object(green_box));
-	analysis_render_list.push_back(analysis_objects.ruasp_end_marker = new Object(green_box));
-	analysis_render_list.push_back(analysis_objects.spinecp_end_marker = new Object(blue_box));
-	analysis_render_list.push_back(analysis_objects.spinesp_end_marker = new Object(blue_box));
+	analysis_render_list.push_back(analysis_objects.upperarm_marker = new Object(yellow_box));
+	analysis_render_list.push_back(analysis_objects.elbow_marker = new Object(yellow_box));
+	analysis_render_list.push_back(analysis_objects.upperarm_cp_marker = new Object(red_box));
+	analysis_render_list.push_back(analysis_objects.upperarm_sp_marker = new Object(green_box));
+	analysis_render_list.push_back(analysis_objects.elbow_cp_marker = new Object(red_box));
+	analysis_render_list.push_back(analysis_objects.elbow_sp_marker = new Object(green_box));
+	analysis_render_list.push_back(analysis_objects.elbow_sp_marker = new Object(green_box));
+	analysis_render_list.push_back(analysis_objects.spine_cp_marker = new Object(blue_box));
+	analysis_render_list.push_back(analysis_objects.spine_sp_marker = new Object(blue_box));
 
 	analysis_objects.coronal_plane_image = new Object(new XYPlaneModel(40, 10, Color(0.7f, 0.7f, 0.0f, 0.5f)),
 		Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f));
@@ -314,22 +322,22 @@ void buildAnalysisObjects()
 	transparent_render_list.push_back(analysis_objects.transverse_plane_image);
 
 	ModelSpecification bonespec("Bone", Color(1.0f, 0.0f, 0.0f));
-	analysis_objects.ruacp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
-	analysis_objects.ruacp_bone->drawAsMesh();
-	analysis_objects.ruacp_bone->setEndpoints(Vector3D(5.0f, 20.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
-	analysis_objects.ruacp_bone->drawAsLine();
-	analysis_objects.ruasp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
-	analysis_objects.ruasp_bone->drawAsMesh();
-	analysis_objects.ruasp_bone->setEndpoints(Vector3D(5.0f, 21.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
-	analysis_objects.ruasp_bone->drawAsLine();
-	analysis_objects.spinecp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
-	analysis_objects.spinecp_bone->drawAsMesh();
-	analysis_objects.spinecp_bone->setEndpoints(Vector3D(5.0f, 22.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
-	analysis_objects.spinecp_bone->drawAsLine();
-	analysis_objects.spinesp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
-	analysis_objects.spinesp_bone->drawAsMesh();
-	analysis_objects.spinesp_bone->setEndpoints(Vector3D(5.0f, 23.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
-	analysis_objects.spinesp_bone->drawAsLine();
+	analysis_objects.arm_cp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
+	analysis_objects.arm_cp_bone->drawAsMesh();
+	analysis_objects.arm_cp_bone->setEndpoints(Vector3D(5.0f, 20.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
+	analysis_objects.arm_cp_bone->drawAsLine();
+	analysis_objects.arm_sp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
+	analysis_objects.arm_sp_bone->drawAsMesh();
+	analysis_objects.arm_sp_bone->setEndpoints(Vector3D(5.0f, 21.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
+	analysis_objects.arm_sp_bone->drawAsLine();
+	analysis_objects.spine_cp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
+	analysis_objects.spine_cp_bone->drawAsMesh();
+	analysis_objects.spine_cp_bone->setEndpoints(Vector3D(5.0f, 22.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
+	analysis_objects.spine_cp_bone->drawAsLine();
+	analysis_objects.spine_sp_bone = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 5.0f);
+	analysis_objects.spine_sp_bone->drawAsMesh();
+	analysis_objects.spine_sp_bone->setEndpoints(Vector3D(5.0f, 23.0f, 5.0f), Vector3D(10.0f, 20.0f, 10.0f));
+	analysis_objects.spine_sp_bone->drawAsLine();
 
 	analysis_objects.right_dir_marker = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 20.0f);
 	analysis_objects.right_dir_marker->drawAsLine();
@@ -338,10 +346,10 @@ void buildAnalysisObjects()
 	analysis_objects.up_dir_marker = new BoneObject(bonespec, Vector3D(0.0f, 0.0f, 0.0f), Vector3D(0.0f, 0.0f, 0.0f), 20.0f);
 	analysis_objects.up_dir_marker->drawAsLine();
 
-	analysis_render_list.push_back(analysis_objects.ruacp_bone);
-	analysis_render_list.push_back(analysis_objects.ruasp_bone);
-	analysis_render_list.push_back(analysis_objects.spinecp_bone);
-	analysis_render_list.push_back(analysis_objects.spinesp_bone);
+	analysis_render_list.push_back(analysis_objects.arm_cp_bone);
+	analysis_render_list.push_back(analysis_objects.arm_sp_bone);
+	analysis_render_list.push_back(analysis_objects.spine_cp_bone);
+	analysis_render_list.push_back(analysis_objects.spine_sp_bone);
 	analysis_render_list.push_back(analysis_objects.right_dir_marker);
 	analysis_render_list.push_back(analysis_objects.forward_dir_marker);
 	analysis_render_list.push_back(analysis_objects.up_dir_marker);

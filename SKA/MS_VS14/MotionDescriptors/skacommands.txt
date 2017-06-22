@@ -1,13 +1,9 @@
-OUTPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\MDResults"
 ANIMATION=Y
-INPUT_FOLDER="C:\Users\mdoherty\Desktop\quantifying natural human walking\training"
-PROCESS AMC="01_01_1_30Hz" ASF="01" MA=Y SM=N LOOP=N SKIP=3
-INPUT_FOLDER="..\..\..\SKA\data\motion\AMC\02"
-PROCESS AMC="02_01" ASF="02" MA=Y SM=N LOOP=N SKIP=3
-INPUT_FOLDER="..\..\..\SKA\data\motion\AMC\01"
-PROCESS AMC="01_01" ASF="01" MA=Y SM=N LOOP=N SKIP=3
-INPUT_FOLDER="..\..\..\SKA\data\motion\BVH\Baseball_Swings"
-PROCESS BVH="swing1" MA=Y SM=N LOOP=N SKIP=3
-PROCESS BVH="swing2" MA=Y SM=N LOOP=N MA=Y SKIP=3
-INPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\SKA-master\SKA\data\motion\BVH"
-PROCESS BVH="UOP_lab_01" MA=Y SM=N LOOP=N SKIP=3
+REALTIME=N
+OUTPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\MDResults"
+INPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\ren_data\training"
+PROCESS AMC="01_01_1_30Hz" ASF="01" FPS=30 MA=Y
+PROCESS AMC="dancer1good.Trial13_3_30Hz" ASF="01" FPS=30 MA=Y
+PROCESS AMC="MandelWalk22_30Hz" ASF="01" FPS=30 MA=Y
+INPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\SKA-master\SKA\data\motion\BVH\Baseball_Swings"
+PROCESS BVH="swing2" FPS=120 MA=Y
