@@ -11,7 +11,38 @@
 #include "MotionAnalyzer.h"
 #include "ProcessControl.h"
 
-void MotionAnalyzer::extractJointPositions() {
+/* Notes for current effort to extract angles and angular velocities
+   in  quaternion format as time-series data for machine learning.
+
+From: A Data-Driven Approach to Quantifying Natural Human Motion
+By: Liu Ren, Alton Patrick, Alexei A. Efros, Jessica K. Hodgins, James M. Rehg
+
+For the experiments reported here, we converted each frame of raw
+motion data to a high-dimensional feature vector of angles and velocities.
+For the root segment, we compute the angular velocity and
+the linear velocity (in the root coordinate system of each frame).
+For each joint, we compute the angular velocity. The velocities
+are computed as a central difference between the joint angle or the
+position on the previous frame and on the next frame. As a result,
+both joint angles and their velocities can be represented by
+unit quaternions (four components each). The complete set of joint
+angles and velocities, together with the root's linear velocity (three
+components) and angular velocity (quaternion, four components),
+form a 151-dimensional feature vector for each frame. The quaternions
+are transformed to be on one-half of the 4D sphere to handle
+the duplicate representation of quaternions. If the orientation of a
+joint crosses to the other half-sphere, we choose the alternative representation
+for that quaternion and divide the motion sequence at
+the boundary to create two continuous sequences. Fortunately this
+problem occurs relatively rarely in natural human motion because
+of human joint limits.
+
+Work in progress:
+- Verify the euler->quaternion code in Quaternion.h or redefine it from theory.
+- Verify MotionAnalyzer::calcAngularVel(Quaternion& q0, Quaternion& q1) method.
+- Fix zero value for angular velocity (early frames with no prior data).
+*/
+void MotionAnalyzer::extractJointPositionsAndOrientations() {
 
 	ProcessControl::MOCAPTYPE skeleton_type = process_control.currentRequest().mocap_file_type;
 	/*
@@ -58,16 +89,45 @@ void MotionAnalyzer::extractJointPositions() {
 		joint_positions[left_hip] = ourSkel->getBone("lhipjoint")->getEndPosition();
 		joint_positions[left_knee] = ourSkel->getBone("lfemur")->getEndPosition();
 		joint_positions[left_ankle] = ourSkel->getBone("ltibia")->getEndPosition();
+		joint_positions[left_toetip] = ourSkel->getBone("ltoes")->getEndPosition();
 		joint_positions[right_hip] = ourSkel->getBone("rhipjoint")->getEndPosition();
 		joint_positions[right_knee] = ourSkel->getBone("rfemur")->getEndPosition();
 		joint_positions[right_ankle] = ourSkel->getBone("rtibia")->getEndPosition();
+		joint_positions[right_toetip] = ourSkel->getBone("rtoes")->getEndPosition();
 
 		joint_positions[left_shoulder] = ourSkel->getBone("lclavicle")->getEndPosition();
 		joint_positions[left_elbow] = ourSkel->getBone("lhumerus")->getEndPosition();
 		joint_positions[left_wrist] = ourSkel->getBone("lradius")->getEndPosition();
+		joint_positions[left_fingertip] = ourSkel->getBone("lfingers")->getEndPosition();
 		joint_positions[right_shoulder] = ourSkel->getBone("rclavicle")->getEndPosition();
 		joint_positions[right_elbow] = ourSkel->getBone("rhumerus")->getEndPosition();
 		joint_positions[right_wrist] = ourSkel->getBone("rradius")->getEndPosition();
+		joint_positions[right_fingertip] = ourSkel->getBone("rfingers")->getEndPosition();
+
+		// FIXIT:170630 mapping between bone orientations and joint orientations is not yet verified
+		joint_orientations[sacrum] = ourSkel->getBone("root")->getOrientation();
+		joint_orientations[mid_spine] = ourSkel->getBone("upperback")->getOrientation();
+		joint_orientations[upper_spine] = ourSkel->getBone("lowerneck")->getOrientation();
+		joint_orientations[atlas] = ourSkel->getBone("upperneck")->getOrientation();
+		joint_orientations[skull_top] = Vector3D(0.0f, 0.0f, 0.0f);
+
+		joint_orientations[left_hip] = ourSkel->getBone("lhipjoint")->getOrientation();
+		joint_orientations[left_knee] = ourSkel->getBone("lfemur")->getOrientation();
+		joint_orientations[left_ankle] = ourSkel->getBone("ltibia")->getOrientation();
+		joint_orientations[left_toetip] = Vector3D(0.0f, 0.0f, 0.0f);
+		joint_orientations[right_hip] = ourSkel->getBone("rhipjoint")->getOrientation();
+		joint_orientations[right_knee] = ourSkel->getBone("rfemur")->getOrientation();
+		joint_orientations[right_ankle] = ourSkel->getBone("rtibia")->getOrientation();
+		joint_orientations[right_toetip] = Vector3D(0.0f, 0.0f, 0.0f);
+
+		joint_orientations[left_shoulder] = ourSkel->getBone("lclavicle")->getOrientation();
+		joint_orientations[left_elbow] = ourSkel->getBone("lhumerus")->getOrientation();
+		joint_orientations[left_wrist] = ourSkel->getBone("lradius")->getOrientation();
+		joint_orientations[left_fingertip] = Vector3D(0.0f, 0.0f, 0.0f);
+		joint_orientations[right_shoulder] = ourSkel->getBone("rclavicle")->getOrientation();
+		joint_orientations[right_elbow] = ourSkel->getBone("rhumerus")->getOrientation();
+		joint_orientations[right_wrist] = ourSkel->getBone("rradius")->getOrientation();
+		joint_orientations[right_fingertip] = Vector3D(0.0f, 0.0f, 0.0f);
 	}
 	/*
 	"root" 
@@ -89,16 +149,45 @@ void MotionAnalyzer::extractJointPositions() {
 		joint_positions[left_hip] = ourSkel->getBone("LeftUpLeg")->getPosition();
 		joint_positions[left_knee] = ourSkel->getBone("LeftLeg")->getPosition();
 		joint_positions[left_ankle] = ourSkel->getBone("LeftFoot")->getPosition();
+		joint_positions[left_toetip] = ourSkel->getBone("LeftToeBase")->getEndPosition();
 		joint_positions[right_hip] = ourSkel->getBone("RightUpLeg")->getPosition();
 		joint_positions[right_knee] = ourSkel->getBone("RightLeg")->getPosition();
 		joint_positions[right_ankle] = ourSkel->getBone("RightFoot")->getPosition();
+		joint_positions[right_toetip] = ourSkel->getBone("RightToeBase")->getEndPosition();
 
 		joint_positions[left_shoulder] = ourSkel->getBone("LeftArm")->getPosition();
 		joint_positions[left_elbow] = ourSkel->getBone("LeftForeArm")->getPosition();
 		joint_positions[left_wrist] = ourSkel->getBone("LeftHand")->getPosition();
+		joint_positions[left_fingertip] = ourSkel->getBone("LeftHand")->getEndPosition();
 		joint_positions[right_shoulder] = ourSkel->getBone("RightArm")->getPosition();
 		joint_positions[right_elbow] = ourSkel->getBone("RightForeArm")->getPosition();
 		joint_positions[right_wrist] = ourSkel->getBone("RightHand")->getPosition();
+		joint_positions[right_fingertip] = ourSkel->getBone("RightHand")->getEndPosition();
+
+		// FIXIT:170630 mapping between bone orientations and joint orientations is not yet verified
+		joint_orientations[sacrum] = ourSkel->getBone("Spine")->getOrientation();
+		joint_orientations[mid_spine] = ourSkel->getBone("Spine1__0")->getOrientation();
+		joint_orientations[upper_spine] = ourSkel->getBone("Neck")->getOrientation();
+		joint_orientations[atlas] = ourSkel->getBone("Head")->getOrientation();
+		joint_orientations[skull_top] = Vector3D(0.0f, 0.0f, 0.0f);
+
+		joint_orientations[left_hip] = ourSkel->getBone("LeftUpLeg")->getOrientation();
+		joint_orientations[left_knee] = ourSkel->getBone("LeftLeg")->getOrientation();
+		joint_orientations[left_ankle] = ourSkel->getBone("LeftFoot")->getOrientation();
+		joint_orientations[left_toetip] = Vector3D(0.0f, 0.0f, 0.0f);
+		joint_orientations[right_hip] = ourSkel->getBone("RightUpLeg")->getOrientation();
+		joint_orientations[right_knee] = ourSkel->getBone("RightLeg")->getOrientation();
+		joint_orientations[right_ankle] = ourSkel->getBone("RightFoot")->getOrientation();
+		joint_orientations[right_toetip] = Vector3D(0.0f, 0.0f, 0.0f);
+
+		joint_orientations[left_shoulder] = ourSkel->getBone("LeftArm")->getOrientation();
+		joint_orientations[left_elbow] = ourSkel->getBone("LeftForeArm")->getOrientation();
+		joint_orientations[left_wrist] = ourSkel->getBone("LeftHand")->getOrientation();
+		joint_orientations[left_fingertip] = Vector3D(0.0f, 0.0f, 0.0f);
+		joint_orientations[right_shoulder] = ourSkel->getBone("RightArm")->getOrientation();
+		joint_orientations[right_elbow] = ourSkel->getBone("RightForeArm")->getOrientation();
+		joint_orientations[right_wrist] = ourSkel->getBone("RightHand")->getOrientation();
+		joint_orientations[right_fingertip] = Vector3D(0.0f, 0.0f, 0.0f);
 	}
 }
 
@@ -113,7 +202,11 @@ void MotionAnalyzer::storeResults(const string& directory, const string& tag)
 	for (int joint = 0; joint < num_joints; joint++) {
 		if (joint > 0) ofs << ", ";
 		string joint_name = toString(JointID(joint));
-		ofs << joint_name << "_x, " << joint_name << "_y, " << joint_name << "_z";
+		ofs << joint_name << "_x, " << joint_name << "_y, " << joint_name << "_z, "
+			<< joint_name << "_rx, " << joint_name << "_ry, " << joint_name << "_rz, "
+			<< joint_name << "_qw, " << joint_name << "_qx, " << joint_name << "_qy, " << joint_name << "_qz, "
+			<< joint_name << "_vqw, " << joint_name << "_vqx, " << joint_name << "_vqy, " << joint_name << "_vqz";
+
 	}
 	ofs << endl;
 
@@ -122,8 +215,14 @@ void MotionAnalyzer::storeResults(const string& directory, const string& tag)
 		ofs << frame << ", ";
 		for (int joint = 0; joint < num_joints; joint++) {
 			if (joint > 0) ofs << ", ";
-			Vector3D p = joint_data[frame][joint].getPosition();
-			ofs << p.x << ", " << p.y << ", " << p.z;
+			Vector3D p = joint_data[frame][joint].position;
+			Vector3D r = joint_data[frame][joint].orientation_euler;
+			Quaternion q = joint_data[frame][joint].orientation_quat;
+			Quaternion vq = joint_data[frame][joint].ang_velocity_quat;
+			ofs << p.x << ", " << p.y << ", " << p.z << ", "
+				<< r.x << ", " << r.y << ", " << r.z << ", "
+				<< q.w << ", " << q.x << ", " << q.y << ", " << q.z << ", "
+				<< vq.w << ", " << vq.x << ", " << vq.y << ", " << vq.z;
 		}
 		ofs << endl;
 	}
@@ -166,8 +265,8 @@ void MotionAnalyzer::initialize(long _num_frames, float _frame_duration, Skeleto
 
 		for (i = 0; i < num_frames; i++) {
 			for (j = 0; j < num_joints; j++) {
-				joint_data[i][j].setJointName(toString(JointID(i)));
-				joint_data[i][j].setFrame(i);
+				joint_data[i][j].joint_name = toString(JointID(i));
+				joint_data[i][j].frame = i;
 			}
 		}
 
@@ -175,7 +274,7 @@ void MotionAnalyzer::initialize(long _num_frames, float _frame_duration, Skeleto
 		//Init QoMWeightMap (all 1's for now)
 		QoMWeightMap.clear();
 		for (i = 0; i < num_joints; i++) {
-			string boneName = joint_data[0][i].getJointName();
+			string boneName = joint_data[0][i].joint_name;
 			QoMWeightMap[boneName] = 1.0;
 		}
 		//Initializaing WeightMap for each animation
@@ -333,6 +432,29 @@ pair <Vector3D, float> MotionAnalyzer::calcJerk(Vector3D p0, Vector3D p1, Vector
 	return jerk_pair;
 
 }
+
+pair <Quaternion, float> MotionAnalyzer::calcAngularVel(Quaternion& q0, Quaternion& q1) {
+// code from https://www.gamedev.net/forums/topic/347752-quaternion-and-angular-velocity/
+//	quaternion q = q1*conj(q0);
+//	double len = sqrt(q.x*q.x + q.y*q.y + q.z*q.z)
+//	if (len <= epsilon)return vector3(2 * q.x, 2 * q.y, 2 * q.z);
+//	double angle = 2 * atan2(len, q.w);
+//	return q.xyz()*(angle / (len*dt));
+	double epsilon = 0.00001f;
+	Quaternion q = q1*conjugate(q0);
+	double len = sqrt(q.x*q.x + q.y*q.y + q.z*q.z);
+	if (len <= epsilon) {
+		Quaternion dq = Quaternion(0.0f, 2.0f * q.x, 2.0f * q.y, 2.0f * q.z);
+		float dq_mag = dq.magnitude();
+		return pair<Quaternion, float>(dq, dq_mag);
+	}
+	double angle = 2 * atan2(len, q.w);
+	double scale = angle / (len*frame_duration);
+	Quaternion dq = Quaternion(0.0f, float(scale*q.x), float(scale*q.y), float(scale*q.z));
+	float dq_mag = dq.magnitude();
+	return pair<Quaternion, float>(dq, dq_mag);
+}
+
 //Curvature
 //Mag(a_k(ti) X v_k(ti))/mag(v_k (ti))^3
 //PER BONE
@@ -357,8 +479,8 @@ float MotionAnalyzer::calculateQoM(int frame) {
 	for (i = 0; i < (int)joint_data[frame].size(); i++) {
 		//avg_counter = 0;
 		it = weightMap.begin();
-		float tmp_vel = joint_data[frame][i].getVelocity_mag();
-		string tmp_bone_name = joint_data[frame][i].getJointName();
+		float tmp_vel = joint_data[frame][i].velocity_mag;
+		string tmp_bone_name = joint_data[frame][i].joint_name;
 
 		// strip off "Left" or "Right" prefix
 		if (tmp_bone_name.find("Right") == 0) tmp_bone_name = tmp_bone_name.substr(5);
@@ -390,8 +512,8 @@ Vector3D MotionAnalyzer::calculateCoM(int frame) {
 	for (i = 0; i < (int)joint_data[frame].size(); i++) {
 		//avg_counter = 0;
 		it = weightMap.begin();
-		Vector3D tmp_pos = joint_data[frame][i].getPosition();
-		string tmp_bone_name = joint_data[frame][i].getJointName();
+		Vector3D tmp_pos = joint_data[frame][i].position;
+		string tmp_bone_name = joint_data[frame][i].joint_name;
 
 		// strip off "Left" or "Right" prefix
 		if (tmp_bone_name.find("Right") == 0) tmp_bone_name = tmp_bone_name.substr(5);
@@ -432,41 +554,75 @@ void MotionAnalyzer::analyzeCurrentFrame(long frame_id, float _frame_duration)
 
 	// A bit unnecessary to extract and store positions, and then copy them,
 	// but that makes the abstraction to different skeleton types a bit cleaner.
-	extractJointPositions();
-	for (int i = 0; i < num_joints; i++) {
-		joint_data[animation_frame][i].setPosition(joint_positions[i]);
+	extractJointPositionsAndOrientations();
+	for (int j = 0; j < num_joints; j++) {
+		joint_data[animation_frame][j].position = joint_positions[j];
+		joint_data[animation_frame][j].orientation_euler = joint_orientations[j];
+		Quaternion q;
+		q.fromEuler(joint_orientations[j]);
+		joint_data[animation_frame][j].orientation_quat = q;
 	}
 
 	// data for individual joints
 
 	for (int i = 0; i < num_joints; i++) {
-		if (animation_frame > 3) {
-			
-			// get positions for last four frames
-			Vector3D p0 = joint_data[animation_frame][i].getPosition();
-			Vector3D p1 = joint_data[animation_frame - 1][i].getPosition();
-			Vector3D p2 = joint_data[animation_frame - 2][i].getPosition();
-			Vector3D p3 = joint_data[animation_frame - 3][i].getPosition();
+		Vector3D p0, p1, p2, p3;
+		pair<Vector3D, float> vel, acc, jerk;
 
-			// compute derivatives of position: velocity, acceleration and jerk
-			pair<Vector3D, float> vel = calcVel(p0, p1);
-			joint_data[animation_frame][i].setVelocity_vec(vel.first);
-			joint_data[animation_frame][i].setVelocity_mag(vel.second);
+		if (animation_frame > 0) {
+			p0 = joint_data[animation_frame][i].position;
+			p1 = joint_data[animation_frame - 1][i].position;
+			vel = calcVel(p0, p1);
+			joint_data[animation_frame][i].velocity_vec = vel.first;
+			joint_data[animation_frame][i].velocity_mag = vel.second;
+		}
+		else {
+			joint_data[animation_frame][i].velocity_vec = Vector3D(0.0f,0.0f,0.0f);
+			joint_data[animation_frame][i].velocity_mag = 0.0f;
+		}
+		if (animation_frame > 1) {
+			p2 = joint_data[animation_frame - 2][i].position;
+			acc = calcAccel(p0, p1, p2);
+			joint_data[animation_frame][i].acceleration_vec = acc.first;
+			joint_data[animation_frame][i].acceleration_mag = acc.second;
+		}
+		else {
+			joint_data[animation_frame][i].acceleration_vec = Vector3D(0.0f, 0.0f, 0.0f);
+			joint_data[animation_frame][i].acceleration_mag = 0.0f;
+		}
+		if (animation_frame > 2) {
+			p3 = joint_data[animation_frame - 3][i].position;
+			jerk = calcJerk(p0, p1, p2, p3);
+			joint_data[animation_frame][i].jerk_vec = jerk.first;
+			joint_data[animation_frame][i].jerk_mag = jerk.second;
+		}
+		else {
+			joint_data[animation_frame][i].jerk_vec = Vector3D(0.0f, 0.0f, 0.0f);
+			joint_data[animation_frame][i].jerk_mag = 0.0f;
+		}
 
-			pair<Vector3D, float> acc = calcAccel(p0, p1, p2);
-			joint_data[animation_frame][i].setAcceleration_vec(acc.first);
-			joint_data[animation_frame][i].setAcceleration_mag(acc.second);
-
-			pair<Vector3D, float> jerk = calcJerk(p0, p1, p2, p3);
-			joint_data[animation_frame][i].setJerk_vec(jerk.first);
-			joint_data[animation_frame][i].setJerk_mag(jerk.second);
-
-			// compute curvature
+		if (animation_frame > 1)
+		{
 			float bone_curve = calcCurvature(acc.first, vel.first, vel.second); 
 			float bone_rad = calcRadiusOfCurvature(bone_curve);
-			joint_data[animation_frame][i].setCurvature(bone_curve);
-			joint_data[animation_frame][i].setCurvatureRadius(bone_rad);
+			joint_data[animation_frame][i].curvature = bone_curve;
+			joint_data[animation_frame][i].curvature_radius = bone_rad;
+		}
+		else {
+			joint_data[animation_frame][i].curvature = 0.0f;
+			joint_data[animation_frame][i].curvature_radius = 0.0f;
+		}
 
+		if (animation_frame > 0) {
+			Quaternion q0 = joint_data[animation_frame][i].orientation_quat;
+			Quaternion q1 = joint_data[animation_frame - 1][i].orientation_quat;
+			pair<Quaternion, float> avel = calcAngularVel(q1, q0);
+			joint_data[animation_frame][i].ang_velocity_quat = avel.first;
+			joint_data[animation_frame][i].ang_velocity_mag = avel.second;
+		}
+		else {
+			joint_data[animation_frame][i].ang_velocity_quat = Quaternion();
+			joint_data[animation_frame][i].ang_velocity_mag = 0.0f;
 		}
 	}
 
@@ -479,7 +635,7 @@ void MotionAnalyzer::analyzeCurrentFrame(long frame_id, float _frame_duration)
 	float minf = -maxf;
 	Vector3D bbmin(maxf,maxf,maxf), bbmax(minf,minf,minf);
 	for (unsigned int i = 0; i < joint_data[animation_frame].size(); i++) {
-		Vector3D tmp = joint_data[animation_frame][i].getPosition();
+		Vector3D tmp = joint_data[animation_frame][i].position;
 		float x = tmp.getX();
 		float y = tmp.getY();
 		float z = tmp.getZ();
@@ -498,7 +654,7 @@ void MotionAnalyzer::analyzeCurrentFrame(long frame_id, float _frame_duration)
 	pointVector.resize(joint_data[animation_frame].size());
 	std::vector<JointData>::iterator it = joint_data[animation_frame].begin();
 	for (it = joint_data[animation_frame].begin(); it != joint_data[animation_frame].end(); it++) {
-		pointVector[i] = it->getPosition();
+		pointVector[i] = it->position;
 		i++;
 	}
 	pair <Vector3D, float> sphere = calcBoundingSphere(pointVector);

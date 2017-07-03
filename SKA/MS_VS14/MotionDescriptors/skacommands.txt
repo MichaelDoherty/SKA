@@ -1,9 +1,9 @@
 ANIMATION=Y
 REALTIME=N
-OUTPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\MDResults"
-INPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\ren_data\training"
+OUTPUT_FOLDER="C:\Users\mdoherty\mdactive\SKA\MDResults"
+INPUT_FOLDER="C:\Users\mdoherty\mdactive\SKA\ren_data\training"
 PROCESS AMC="01_01_1_30Hz" ASF="01" FPS=30 MA=Y
 PROCESS AMC="dancer1good.Trial13_3_30Hz" ASF="01" FPS=30 MA=Y
 PROCESS AMC="MandelWalk22_30Hz" ASF="01" FPS=30 MA=Y
-INPUT_FOLDER="C:\Users\mdoherty\Desktop\SKA\SKA-master\SKA\data\motion\BVH\Baseball_Swings"
+INPUT_FOLDER="C:\Users\mdoherty\mdactive\SKA\SKA\data\motion\BVH\Baseball_Swings"
 PROCESS BVH="swing2" FPS=120 MA=Y
