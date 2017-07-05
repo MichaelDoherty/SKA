@@ -74,5 +74,8 @@
     <ClCompile Include="..\..\apps\MotionDescriptors\ShoulderAnalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\apps\MotionDescriptors\QMathTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -559,6 +559,9 @@ void MotionAnalyzer::analyzeCurrentFrame(long frame_id, float _frame_duration)
 		joint_data[animation_frame][j].position = joint_positions[j];
 		joint_data[animation_frame][j].orientation_euler = joint_orientations[j];
 		Quaternion q;
+		// FIXIT! CMU ASM: build rotation transform as RxRyRz
+		//        UOP BVH: build rotation transform as RyRxRz
+		// The following function needs to handle different application orders.
 		q.fromEuler(joint_orientations[j]);
 		joint_data[animation_frame][j].orientation_quat = q;
 	}

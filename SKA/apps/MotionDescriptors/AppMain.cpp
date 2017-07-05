@@ -165,19 +165,24 @@ void updateAnimation()
 		shoulder_analyzer->processPTData();
 }
 
+void QMathTest();
+
 int main(int argc, char **argv)
 {
+	QMathTest();
+	//shutDown(0);
+
 	if (!process_control.readCommandFile())
 	{
 		cerr << "No command file found. Exiting program." << endl;
-		exit(1);
+		shutDown(1);
 	}
 	//process_control.printProcessControl();
 
 	if (!process_control.active())
 	{
 		cerr << "No processing requests found. Exiting program." << endl;
-		exit(1);
+		shutDown(1);
 	}
 
 	// load first motion before entering the processing loops

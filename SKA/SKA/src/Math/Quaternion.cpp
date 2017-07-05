@@ -185,7 +185,7 @@ void Quaternion::set( const Vector3D& from, const Vector3D& to )
 {
     // Ensure that our vectors are unit
     if (!from.isUnit() || !to.isUnit()) 
-		throw MathException("non-unit vector passed to Quaternion::Set()");
+		throw MathException("non-unit vector passed to Quaternion::set()");
     // get axis of rotation
     Vector3D axis = from.cross( to );
     // get cos of angle between vectors
@@ -308,7 +308,7 @@ Quaternion inverse( const Quaternion& quat )
     // if we're the zero quaternion, just return identity
     if (isZero(norm))
     {
-		throw MathException("zero quaternion passed to Quaternion::Rotate()");
+		throw MathException("zero quaternion passed to Quaternion::inverse()");
         return Quaternion();
     }
 
@@ -421,7 +421,7 @@ float dot( const Quaternion& quat1, const Quaternion& quat2 )
 // Rotate vector by quaternion - assumes quaternion is normalized!
 Vector3D Quaternion::rotate( const Vector3D& vector ) const
 {
-    if (!isUnit()) throw MathException("non-unit vector passed to Quaternion::Rotate()");
+    if (!isUnit()) throw MathException("non-unit vector passed to Quaternion::rotate()");
 
     float pMult = w*w - x*x - y*y - z*z;
     float vMult = 2.0f*(x*vector.x + y*vector.y + z*vector.z);
@@ -641,6 +641,22 @@ void Quaternion::fromRotationMatrix(const Matrix4x4& rotMatrix)
 	}
 }
 
+void Quaternion::fromRotationMatrix2(const Matrix4x4& rotMatrix)
+{
+	// From appendix B.4 in Quaternions, Interpolation and Animation
+	//   Erik B.Dam Martin Koch Martin Lillholm
+	//   Technical Report DIKU - TR - 98 / 5
+	//   Department of Computer Science
+	//   University of Copenhagen
+
+	float trace = rotMatrix(0, 0) + rotMatrix(1, 1) + rotMatrix(2, 2) + rotMatrix(3,3);
+	w = 0.5f*sqrtf(trace);
+	float inv4w = 1.0f / (4.0f*w);
+	x = (rotMatrix(2, 1) - rotMatrix(1, 2))*inv4w;
+	y = (rotMatrix(0, 2) - rotMatrix(2, 0))*inv4w;
+	z = (rotMatrix(1, 0) - rotMatrix(0, 1))*inv4w;
+}
+
 /* Eberly's code
 template <typename Real>
 void Quaternion<Real>::ToRotationMatrix (Matrix3<Real>& rot) const
@@ -782,7 +798,7 @@ void Quaternion::toAxisAngle(Vector3D& axis, float& angle) const
 
 void Quaternion::fromEuler(const Vector3D& angles)
 {
-	Matrix4x4 rotMatrix = Matrix4x4::rotationRPY(angles.roll, angles.pitch, angles.yaw);
+	Matrix4x4 rotMatrix = Matrix4x4::rotationZYX(angles);
 	fromRotationMatrix(rotMatrix);
 }
 
@@ -791,7 +807,7 @@ void Quaternion::toEuler(Vector3D& angles) const
 	Matrix4x4 rotMatrix;
 	toRotationMatrix(rotMatrix);
 	float r,p,y;
-	rotMatrix.toEulerAnglesFromXYZ(p,y,r);
+	rotMatrix.factorEulerZYX(p,y,r);
 	angles.pitch = p;
 	angles.yaw = y;
 	angles.roll = r;

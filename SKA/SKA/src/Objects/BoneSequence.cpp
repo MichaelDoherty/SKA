@@ -86,7 +86,7 @@ void BoneSequence::updateState(float time_delta)
 	for (unsigned int b=0; b<bone_store->bones.size(); b++)
 	{
 		Vector3D bone_angles = bone_store->bones[b]->currRotation();
-		Matrix4x4 r_xform = Matrix4x4::rotationRPY(bone_angles);
+		Matrix4x4 r_xform = Matrix4x4::rotationZXY(bone_angles);
 				
 		Vector3D bone_translation(0.0f,0.0f,bone_store->bones[b]->currLength());
 		Matrix4x4 t_xfrom = Matrix4x4::translationXYZ(bone_translation);

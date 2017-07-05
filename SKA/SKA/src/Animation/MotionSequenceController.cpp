@@ -48,7 +48,7 @@ void MotionSequenceController::setRootOffset(Vector3D& _offset_position, Vector3
 	// this is not a valid difference, but it will work temporarily, since
 	// we're primarily dealing with a 2D rotation around y axis (yaw/heading)
 	start_offset_rotation = Vector3D(0.0f, _offset_orientation.yaw - orig_start_orientation.yaw, 0.0f);
-	start_offset_rotation_transform = Matrix4x4::rotationRPY(start_offset_rotation);
+	start_offset_rotation_transform = Matrix4x4::rotationZXY(start_offset_rotation);
 
 	// combine the two root offset transforms
 	start_offset_combined_transform = so_translation_transform * start_offset_rotation_transform;
@@ -117,7 +117,7 @@ float MotionSequenceController::getValue(CHANNEL_ID _channel, float _time)
 				frame_position = start_offset_combined_transform * frame_position;
 
 				Matrix4x4 orig_orientation_transform = 
-					Matrix4x4::rotationRPY(frame_orientation.roll, frame_orientation.pitch, frame_orientation.yaw);
+					Matrix4x4::rotationZXY(frame_orientation);
 				Matrix4x4 new_orientation_transform = start_offset_rotation_transform*orig_orientation_transform;
 				
 				float p, y, r;

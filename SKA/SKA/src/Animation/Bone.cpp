@@ -85,6 +85,7 @@ void Bone::update()
 // Compute the rotation due to current AMC frame angles
 void Bone::computeRotationTransform()
 {
+	//logout << name << " ";
 	M = Matrix4x4::identity();
 	Matrix4x4 r;
 	for (short d=0; d<6; d++)
@@ -97,14 +98,17 @@ void Bone::computeRotationTransform()
 				switch (channel_type)
 				{
 				case CT_RX:
+					//logout << "Rx";
 					r = Matrix4x4::rotationPitch(orientation.pitch);
 					M = r * M; 
 					break;
 				case CT_RY:
+					//logout << "Ry";
 					r = Matrix4x4::rotationYaw(orientation.yaw);
 					M = r * M; 
 					break;
 				case CT_RZ:
+					//logout << "Rz";
 					r = Matrix4x4::rotationRoll(orientation.roll);
 					M = r * M; 
 					break;
@@ -115,6 +119,7 @@ void Bone::computeRotationTransform()
 			}
 		}
 	}
+	//logout << endl;
 }
 
 //====================================================================
@@ -300,32 +305,32 @@ ostream& operator<<(ostream& out, Bone& bone)
 
 	out << "M (motion data - dynamic angles):" << endl;
 	out << bone.M;
-	bone.M.toEulerAnglesFromXYZ(p, y, r);
+	bone.M.factorEulerZYX(p, y, r);
 	out << "M angles(deg) " << rad2deg(p) << "," << rad2deg(y) << "," << rad2deg(r) << endl;
 
 	out << "B (translation relative to parent bone):" << endl;
 	out << bone.B;
-	bone.B.toEulerAnglesFromXYZ(p, y, r);
+	bone.B.factorEulerZYX(p, y, r);
 	out << "B angles(deg) " << rad2deg(p) << "," << rad2deg(y) << "," << rad2deg(r) << endl;
 
 	out << "C (local axis transform - relative to parent bone):" << endl;
 	out << bone.C;
-	bone.C.toEulerAnglesFromXYZ(p, y, r);
+	bone.C.factorEulerZYX(p, y, r);
 	out << "C angles(deg) " << rad2deg(p) << "," << rad2deg(y) << "," << rad2deg(r) << endl;
 	/*
 	out << "Cinv (inverse of local axis transform):" << endl;
 	out << bone.Cinv;
-	bone.Cinv.toEulerAnglesFromXYZ(p, y, r);
+	bone.Cinv.factorEulerZYX(p, y, r);
 	out << "Cinv angles(deg) " << rad2deg(p) << "," << rad2deg(y) << "," << rad2deg(r) << endl;
 	*/
 	out << "L (complete local transform):" << endl;
 	out << bone.L;
-	bone.L.toEulerAnglesFromXYZ(p, y, r);
+	bone.L.factorEulerZYX(p, y, r);
 	out << "L angles(deg) " << rad2deg(p) << "," << rad2deg(y) << "," << rad2deg(r) << endl;
 
 	out << "W (complete world transform):" << endl;
 	out << bone.W;
-	bone.W.toEulerAnglesFromXYZ(p, y, r);
+	bone.W.factorEulerZYX(p, y, r);
 	out << "W angles(deg) " << rad2deg(p) << "," << rad2deg(y) << "," << rad2deg(r) << endl;
 
 	return out;

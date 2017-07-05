@@ -90,7 +90,7 @@ void MovingCamera::move(float elapsed_time,
 	
     heading += yaw_thrust * elapsed_time;
 
-	Matrix4x4 rotation_matrix = Matrix4x4::rotationRPY(roll, pitch, heading);
+	Matrix4x4 rotation_matrix = Matrix4x4::rotationZXY(pitch, heading, roll);
 
 	Vector3D fwd_direction, hrz_direction, vrt_direction;
 	

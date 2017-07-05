@@ -37,7 +37,7 @@ public:
 
 	void rotateTo(Vector3D& _rpy)
 	{
-		Matrix4x4 rot_xform = Matrix4x4::rotationRPY(_rpy);
+		Matrix4x4 rot_xform = Matrix4x4::rotationZXY(_rpy);
 		setup(rot_xform.multVector(v1), rot_xform.multVector(v2), origin);
 	}
 

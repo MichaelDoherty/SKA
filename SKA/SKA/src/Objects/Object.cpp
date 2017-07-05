@@ -59,7 +59,7 @@ Matrix4x4 Object::worldTransformation() const
 	Matrix4x4 translation_xform;
 	translation_xform = Matrix4x4::translationXYZ(pos);
 	Matrix4x4 orientation_xform;
-	orientation_xform = Matrix4x4::rotationRPY(rot.roll, rot.pitch, rot.yaw);
+	orientation_xform = Matrix4x4::rotationZXY(rot);
 
 	// translate, then rotate, then scale
 	Matrix4x4 world_xform = translation_xform * orientation_xform * scale_xform;

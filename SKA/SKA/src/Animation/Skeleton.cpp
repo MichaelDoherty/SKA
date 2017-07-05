@@ -354,7 +354,7 @@ void Skeleton::update(float _time)
 
 	// compute root transforms from offsets
 	Matrix4x4 translation_xform = Matrix4x4::translationXYZ(offset_position);
-	Matrix4x4 rotation_xform = Matrix4x4::rotationRPY(offset_rotation);
+	Matrix4x4 rotation_xform = Matrix4x4::rotationZXY(offset_rotation);
 
 	world_xform = translation_xform*rotation_xform;
 
@@ -486,7 +486,7 @@ bool Skeleton::buildPositionMatrix(Array2D<float>& pmat)
 	{
 		// compute skeletal transform for offsets
 		Matrix4x4 translation_xform = Matrix4x4::translationXYZ(offset_position);
-		Matrix4x4 rotation_xform = Matrix4x4::rotationRPY(offset_rotation);
+		Matrix4x4 rotation_xform = Matrix4x4::rotationZXY(offset_rotation);
 		world_xform = translation_xform*rotation_xform;
 
 		for (short id=0; id<num_bones; id++)

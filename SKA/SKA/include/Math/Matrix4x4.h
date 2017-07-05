@@ -58,12 +58,12 @@ public:
 	// access with row, column indexes
 	float& operator()(unsigned int r, unsigned int c)
 	{
-		return m[r + 3*c];
+		return m[r + 4*c];
 	}
 
 	float operator()(unsigned int r, unsigned int c) const
 	{
-		return m[r + 3*c];
+		return m[r + 4*c];
 	}
 
 	static Matrix4x4 zero() 
@@ -122,100 +122,91 @@ public:
 	static Matrix4x4 translationXYZ(Vector3D v)	
 	{	return Matrix4x4::translationXYZ(v.x, v.y, v.z);	}
 
-//	Create a new rotation transformation matrix from euler angles.
-//	The order of transformations is roll(z), then pitch(x), then yaw(y). 
-//	A = pitch(x), B = yaw(y), C = roll(z)
-//
-//		Ry*Rx*Rz =
-//			 cB   0  sB  |   1   0   0  |  cC -sC   0
-//			  0   1   0  |   0  cA -sA  |  sC  cC   0
-//			-sB   0  cB  |   0  sA  cA  |   0   0   1
-//		=
-//			(cBcC + sBsAsC) (-cBsC + sBsAcC) (sBcA)
-//			(cAsC)          (cAcC)           (-sA)
-//			(-sBcC + cBsAsC) (sBsC + cBsAcC) (cBcA)
-//
-//	equivalent to D3DXMatrixRotationYawPitchRoll 
-//	reference: http://www.songho.ca/opengl/gl_anglestoaxes.html
-	static Matrix4x4 rotationRPY(float roll, float pitch, float yaw)
-	{
-		Matrix4x4 M;
-		float sA = sin(pitch);
-		float cA = cos(pitch);
-		float sB = sin(yaw);
-		float cB = cos(yaw);
-		float sC = sin(roll);
-		float cC = cos(roll);
+	// The following series of methods create rotation transformations
+	// from Euler angles applied in various orders.
+	// Note that since tranform application is from the right, 
+	// the specified order is reversed from the applied order.
+	// For example, rotationZYX() will be the transfrom Rx*Ry*Rz.
 
-		M.m[0]  = cB*cC + sB*sA*sC;
-		M.m[1]  = cA*sC;
-		M.m[2]  = cB*sA*sC - sB*cC;
-		M.m[3]  = 0.0f;
+	//	rotationXYZ = Rz*Ry*Rx 
+	static Matrix4x4 rotationXYZ(float rx, float ry, float rz);
+	//	rotationXZY = Ry*Rz*Rx 
+	static Matrix4x4 rotationXZY(float rx, float ry, float rz);
+	//	rotationYXZ = Rz*Rx*Ry 
+	static Matrix4x4 rotationYXZ(float rx, float ry, float rz);
+	//	rotationYZX = Rz*Ry*Rx 
+	static Matrix4x4 rotationYZX(float rx, float ry, float rz);
+	//	rotationZXY = Ry*Rx*Rz 
+	static Matrix4x4 rotationZXY(float rx, float ry, float rz);
+	//	rotationZYX = Rx*Ry*Rz 
+	static Matrix4x4 rotationZYX(float rx, float ry, float rz);
 
-		M.m[4]  = sB*sA*cC - cB*sC;
-		M.m[5]  = cA*cC;
-		M.m[6]  = sB*sC + cB*sA*cC;
-		M.m[7] = 0.0f;
-		
-		M.m[8]  = sB*cA;
-		M.m[9]  = -sA;
-		M.m[10] = cB*cA;
-		M.m[11] = 0.0f;
-		
-		M.m[12] = 0.0f;
-		M.m[13] = 0.0f;
-		M.m[14] = 0.0f;
-		M.m[15] = 1.0f; // CHECKIT! is this 1.0 correct?
-		return M;
-	}
-	static Matrix4x4 rotationRPY(Vector3D v)	
-	{	return Matrix4x4::rotationRPY(v.roll, v.pitch, v.yaw);	}
+	static Matrix4x4 rotationXYZ(const Vector3D& v) { return Matrix4x4::rotationXYZ(v.x, v.y, v.z); }
+	static Matrix4x4 rotationXZY(const Vector3D& v) { return Matrix4x4::rotationXZY(v.x, v.y, v.z); }
+	static Matrix4x4 rotationYXZ(const Vector3D& v) { return Matrix4x4::rotationYXZ(v.x, v.y, v.z); }
+	static Matrix4x4 rotationYZX(const Vector3D& v) { return Matrix4x4::rotationYZX(v.x, v.y, v.z); }
+	static Matrix4x4 rotationZXY(const Vector3D& v) { return Matrix4x4::rotationZXY(v.x, v.y, v.z); }
+	static Matrix4x4 rotationZYX(const Vector3D& v) { return Matrix4x4::rotationZYX(v.x, v.y, v.z); }
 
 	//   1   0   0
-	//   0  cA -sA
-	//   0  sA  cA
-	static Matrix4x4 rotationPitch(float pitch)
+	//   0  cc -sx
+	//   0  sx  cx
+	static Matrix4x4 rotationX(float rx)
 	{
 		Matrix4x4 M = Matrix4x4::identity();
-		float cA = cos(pitch);
-		float sA = sin(pitch);
-		M.m[5]  =  cA;
-		M.m[6]  =  sA;
-		M.m[9]  = -sA;
-		M.m[10] =  cA;
+		float cx = cos(rx), sx = sin(rx);
+		M.m[5]  =  cx; M.m[9]  = -sx;
+		M.m[6]  =  sx; M.m[10] =  cx;
 		return M;
 	}
+	static Matrix4x4 rotationPitch(float pitch) { return rotationX(pitch); }
 
-	//  cB   0  sB
+	//  cy   0  sy
 	//   0   1   0
-	// -sB   0  cB	
-	static Matrix4x4 rotationYaw(float yaw)
+	// -sy   0  cy	
+	static Matrix4x4 rotationY(float ry)
 	{
 		Matrix4x4 M = Matrix4x4::identity();
-		float cB = cos(yaw);
-		float sB = sin(yaw);
-		M.m[0]  =  cB;
-		M.m[2]  = -sB;
-		M.m[8]  =  sB;
-		M.m[10] =  cB;
+		float cy = cos(ry), sy = sin(ry);
+		M.m[0]  =  cy; M.m[8]  =  sy;
+		M.m[2]  = -sy; M.m[10] =  cy;
 		return M;
 	}
+	static Matrix4x4 rotationYaw(float yaw) { return rotationY(yaw); }
 
-	//  cC -sC   0
-	//  sC  cC   0
+	//  cz -sz   0
+	//  sz  cz   0
 	//   0   0   1	
-	static Matrix4x4 rotationRoll(float roll)
+	static Matrix4x4 rotationZ(float rz)
 	{
 		Matrix4x4 M = Matrix4x4::identity();
-		float cC = cos(roll);
-		float sC = sin(roll);
-		M.m[0]  =  cC;
-		M.m[1]  =  sC;
-		M.m[4]  = -sC;
-		M.m[5]  =  cC;
+		float cz = cos(rz), sz = sin(rz);
+		M.m[0]  =  cz; M.m[4]  = -sz;
+		M.m[1]  =  sz; M.m[5]  =  cz;
 		return M;
 	}
+	static Matrix4x4 rotationRoll(float roll) { return rotationZ(roll); }
 
+	// Factor Euler angles from a rotation transformation matrix.
+	// These methods assume the processed matrix is a pure rotation transformation.
+	// These methods are the inverse of the rotation??? methods.
+	// For example, rotationZYX() created transfrom Rx*Ry*Rz 
+	//  and factorEulerZYX() will factor such that M = Rx*Ry*Rz. 
+	// False return values indicate that the factorization was not unique.
+	bool factorEulerXYZ(float& rx, float& ry, float& rz);
+	bool factorEulerXZY(float& rx, float& ry, float& rz);
+	bool factorEulerYXZ(float& rx, float& ry, float& rz);
+	bool factorEulerYZX(float& rx, float& ry, float& rz);
+	bool factorEulerZXY(float& rx, float& ry, float& rz);
+	bool factorEulerZYX(float& rx, float& ry, float& rz);
+
+	bool factorEulerXYZ(Vector3D& r) { return factorEulerXYZ(r.x, r.y, r.z); }
+	bool factorEulerXZY(Vector3D& r) { return factorEulerXZY(r.x, r.y, r.z); }
+	bool factorEulerYXZ(Vector3D& r) { return factorEulerYXZ(r.x, r.y, r.z); }
+	bool factorEulerYZX(Vector3D& r) { return factorEulerYZX(r.x, r.y, r.z); }
+	bool factorEulerZXY(Vector3D& r) { return factorEulerZXY(r.x, r.y, r.z); }
+	bool factorEulerZYX(Vector3D& r) { return factorEulerZYX(r.x, r.y, r.z); }
+	
 	static Matrix4x4 rotationFromAxisAngle(Vector3D& axis, float angle)
 	{
 		Matrix4x4 M = Matrix4x4::identity();
@@ -500,15 +491,6 @@ public:
 		return true;
 	}
 
-	// Factor Euler angles from a rotation transformation matrix.
-	// Rotation transformation matrix is embedded in a 4x4 transformation.
-	// False return values indicate that the factorization was not unique.
-	bool toEulerAnglesFromXYZ(float& rx, float& ry, float& rz);
-	bool toEulerAnglesFromXZY(float& rx, float& ry, float& rz);
-	bool toEulerAnglesFromYXZ(float& rx, float& ry, float& rz);
-	bool toEulerAnglesFromYZX(float& rx, float& ry, float& rz);
-	bool toEulerAnglesFromZXY(float& rx, float& ry, float& rz);
-	bool toEulerAnglesFromZYX(float& rx, float& ry, float& rz);
 };
 
 

@@ -55,7 +55,7 @@ public:
     // text output
     SKA_LIB_DECLSPEC friend ostream& operator<<(ostream& out, const Quaternion& source);
 
-    // accessors
+    // accessors - these access the x, y and z components as q[0], q[1], and q[2]
     inline float& operator[](unsigned int i)         { return (&x)[i]; }
     inline float operator[](unsigned int i) const    { return (&x)[i]; }
 
@@ -123,6 +123,7 @@ public:
 
 	// conversions to/from other rotation formats (testing March 2013)
 	void fromRotationMatrix(const Matrix4x4& rotMatrix);
+	void fromRotationMatrix2(const Matrix4x4& rotMatrix);
 	void toRotationMatrix(Matrix4x4& rotMatrix) const;
 	void fromAxisAngle(const Vector3D& axis, const float angle);
 	void toAxisAngle(Vector3D& axis, float& angle) const;
